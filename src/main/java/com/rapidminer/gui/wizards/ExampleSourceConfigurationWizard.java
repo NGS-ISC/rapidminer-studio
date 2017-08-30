@@ -873,7 +873,7 @@ public class ExampleSourceConfigurationWizard extends AbstractConfigurationWizar
 			try (FileOutputStream fos = new FileOutputStream(attFile);
 					OutputStreamWriter osw = new OutputStreamWriter(fos, encoding);
 					PrintWriter writer = new PrintWriter(osw)) {
-				writer.print(XMLTools.toString(document, encoding));
+			writer.print(XMLTools.toString(document, encoding));
 			}
 		} catch (XMLException e) {
 			e.printStackTrace();

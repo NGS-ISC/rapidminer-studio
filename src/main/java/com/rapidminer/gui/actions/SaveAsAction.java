@@ -81,7 +81,7 @@ public class SaveAsAction extends ResourceAction {
 		if (process.getRepositoryLocation() != null) {
 			initial = process.getRepositoryLocation().toString();
 		}
-		String loc = RepositoryLocationChooser.selectLocation(null, initial, RapidMinerGUI.getMainFrame(), true, false,
+		String loc = RepositoryLocationChooser.selectLocation(null, initial, RapidMinerGUI.getMainFrame().getWindow(), true, false,
 				false, true, true);
 		if (loc != null) {
 			try {

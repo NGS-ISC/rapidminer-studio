@@ -100,7 +100,7 @@ public class PerspectiveProperties {
 	 * This method saves all tabs which are currently selected/visible.
 	 */
 	private void storeFocusedDockables() {
-		MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+		MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 		if (mainFrame != null) {
 			focusedDockables = new ArrayList<>();
 			DockableState[] states = mainFrame.getDockingDesktop().getContext().getDockables();
@@ -134,7 +134,7 @@ public class PerspectiveProperties {
 	 * This method saves scroll positions of all {@link JScrollPane}s in the current Perspective.
 	 */
 	private void storeScrollBarPositions() {
-		MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+		MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 		if (mainFrame != null) {
 			DockableState[] states = mainFrame.getDockingDesktop().getContext().getDockables();
 			for (DockableState state : states) {

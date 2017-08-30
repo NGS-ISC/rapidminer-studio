@@ -1,18 +1,18 @@
 /**
  * Copyright (C) 2001-2017 by RapidMiner and the contributors
- * 
+ *
  * Complete list of developers available at our web site:
- * 
+ *
  * http://rapidminer.com
- * 
+ *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU Affero General Public License as published by the Free Software Foundation, either version 3
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License along with this program.
  * If not, see http://www.gnu.org/licenses/.
 */
@@ -49,6 +49,7 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
@@ -60,7 +61,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.AttributesImpl;
 
 import com.rapidminer.Process;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.AbstractUIState;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.OperatorDocToHtmlConverter;
 import com.rapidminer.gui.OperatorDocumentationBrowser;
 import com.rapidminer.gui.actions.ToggleAction;
@@ -131,7 +133,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	private final DockKey DOCK_KEY = new ResourceDockKey(PROPERTY_EDITOR_DOCK_KEY);
 
 	{
-		DOCK_KEY.setDockGroup(MainFrame.DOCK_GROUP_ROOT);
+		DOCK_KEY.setDockGroup(AbstractUIState.DOCK_GROUP_ROOT);
 	}
 
 	private JPanel dockableComponent;
@@ -155,12 +157,12 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	private final Observer<String> parameterObserver = new Observer<String>() {
 
 		@Override
-		public void update(Observable<String> observable, String key) {
-			PropertyValueCellEditor editor = getEditorForKey(key);
+		public void update(final Observable<String> observable, final String key) {
+			final PropertyValueCellEditor editor = getEditorForKey(key);
 			if (editor != null) {
-				ParameterType type = operator.getParameters().getParameterType(key);
-				String editorValue = type.toString(editor.getCellEditorValue());
-				String opValue = operator.getParameters().getParameterOrNull(key);
+				final ParameterType type = operator.getParameters().getParameterType(key);
+				final String editorValue = type.toString(editor.getCellEditorValue());
+				final String opValue = operator.getParameters().getParameterOrNull(key);
 				if (opValue != null && editorValue == null || opValue == null && editorValue != null || opValue != null
 						&& editorValue != null && !opValue.equals(editorValue)) {
 					editor.getTableCellEditorComponent(null, opValue, false, 0, 1);
@@ -177,7 +179,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	private final ResourceLabel compatibilityLabel = new ResourceLabel("compatibility_level");
 	private final JPanel compatibilityPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
 
-	public OperatorPropertyPanel(final MainFrame mainFrame) {
+	public OperatorPropertyPanel(final MainUIState mainFrame) {
 		super();
 		headerLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
@@ -187,7 +189,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				TOGGLE_EXPERT_MODE_ACTION.actionPerformed(null);
 			}
 		});
@@ -196,8 +198,8 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				TOGGLE_EXPERT_MODE_ACTION.actionPerformed(null);
+			public void actionPerformed(final ActionEvent e) {
+				mainFrame.getToggleExpertModeAction().actionPerformed(null);
 			}
 		});
 
@@ -206,14 +208,14 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 		compatibilityLevelSpinner.addChangeListener(new ChangeListener() {
 
 			@Override
-			public void stateChanged(ChangeEvent e) {
+			public void stateChanged(final ChangeEvent e) {
 				// compatibility level
-				OperatorVersion[] versionChanges = operator.getIncompatibleVersionChanges();
+				final OperatorVersion[] versionChanges = operator.getIncompatibleVersionChanges();
 
 				// sort to have an ascending order
 				Arrays.sort(versionChanges);
 				if (versionChanges.length > 0) {
-					OperatorVersion latestChange = versionChanges[versionChanges.length - 1];
+					final OperatorVersion latestChange = versionChanges[versionChanges.length - 1];
 					if (latestChange.isAtLeast(operator.getCompatibilityLevel())) {
 						compatibilityLabel.setIcon(WARNING_ICON);
 					} else {
@@ -227,7 +229,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionToggled(ActionEvent e) {
+			public void actionToggled(final ActionEvent e) {
 				setShowParameterHelp(isSelected());
 				mainFrame.getPropertyPanel().setupComponents();
 			}
@@ -235,19 +237,19 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	}
 
 	@Override
-	public void processChanged(Process process) {}
+	public void processChanged(final Process process) {}
 
 	@Override
-	public void processUpdated(Process process) {
+	public void processUpdated(final Process process) {
 		setNameFor(operator);
 		// check if we have editors for the current parameters. If not, refresh.
 		int count = 0; // count hits. If we have to many, also refresh
-		List<ParameterType> properties = getProperties();
+		final List<ParameterType> properties = getProperties();
 		if (properties.size() != getNumberOfEditors()) {
 			setupComponents();
 			return;
 		}
-		for (ParameterType type : properties) {
+		for (final ParameterType type : properties) {
 			if (hasEditorFor(type)) {
 				count++;
 			} else {
@@ -261,7 +263,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	}
 
 	@Override
-	public void setSelection(List<Operator> selection) {
+	public void setSelection(final List<Operator> selection) {
 		final Operator operator = selection.isEmpty() ? null : selection.get(0);
 		if (operator == this.operator) {
 			return;
@@ -284,7 +286,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 			}
 
 			// compatibility level
-			OperatorVersion[] versionChanges = operator.getIncompatibleVersionChanges();
+			final OperatorVersion[] versionChanges = operator.getIncompatibleVersionChanges();
 			if (versionChanges.length == 0) {
 				// no incompatible versions exist
 				changeCompatibility.setVisible(false);
@@ -311,7 +313,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 			scrollPane.getViewport().addChangeListener(new ChangeListener() {
 
 				@Override
-				public void stateChanged(ChangeEvent e) {
+				public void stateChanged(final ChangeEvent e) {
 					if (scrollPane.getVerticalScrollBar().isVisible()) {
 						scrollPane.setBorder(BOTH_BORDERS);
 					} else {
@@ -322,7 +324,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 
 			dockableComponent = new JPanel(new BorderLayout());
 
-			JPanel headerPanel = new JPanel(new BorderLayout());
+			final JPanel headerPanel = new JPanel(new BorderLayout());
 			headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 5));
 			headerPanel.add(headerLabel, BorderLayout.CENTER);
 
@@ -331,7 +333,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 
 			// compatibility level and warnings
 
-			JPanel advancedPanel = new JPanel();
+			final JPanel advancedPanel = new JPanel();
 			advancedPanel.setLayout(new BoxLayout(advancedPanel, BoxLayout.PAGE_AXIS));
 			advancedPanel.add(showAdvancedParameters);
 			advancedPanel.add(hideAdvancedParameters);
@@ -341,12 +343,12 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 
 			compatibilityPanel.add(compatibilityLabel);
 			compatibilityPanel.add(compatibilityLevelSpinner);
-			JPanel compPanel = new JPanel();
+			final JPanel compPanel = new JPanel();
 			compPanel.setLayout(new BoxLayout(compPanel, BoxLayout.PAGE_AXIS));
 			compPanel.add(changeCompatibility);
 			compPanel.add(compatibilityPanel);
 
-			JPanel combiPanel = new JPanel();
+			final JPanel combiPanel = new JPanel();
 			combiPanel.setLayout(new BoxLayout(combiPanel, BoxLayout.PAGE_AXIS));
 			combiPanel.add(advancedPanel);
 			combiPanel.add(compPanel);
@@ -364,12 +366,12 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 		return TOGGLE_EXPERT_MODE_ACTION.isSelected();
 	}
 
-	public void setExpertMode(boolean isExpert) {
+	public void setExpertMode(final boolean isExpert) {
 		TOGGLE_EXPERT_MODE_ACTION.setSelected(isExpert);
 	}
 
 	@Override
-	public void setShowParameterHelp(boolean showHelp) {
+	public void setShowParameterHelp(final boolean showHelp) {
 		super.setShowParameterHelp(showHelp);
 		showHelpAction.setSelected(showHelp);
 	}
@@ -380,7 +382,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	}
 
 	@Override
-	protected String getToolTipText(String key, String title, String description, String range, boolean isOptional) {
+	protected String getToolTipText(final String key, final String title, String description, final String range, final boolean isOptional) {
 		if (parameterDescriptionCache.containsKey(key)) {
 			description = parameterDescriptionCache.get(key);
 		}
@@ -388,12 +390,12 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	}
 
 	@Override
-	protected String getValue(ParameterType type) {
+	protected String getValue(final ParameterType type) {
 		return operator.getParameters().getParameterOrNull(type.getKey());
 	}
 
 	@Override
-	protected void setValue(Operator operator, ParameterType type, String value) {
+	protected void setValue(final Operator operator, final ParameterType type, String value) {
 		if (value.length() == 0) {
 			value = null;
 		}
@@ -402,11 +404,11 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 
 	@Override
 	protected List<ParameterType> getProperties() {
-		List<ParameterType> visible = new LinkedList<ParameterType>();
+		final List<ParameterType> visible = new LinkedList<>();
 		int hidden = 0;
 		int advancedCount = 0;
 		if (operator != null) {
-			for (ParameterType type : operator.getParameters().getParameterTypes()) {
+			for (final ParameterType type : operator.getParameters().getParameterTypes()) {
 				if (type.isHidden()) {
 					continue;
 				}
@@ -445,10 +447,10 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	 */
 	private void parseParameterDescriptions(final Operator operator) {
 		parameterDescriptionCache.clear();
-		URL documentationURL = OperatorDocumentationBrowser.getDocResourcePath(operator);
+		final URL documentationURL = OperatorDocumentationBrowser.getDocResourcePath(operator);
 		if (documentationURL != null) {
 			try (InputStream documentationStream = documentationURL.openStream()) {
-				XMLStreamReader reader = XML_STREAM_FACTORY.createXMLStreamReader(documentationStream);
+				final XMLStreamReader reader = XML_STREAM_FACTORY.createXMLStreamReader(documentationStream);
 				String parameterKey = null;
 
 				// The builder that stores the parameter description text
@@ -456,11 +458,11 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 				boolean inParameters = false;
 				while (reader.hasNext()) {
 					switch (reader.next()) {
-						case XMLStreamReader.START_ELEMENT:
+						case XMLStreamConstants.START_ELEMENT:
 							if (!inParameters && reader.getLocalName().equals(TAG_PARAMETERS)) {
 								inParameters = true;
 							} else {
-								AttributesImpl attributes = new AttributesImpl();
+								final AttributesImpl attributes = new AttributesImpl();
 								for (int i = 0; i < reader.getAttributeCount(); i++) {
 									attributes.addAttribute("", reader.getAttributeLocalName(i), reader.getAttributeName(i)
 											.toString(), reader.getAttributeType(i), reader.getAttributeValue(i));
@@ -482,7 +484,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 								}
 							}
 							break;
-						case XMLStreamReader.END_ELEMENT:
+						case XMLStreamConstants.END_ELEMENT:
 							// end parsing when end of parameters element is reached
 							if (reader.getLocalName().equals(TAG_PARAMETERS)) {
 								return;
@@ -500,18 +502,18 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 									final String parameterDescription = parameterTextBuilder.toString();
 									final String key = parameterKey;
 									if (!parameterDescriptionCache.containsKey(parameterKey)) {
-										Source xmlSource = new StreamSource(new StringReader(parameterDescription));
+										final Source xmlSource = new StreamSource(new StringReader(parameterDescription));
 										try {
-											String desc = OperatorDocToHtmlConverter.applyXSLTTransformation(xmlSource);
+											final String desc = OperatorDocToHtmlConverter.applyXSLTTransformation(xmlSource);
 											parameterDescriptionCache.put(key, StringEscapeUtils.unescapeHtml(desc));
-										} catch (TransformerException e) {
+										} catch (final TransformerException e) {
 											// ignore
 										}
 									}
 								}
 							}
 							break;
-						case XMLStreamReader.CHARACTERS:
+						case XMLStreamConstants.CHARACTERS:
 							if (parameterTextBuilder != null) {
 								parameterTextBuilder.append(StringEscapeUtils.escapeHtml(reader.getText()));
 							}
@@ -527,7 +529,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 		}
 	}
 
-	private void appendParameterStartTag(String localName, Attributes attributes, StringBuilder parameterTextBuilder) {
+	private void appendParameterStartTag(final String localName, final Attributes attributes, final StringBuilder parameterTextBuilder) {
 		parameterTextBuilder.append('<');
 		parameterTextBuilder.append(localName);
 		for (int i = 0; i < attributes.getLength(); i++) {
@@ -541,7 +543,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 		parameterTextBuilder.append(" >");
 	}
 
-	private void setNameFor(Operator operator) {
+	private void setNameFor(final Operator operator) {
 		if (operator != null) {
 			headerLabel.setFont(selectedFont);
 			if (operator.getName().equals(operator.getOperatorDescription().getName())) {
@@ -564,15 +566,15 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 	 * @param version
 	 * @return
 	 */
-	private ResourceAction createCompatibilityAction(String version) {
+	private ResourceAction createCompatibilityAction(final String version) {
 		String key = "parameters.change_compatibility_current";
 
 		// different action if old comp level
 		if (operator != null) {
-			OperatorVersion[] versionChanges = operator.getIncompatibleVersionChanges();
+			final OperatorVersion[] versionChanges = operator.getIncompatibleVersionChanges();
 			Arrays.sort(versionChanges);
 			if (versionChanges.length > 0) {
-				OperatorVersion latestChange = versionChanges[versionChanges.length - 1];
+				final OperatorVersion latestChange = versionChanges[versionChanges.length - 1];
 				if (latestChange.isAtLeast(operator.getCompatibilityLevel())) {
 					key = "parameters.change_compatibility_old";
 				}
@@ -584,7 +586,7 @@ public class OperatorPropertyPanel extends PropertyPanel implements Dockable, Pr
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				compatibilityLevelSpinner.setVisible(true);
 				compatibilityLabel.setVisible(true);
 				changeCompatibility.setVisible(false);

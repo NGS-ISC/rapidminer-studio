@@ -28,7 +28,8 @@ import javax.swing.JScrollPane;
 
 import com.rapidminer.Process;
 import com.rapidminer.ProcessLocation;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.AbstractUIState;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.actions.export.PrintableComponent;
 import com.rapidminer.gui.processeditor.ProcessEditor;
@@ -49,7 +50,7 @@ public class OperatorTreePanel extends JPanel implements Dockable, ProcessEditor
 
 	private final OperatorTree operatorTree;
 
-	public OperatorTreePanel(final MainFrame mainFrame) {
+	public OperatorTreePanel(final MainUIState mainFrame) {
 		operatorTree = new OperatorTree(mainFrame);
 
 		setLayout(new BorderLayout());
@@ -62,7 +63,7 @@ public class OperatorTreePanel extends JPanel implements Dockable, ProcessEditor
 	private final DockKey DOCK_KEY = new ResourceDockKey("operator_tree");
 
 	{
-		DOCK_KEY.setDockGroup(MainFrame.DOCK_GROUP_ROOT);
+		DOCK_KEY.setDockGroup(AbstractUIState.DOCK_GROUP_ROOT);
 	}
 
 	private Component component;

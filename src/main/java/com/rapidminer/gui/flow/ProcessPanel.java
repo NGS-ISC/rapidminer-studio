@@ -40,7 +40,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.rapidminer.Process;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.AbstractUIState;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.actions.AutoWireAction;
 import com.rapidminer.gui.flow.processrendering.annotations.AnnotationsVisualizer;
 import com.rapidminer.gui.flow.processrendering.annotations.model.WorkflowAnnotation;
@@ -188,7 +189,7 @@ public class ProcessPanel extends JPanel implements Dockable, ProcessEditor {
 
 	private final JScrollPane scrollPane;
 
-	public ProcessPanel(final MainFrame mainFrame) {
+	public ProcessPanel(final MainUIState mainFrame) {
 		setOpaque(true);
 		setBackground(Colors.PANEL_BACKGROUND);
 		processButtonBar = new ProcessButtonBar(mainFrame);
@@ -511,7 +512,7 @@ public class ProcessPanel extends JPanel implements Dockable, ProcessEditor {
 	private final DockKey DOCK_KEY = new ResourceDockKey(PROCESS_PANEL_DOCK_KEY);
 
 	{
-		DOCK_KEY.setDockGroup(MainFrame.DOCK_GROUP_ROOT);
+		DOCK_KEY.setDockGroup(AbstractUIState.DOCK_GROUP_ROOT);
 	}
 
 	@Override

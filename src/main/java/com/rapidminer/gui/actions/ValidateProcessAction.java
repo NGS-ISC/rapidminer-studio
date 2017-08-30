@@ -18,10 +18,10 @@
 */
 package com.rapidminer.gui.actions;
 
-import com.rapidminer.gui.MainFrame;
-import com.rapidminer.gui.tools.ResourceAction;
-
 import java.awt.event.ActionEvent;
+
+import com.rapidminer.gui.MainUIState;
+import com.rapidminer.gui.tools.ResourceAction;
 
 
 /**
@@ -33,9 +33,9 @@ public class ValidateProcessAction extends ResourceAction {
 
 	private static final long serialVersionUID = -420838202882684287L;
 
-	private final MainFrame mainFrame;
+	private final MainUIState mainFrame;
 
-	public ValidateProcessAction(MainFrame mainFrame) {
+	public ValidateProcessAction(MainUIState mainFrame) {
 		super("validate");
 		setCondition(PROCESS_RUNNING, DISALLOWED);
 		setCondition(EDIT_IN_PROGRESS, DISALLOWED);

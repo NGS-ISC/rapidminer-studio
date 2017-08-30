@@ -32,7 +32,7 @@ import com.rapidminer.BreakpointListener;
 import com.rapidminer.Process;
 import com.rapidminer.ProcessListener;
 import com.rapidminer.gui.ConditionalAction;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.actions.OperatorActionFactory.ResourceEntry;
 import com.rapidminer.gui.dnd.OperatorTransferHandler;
 import com.rapidminer.gui.flow.AutoWireThread;
@@ -144,7 +144,7 @@ public class Actions implements ProcessEditor {
 
 	};
 
-	private final MainFrame mainFrame;
+	private final MainUIState mainFrame;
 
 	private final BreakpointListener breakpointListener = new BreakpointListener() {
 
@@ -163,7 +163,7 @@ public class Actions implements ProcessEditor {
 		@Override
 		public void processEnded(Process process) {
 			enableActions();
-			mainFrame.RUN_ACTION.setState(process.getProcessState());
+			mainFrame.getRunAction().setState(process.getProcessState());
 		}
 
 		@Override
@@ -178,7 +178,7 @@ public class Actions implements ProcessEditor {
 		}
 	};
 
-	public Actions(MainFrame mainFrame) {
+	public Actions(MainUIState mainFrame) {
 		this.mainFrame = mainFrame;
 	}
 

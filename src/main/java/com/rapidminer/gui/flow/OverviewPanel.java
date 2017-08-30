@@ -31,7 +31,7 @@ import java.awt.event.MouseMotionListener;
 
 import javax.swing.JPanel;
 
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.AbstractUIState;
 import com.rapidminer.gui.flow.processrendering.draw.ProcessDrawer;
 import com.rapidminer.gui.flow.processrendering.view.ProcessRendererView;
 import com.rapidminer.gui.tools.ResourceDockKey;
@@ -117,7 +117,7 @@ public class OverviewPanel extends JPanel implements Dockable {
 	public static final String OVERVIEW_DOCK_KEY = "overview";
 	private final DockKey DOCK_KEY = new ResourceDockKey(OVERVIEW_DOCK_KEY);
 	{
-		DOCK_KEY.setDockGroup(MainFrame.DOCK_GROUP_ROOT);
+		DOCK_KEY.setDockGroup(AbstractUIState.DOCK_GROUP_ROOT);
 	}
 
 	@Override

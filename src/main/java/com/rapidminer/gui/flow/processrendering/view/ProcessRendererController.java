@@ -825,7 +825,7 @@ public class ProcessRendererController {
 			if (bestInputPort != null) {
 				hoveringConnectionSource.disconnect();
 				connect(hoveringConnectionSource, bestInputPort);
-				if (RapidMinerGUI.getMainFrame().VALIDATE_AUTOMATICALLY_ACTION.isSelected()) {
+				if (RapidMinerGUI.getMainFrame().getValidateAutomaticallyAction().isSelected()) {
 					hoveringConnectionSource.getPorts().getOwner().getOperator().transformMetaData();
 					operator.transformMetaData();
 				}

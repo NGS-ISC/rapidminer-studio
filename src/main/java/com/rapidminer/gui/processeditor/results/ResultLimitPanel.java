@@ -36,7 +36,6 @@ import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.gui.tools.ResourceLabel;
 import com.rapidminer.gui.tools.components.AbstractLinkButton;
 import com.rapidminer.gui.tools.components.LinkRemoteButton;
-import com.rapidminer.license.violation.LicenseConstraintViolation;
 import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.RMUrlHandler;
 
@@ -107,16 +106,16 @@ class ResultLimitPanel extends JPanel {
 	 * @param violation
 	 *            the violation that causes the warning panel
 	 */
-	ResultLimitPanel(Color backgroundColor, LicenseConstraintViolation<Integer, Integer> violation) {
-		limit = violation.getConstraintValue();
+	ResultLimitPanel(Color backgroundColor/*, LicenseConstraintViolation<Integer, Integer> violation*/) {
+		limit = Integer.MAX_VALUE;//violation.getConstraintValue();
 
-		initGUI(backgroundColor, violation);
+		initGUI(backgroundColor/*, violation*/);
 	}
 
 	/**
 	 * Initializes the banner panel.
 	 */
-	private void initGUI(Color backgroundColor, LicenseConstraintViolation<Integer, Integer> violation) {
+	private void initGUI(Color backgroundColor/*, LicenseConstraintViolation<Integer, Integer> violation*/) {
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 
@@ -126,7 +125,7 @@ class ResultLimitPanel extends JPanel {
 		containerPanel.setBackground(Colors.WARNING_COLOR);
 
 		ResourceLabel firstLabel = new ResourceLabel("too_much_data.display_license",
-				NumberFormat.getIntegerInstance().format(violation.getConstraintValue()));
+				NumberFormat.getIntegerInstance().format(/*violation.getConstraintValue()*/0));
 		firstLabel.setFont(BOLD_LABEL_FONT);
 
 		gbc.gridx = 0;

@@ -38,9 +38,9 @@ import javax.swing.SwingUtilities;
  */
 public class MetaDataUpdateQueue extends UpdateQueue {
 
-	private final MainFrame mainFrame;
+	private final MainUIState mainFrame;
 
-	public MetaDataUpdateQueue(MainFrame mainFrame) {
+	public MetaDataUpdateQueue(MainUIState mainFrame) {
 		super("MetaDataValidation");
 		this.mainFrame = mainFrame;
 		this.setPriority(MIN_PRIORITY);

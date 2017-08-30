@@ -18,14 +18,14 @@
 */
 package com.rapidminer.gui.actions;
 
+import java.awt.event.ActionEvent;
+import java.io.File;
+
 import com.rapidminer.FileProcessLocation;
 import com.rapidminer.RapidMiner;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.gui.tools.SwingTools;
-
-import java.awt.event.ActionEvent;
-import java.io.File;
 
 
 /**
@@ -45,7 +45,7 @@ public class ImportProcessAction extends ResourceAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		File file = SwingTools.chooseFile(RapidMinerGUI.getMainFrame(), "import_process", null, true, false, new String[] {
+		File file = SwingTools.chooseFile(RapidMinerGUI.getMainFrame().getWindow(), "import_process", null, true, false, new String[] {
 				RapidMiner.PROCESS_FILE_EXTENSION, "xml" }, new String[] { "Process File", "Process File" });
 		if (file == null) {
 			return;

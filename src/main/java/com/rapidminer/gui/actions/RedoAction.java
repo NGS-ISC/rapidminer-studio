@@ -18,10 +18,10 @@
 */
 package com.rapidminer.gui.actions;
 
-import com.rapidminer.gui.MainFrame;
-import com.rapidminer.gui.tools.ResourceAction;
-
 import java.awt.event.ActionEvent;
+
+import com.rapidminer.gui.MainUIState;
+import com.rapidminer.gui.tools.ResourceAction;
 
 
 /**
@@ -33,9 +33,9 @@ public class RedoAction extends ResourceAction {
 
 	private static final long serialVersionUID = -3106523347321697652L;
 
-	private MainFrame mainFrame;
+	private MainUIState mainFrame;
 
-	public RedoAction(MainFrame mainFrame) {
+	public RedoAction(MainUIState mainFrame) {
 		super("redo");
 		this.mainFrame = mainFrame;
 		setCondition(EDIT_IN_PROGRESS, DISALLOWED);

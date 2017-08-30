@@ -167,7 +167,7 @@ public abstract class ReceivingOperatorTransferHandler extends OperatorTransferH
 					@Override
 					public void run() {
 						DataImportWizardBuilder importWizardBuilder = new DataImportWizardBuilder();
-						importWizardBuilder.forFile(file.toPath()).build(RapidMinerGUI.getMainFrame()).getDialog()
+						importWizardBuilder.forFile(file.toPath()).build(RapidMinerGUI.getMainFrame().getWindow()).getDialog()
 								.setVisible(true);
 					}
 				});

@@ -44,7 +44,7 @@ public class DataImportWizard extends AbstractWizard {
 	private static final long serialVersionUID = 6361602131820283501L;
 
 	public DataImportWizard(String key, Object... arguments) {
-		super(RapidMinerGUI.getMainFrame(), key, arguments);
+		super(RapidMinerGUI.getMainFrame().getWindow(), key, arguments);
 	}
 
 	protected boolean transferData(final AbstractExampleSource reader, final String repositoryLocationPath) {

@@ -20,11 +20,9 @@ package com.rapidminer.gui.processeditor.results;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -36,7 +34,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import com.rapidminer.core.license.ProductConstraintManager;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.example.set.MappedExampleSet;
 import com.rapidminer.gui.renderer.DefaultTextRenderer;
@@ -48,9 +45,6 @@ import com.rapidminer.gui.tools.components.ButtonBarCardPanel;
 import com.rapidminer.gui.tools.components.CardSelectionEvent;
 import com.rapidminer.gui.tools.components.CardSelectionListener;
 import com.rapidminer.gui.tools.components.ResourceCard;
-import com.rapidminer.license.LicenseConstants;
-import com.rapidminer.license.LicenseManagerRegistry;
-import com.rapidminer.license.violation.LicenseConstraintViolation;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.IOObject;
 import com.rapidminer.operator.ResultObject;
@@ -129,18 +123,7 @@ public class ResultDisplayTools {
 		visualisationComponent = new ButtonBarCardPanel(NO_CARD_KEYS, showCards);
 		final ButtonBarCardPanel cardPanel = visualisationComponent;
 		// check license limit for ExampleSet rows
-		final List<LicenseConstraintViolation<Integer, Integer>> violationList = new ArrayList<>();
-		if (result instanceof ExampleSet) {
-			LicenseConstraintViolation<Integer, Integer> violation = LicenseManagerRegistry.INSTANCE.get()
-					.checkConstraintViolation(ProductConstraintManager.INSTANCE.getProduct(),
-							LicenseConstants.DATA_ROW_CONSTRAINT, ((ExampleSet) result).size(), false);
-			if (violation != null) {
-				result = downsample((ExampleSet) result, violation.getConstraintValue());
-				violationList.add(violation);
-				ActionStatisticsCollector.INSTANCE.log(ActionStatisticsCollector.TYPE_ROW_LIMIT,
-						ActionStatisticsCollector.VALUE_ROW_LIMIT_DIALOG, "results_banner");
-			}
-		}
+//		final List<LicenseConstraintViolation<Integer, Integer>> violationList = new ArrayList<>();
 		final IOObject resultObject = result;
 		for (final Renderer renderer : renderers) {
 			String cardKey = toCardName(renderer.getName());
@@ -187,11 +170,11 @@ public class ResultDisplayTools {
 									inConstructionPanel.removeAll();
 
 									// add license information if necessary
-									if (!violationList.isEmpty()) {
-										JPanel warnPanel = new ResultLimitPanel(rendererComponent.getBackground(),
-												violationList.get(0));
-										inConstructionPanel.add(warnPanel, BorderLayout.NORTH);
-									}
+//									if (!violationList.isEmpty()) {
+//										JPanel warnPanel = new ResultLimitPanel(rendererComponent.getBackground(),
+//												violationList.get(0));
+//										inConstructionPanel.add(warnPanel, BorderLayout.NORTH);
+//									}
 
 									// add real renderer
 									inConstructionPanel.add(rendererComponent, BorderLayout.CENTER);

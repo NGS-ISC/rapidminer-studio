@@ -241,12 +241,12 @@ public class GraphViewer<V, E> extends JPanel implements Renderable, PrintableCo
 
 			@Override
 			public void graphClicked(V vertex, MouseEvent arg1) {
-					if (graphCreator.getObjectViewer() != null) {
-						vv.getPickedVertexState().clear();
-						vv.getPickedVertexState().pick(vertex, true);
-						graphCreator.getObjectViewer().showObject(graphCreator.getObject(vertex));
-					}
+				if (graphCreator.getObjectViewer() != null) {
+					vv.getPickedVertexState().clear();
+					vv.getPickedVertexState().pick(vertex, true);
+					graphCreator.getObjectViewer().showObject(graphCreator.getObject(vertex));
 				}
+			}
 
 			@Override
 			public void graphPressed(V arg0, MouseEvent arg1) {}

@@ -65,7 +65,6 @@ import Jama.Matrix;
 public class EMClusterer extends RMAbstractClusterer {
 
 	private static final OperatorVersion BEFORE_MEASURE_PARAM = new OperatorVersion(7, 5, 3);
-
 	/** The parameter name for &quot;the maximal number of clusters&quot; */
 	public static final String PARAMETER_K = "k";
 
@@ -110,6 +109,7 @@ public class EMClusterer extends RMAbstractClusterer {
 
 	/** The parameter name for &quot;Indicates if the example set has correlated attributes&quot; */
 	public static final String PARAMETER_CORRELATED = "correlated_attributes";
+
 
 	public EMClusterer(OperatorDescription description) {
 		super(description);
@@ -157,7 +157,6 @@ public class EMClusterer extends RMAbstractClusterer {
 		int[] bestAssignments = null;
 
 		RandomGenerator randomGenerator = RandomGenerator.getGlobalRandomGenerator();
-
 		// the iterations
 		for (int iter = 0; iter < restoreMaxRuns; iter++) {
 			FlatFuzzyClusterModel result = new FlatFuzzyClusterModel(exampleSet, k, addAsLabel, removeUnlabeled);
@@ -248,7 +247,6 @@ public class EMClusterer extends RMAbstractClusterer {
 		if (addsClusterAttribute()) {
 			addClusterAssignments(exampleSet, bestAssignments);
 		}
-
 		return bestModel;
 	}
 
@@ -313,7 +311,6 @@ public class EMClusterer extends RMAbstractClusterer {
 				ExampleSet clusterSet = (ExampleSet) exampleSet.clone();
 				clusterAlgorithm.setParameter(KMeans.PARAMETER_K, "" + k);
 				clusterAlgorithm.setParameter(RMAbstractClusterer.PARAMETER_ADD_CLUSTER_ATTRIBUTE, "true");
-				
 				if (getParameterAsBoolean(RandomGenerator.PARAMETER_USE_LOCAL_RANDOM_SEED)) {
 					clusterAlgorithm.setParameter(RandomGenerator.PARAMETER_USE_LOCAL_RANDOM_SEED, Boolean.toString(true));
 					clusterAlgorithm.setParameter(RandomGenerator.PARAMETER_LOCAL_RANDOM_SEED,
@@ -441,6 +438,7 @@ public class EMClusterer extends RMAbstractClusterer {
 			average[i] = exampleSet.getStatistics(attribute, Statistics.AVERAGE);
 			i++;
 		}
+
 
 		// make it random (to get different initializations for the different iterations)
 		double[] offset = VectorMath.vectorDivision(VectorMath.vectorSubtraction(max, min), k * 2);
@@ -759,7 +757,6 @@ public class EMClusterer extends RMAbstractClusterer {
 		ClusterModel model = createClusterModel(exampleSet);
 
 		return model;
-
 	}
 
 	@Override
@@ -800,7 +797,6 @@ public class EMClusterer extends RMAbstractClusterer {
 
 		return types;
 	}
-
 	private void addDistMeasureParams(List<ParameterType> types) {
 		List<ParameterType> measureParams = DistanceMeasures.getParameterTypesForNumAndDiv(this);
 		ParameterType param = measureParams.get(0);
@@ -823,5 +819,4 @@ public class EMClusterer extends RMAbstractClusterer {
 		newVersions[old.length] = BEFORE_MEASURE_PARAM;
 		return newVersions;
 	}
-
 }

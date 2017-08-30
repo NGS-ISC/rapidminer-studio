@@ -39,7 +39,7 @@ public abstract class GeneralProcessListener implements ProcessListener {
 
 	private Process process;
 
-	public GeneralProcessListener(MainFrame mainFrame) {
+	public GeneralProcessListener(MainUIState mainFrame) {
 		register(mainFrame);
 	}
 
@@ -48,7 +48,7 @@ public abstract class GeneralProcessListener implements ProcessListener {
 	}
 
 	public GeneralProcessListener() {
-		this((MainFrame) null);
+		this((MainUIState) null);
 	}
 
 	private void register(Object processProvider) {
@@ -79,8 +79,8 @@ public abstract class GeneralProcessListener implements ProcessListener {
 				processProvider = RapidMinerGUI.getMainFrame().getProcessPanel().getProcessRenderer().getModel();
 			}
 			ProcessRendererModel processModel;
-			if (processProvider instanceof MainFrame) {
-				processModel = ((MainFrame) processProvider).getProcessPanel().getProcessRenderer().getModel();
+			if (processProvider instanceof MainUIState) {
+				processModel = ((MainUIState) processProvider).getProcessPanel().getProcessRenderer().getModel();
 			} else {
 				processModel = (ProcessRendererModel) processProvider;
 			}

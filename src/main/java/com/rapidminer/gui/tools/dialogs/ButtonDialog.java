@@ -283,21 +283,21 @@ public class ButtonDialog extends JDialog {
 		 * @return the dialog instance, never {@code null}
 		 */
 		public ButtonDialog build() {
-			ButtonDialog dialog = new ButtonDialog(owner, key, modalityType, graphicsConfig, i18nArgs);
+			final ButtonDialog dialog = new ButtonDialog(owner, key, modalityType, graphicsConfig, i18nArgs);
 
 			// see if we also should prepare the layout
 			if (doLayout) {
 				// prepare desired buttons
-				boolean useCustomButtons = buttons != null && buttons.length > 0;
-				boolean useDefaultButtons = defaultButtons != null && defaultButtons.length > 0;
+				final boolean useCustomButtons = buttons != null && buttons.length > 0;
+				final boolean useDefaultButtons = defaultButtons != null && defaultButtons.length > 0;
 				AbstractButton[] buttonArray;
 				if (useCustomButtons) {
 					// use user supplied buttons
 					buttonArray = buttons;
 				} else if (useDefaultButtons) {
 					// create specified default buttons
-					ArrayList<AbstractButton> list = new ArrayList<>(defaultButtons.length);
-					for (DefaultButtons defB : defaultButtons) {
+					final ArrayList<AbstractButton> list = new ArrayList<>(defaultButtons.length);
+					for (final DefaultButtons defB : defaultButtons) {
 						switch (defB) {
 							case OK_BUTTON:
 								list.add(dialog.makeOkButton());
@@ -409,7 +409,7 @@ public class ButtonDialog extends JDialog {
 	 * @deprecated Use {@link ButtonDialogBuilder} instead
 	 */
 	@Deprecated
-	public ButtonDialog(String key, Object... arguments) {
+	public ButtonDialog(final String key, final Object... arguments) {
 		super(ApplicationFrame.getApplicationFrame(),
 				I18N.getMessage(I18N.getGUIBundle(), "gui.dialog." + key + ".title", arguments), false);
 		this.arguments = arguments;
@@ -423,7 +423,7 @@ public class ButtonDialog extends JDialog {
 	 * @deprecated Use {@link ButtonDialogBuilder} instead
 	 */
 	@Deprecated
-	public ButtonDialog(String key, boolean modal, Object... arguments) {
+	public ButtonDialog(final String key, final boolean modal, final Object... arguments) {
 		super(ApplicationFrame.getApplicationFrame(),
 				I18N.getMessage(I18N.getGUIBundle(), "gui.dialog." + key + ".title", arguments), modal);
 		this.arguments = arguments;
@@ -437,7 +437,7 @@ public class ButtonDialog extends JDialog {
 	 * @deprecated Use {@link ButtonDialogBuilder} instead
 	 */
 	@Deprecated
-	public ButtonDialog(String key, ModalityType type, Object... arguments) {
+	public ButtonDialog(final String key, final ModalityType type, final Object... arguments) {
 		super(ApplicationFrame.getApplicationFrame(),
 				I18N.getMessage(I18N.getGUIBundle(), "gui.dialog." + key + ".title", arguments), type);
 		this.arguments = arguments;
@@ -451,7 +451,7 @@ public class ButtonDialog extends JDialog {
 	 * @deprecated Use {@link ButtonDialogBuilder} instead
 	 */
 	@Deprecated
-	public ButtonDialog(Dialog owner, String key, boolean modal, Object... arguments) {
+	public ButtonDialog(final Dialog owner, final String key, final boolean modal, final Object... arguments) {
 		super(owner, I18N.getMessage(I18N.getGUIBundle(), "gui.dialog." + key + ".title", arguments), modal);
 		this.arguments = arguments;
 		configure(key);
@@ -464,7 +464,7 @@ public class ButtonDialog extends JDialog {
 	 * @deprecated Use {@link ButtonDialogBuilder} instead
 	 */
 	@Deprecated
-	public ButtonDialog(Dialog owner, String key, Object... arguments) {
+	public ButtonDialog(final Dialog owner, final String key, final Object... arguments) {
 		super(owner, I18N.getMessage(I18N.getGUIBundle(), "gui.dialog." + key + ".title", arguments), false);
 		this.arguments = arguments;
 		configure(key);
@@ -477,7 +477,7 @@ public class ButtonDialog extends JDialog {
 	 * @deprecated Use {@link ButtonDialogBuilder} instead
 	 */
 	@Deprecated
-	public ButtonDialog(Frame owner, String key, boolean modal, Object... arguments) {
+	public ButtonDialog(final Frame owner, final String key, final boolean modal, final Object... arguments) {
 		this(owner, key, modal ? ModalityType.APPLICATION_MODAL : ModalityType.MODELESS, arguments);
 	}
 
@@ -485,7 +485,7 @@ public class ButtonDialog extends JDialog {
 	 * @deprecated Use {@link ButtonDialogBuilder} instead
 	 */
 	@Deprecated
-	public ButtonDialog(Frame owner, String key, Object... arguments) {
+	public ButtonDialog(final Frame owner, final String key, final Object... arguments) {
 		this(owner, key, ModalityType.APPLICATION_MODAL, arguments);
 	}
 
@@ -504,7 +504,7 @@ public class ButtonDialog extends JDialog {
 	 *            the optional i18n arguments
 	 * @since 6.5.0
 	 */
-	protected ButtonDialog(Window owner, String key, ModalityType modalityType, Object... arguments) {
+	protected ButtonDialog(final Window owner, final String key, final ModalityType modalityType, final Object... arguments) {
 		this(owner, key, modalityType, owner != null ? owner.getGraphicsConfiguration() : null, arguments);
 	}
 
@@ -525,8 +525,8 @@ public class ButtonDialog extends JDialog {
 	 *            the optional i18n arguments
 	 * @since 6.5.0
 	 */
-	protected ButtonDialog(Window owner, String key, ModalityType modalityType, GraphicsConfiguration graphicsConfig,
-			Object... arguments) {
+	protected ButtonDialog(final Window owner, final String key, final ModalityType modalityType, final GraphicsConfiguration graphicsConfig,
+			final Object... arguments) {
 		super(owner, I18N.getMessage(I18N.getGUIBundle(), "gui.dialog." + key + ".title", arguments), modalityType,
 				graphicsConfig);
 		this.arguments = arguments;
@@ -537,7 +537,7 @@ public class ButtonDialog extends JDialog {
 		checkForEDT();
 	}
 
-	private void configure(String key) {
+	private void configure(final String key) {
 		this.key = key;
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
@@ -569,10 +569,10 @@ public class ButtonDialog extends JDialog {
 		return makeInfoPanel(getInfoText(), getInfoIcon());
 	}
 
-	private JPanel makeInfoPanel(String message, Icon icon) {
-		JLabel infoIcon = new JLabel(icon);
+	private JPanel makeInfoPanel(final String message, final Icon icon) {
+		final JLabel infoIcon = new JLabel(icon);
 		infoIcon.setVerticalAlignment(SwingConstants.TOP);
-		JPanel infoPanel = new JPanel(new BorderLayout(20, 0));
+		final JPanel infoPanel = new JPanel(new BorderLayout(20, 0));
 		infoPanel.setBorder(BorderFactory.createEmptyBorder(12, 16, 16, 4));
 		infoPanel.add(infoIcon, BorderLayout.WEST);
 		int width;
@@ -594,33 +594,33 @@ public class ButtonDialog extends JDialog {
 		return infoPanel;
 	}
 
-	protected void layoutDefault(JComponent centerComponent, int size, Collection<AbstractButton> buttons) {
+	protected void layoutDefault(final JComponent centerComponent, final int size, final Collection<AbstractButton> buttons) {
 		layoutDefault(centerComponent, size, buttons.toArray(new AbstractButton[buttons.size()]));
 	}
 
-	protected void layoutDefault(JComponent centerComponent, Collection<AbstractButton> buttons) {
+	protected void layoutDefault(final JComponent centerComponent, final Collection<AbstractButton> buttons) {
 		layoutDefault(centerComponent, DEFAULT_SIZE, buttons.toArray(new AbstractButton[buttons.size()]));
 	}
 
-	protected void layoutDefault(JComponent centerComponent, AbstractButton... buttons) {
+	protected void layoutDefault(final JComponent centerComponent, final AbstractButton... buttons) {
 		layoutDefault(centerComponent, DEFAULT_SIZE, buttons);
 	}
 
-	protected void layoutDefault(JComponent centerComponent, int size, AbstractButton... buttons) {
+	protected void layoutDefault(final JComponent centerComponent, final int size, final AbstractButton... buttons) {
 		layoutDefault(centerComponent, makeButtonPanel(buttons), size);
 	}
 
-	protected void layoutDefault(final JComponent centerComponent, JPanel buttonPanel) {
+	protected void layoutDefault(final JComponent centerComponent, final JPanel buttonPanel) {
 		layoutDefault(centerComponent, buttonPanel, DEFAULT_SIZE);
 	}
 
-	protected void layoutDefault(final JComponent centerComponent, JPanel buttonPanel, int size) {
+	protected void layoutDefault(final JComponent centerComponent, final JPanel buttonPanel, final int size) {
 		this.centerComponent = centerComponent;
 		setTitle(getDialogTitle());
 		setLayout(new BorderLayout());
 		add(makeInfoPanel(), BorderLayout.NORTH);
 		if (centerComponent != null) {
-			JPanel centerPanel = new JPanel(new BorderLayout());
+			final JPanel centerPanel = new JPanel(new BorderLayout());
 			centerPanel.setBorder(BorderFactory.createEmptyBorder(0, GAP, 0, GAP));
 			centerPanel.add(centerComponent, BorderLayout.CENTER);
 			add(centerPanel, BorderLayout.CENTER);
@@ -629,18 +629,18 @@ public class ButtonDialog extends JDialog {
 		this.addComponentListener(new ComponentListener() {
 
 			@Override
-			public void componentHidden(ComponentEvent e) {}
+			public void componentHidden(final ComponentEvent e) {}
 
 			@Override
-			public void componentMoved(ComponentEvent e) {}
+			public void componentMoved(final ComponentEvent e) {}
 
 			@Override
-			public void componentResized(ComponentEvent e) {
+			public void componentResized(final ComponentEvent e) {
 				if (infoTextLabel != null && centerComponent != null) {
-					int prefHeightBefore = infoTextLabel.getPreferredSize().height;
+					final int prefHeightBefore = infoTextLabel.getPreferredSize().height;
 					infoTextLabel.setWidth(centerComponent.getWidth() - 88);
-					int prefHeightAfter = infoTextLabel.getPreferredSize().height;
-					int heightDiff = prefHeightAfter - prefHeightBefore;
+					final int prefHeightAfter = infoTextLabel.getPreferredSize().height;
+					final int heightDiff = prefHeightAfter - prefHeightBefore;
 					if (heightDiff > 0) {
 						// re-pack this dialog if the infoTextLabel has changed its prefHeight after
 						// the resize
@@ -652,7 +652,7 @@ public class ButtonDialog extends JDialog {
 			}
 
 			@Override
-			public void componentShown(ComponentEvent e) {}
+			public void componentShown(final ComponentEvent e) {}
 		});
 		switch (size) {
 			case DEFAULT_SIZE:
@@ -675,7 +675,7 @@ public class ButtonDialog extends JDialog {
 		setDefaultSize(NORMAL);
 	}
 
-	protected Dimension getDefaultSize(int size) {
+	protected Dimension getDefaultSize(final int size) {
 		switch (size) {
 			case NARROW:
 				return DIMENSION_NARROW;
@@ -691,8 +691,8 @@ public class ButtonDialog extends JDialog {
 				// return the next smaller dimension instead to avoid components being too large for
 				// display
 				if (RapidMinerGUI.getMainFrame() != null
-						&& RapidMinerGUI.getMainFrame().getGraphicsConfiguration() != null) {
-					if (RapidMinerGUI.getMainFrame().getGraphicsConfiguration().getBounds().getHeight() <= MAX_HEIGHT) {
+						&& RapidMinerGUI.getMainFrame().getWindow().getGraphicsConfiguration() != null) {
+					if (RapidMinerGUI.getMainFrame().getWindow().getGraphicsConfiguration().getBounds().getHeight() <= MAX_HEIGHT) {
 						return getDefaultSize(LARGE);
 					} else {
 						return DIMENSION_HUGE;
@@ -725,26 +725,26 @@ public class ButtonDialog extends JDialog {
 		}
 	}
 
-	protected void setDefaultSize(int size) {
+	protected void setDefaultSize(final int size) {
 		if (size != DEFAULT_SIZE) {
 			setPreferredSize(getDefaultSize(size));
 		}
 		pack();
 	}
 
-	protected JPanel makeButtonPanel(Collection<AbstractButton> buttons) {
+	protected JPanel makeButtonPanel(final Collection<AbstractButton> buttons) {
 		return makeButtonPanel(buttons.toArray(new AbstractButton[buttons.size()]));
 	}
 
-	protected JPanel makeButtonPanel(AbstractButton... buttons) {
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, GAP, GAP));
+	protected JPanel makeButtonPanel(final AbstractButton... buttons) {
+		final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, GAP, GAP));
 		for (final AbstractButton button : buttons) {
 			if (button != null) {
 				buttonPanel.add(button);
 				button.addActionListener(new ActionListener() {
 
 					@Override
-					public void actionPerformed(ActionEvent e) {
+					public void actionPerformed(final ActionEvent e) {
 						ActionStatisticsCollector.getInstance().log(ActionStatisticsCollector.TYPE_DIALOG, key,
 								button.getActionCommand());
 					}
@@ -759,18 +759,18 @@ public class ButtonDialog extends JDialog {
 		return makeOkButton("ok");
 	}
 
-	protected JButton makeOkButton(String i18nKey) {
-		Action okAction = new ResourceAction(i18nKey) {
+	protected JButton makeOkButton(final String i18nKey) {
+		final Action okAction = new ResourceAction(i18nKey) {
 
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				wasConfirmed = true;
 				ok();
 			}
 		};
-		JButton button = new JButton(okAction);
+		final JButton button = new JButton(okAction);
 		getRootPane().setDefaultButton(button);
 
 		return button;
@@ -781,13 +781,13 @@ public class ButtonDialog extends JDialog {
 		return makeCancelButton("cancel");
 	}
 
-	protected JButton makeCancelButton(String i18nKey) {
-		Action cancelAction = new ResourceAction(i18nKey) {
+	protected JButton makeCancelButton(final String i18nKey) {
+		final Action cancelAction = new ResourceAction(i18nKey) {
 
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				wasConfirmed = false;
 				cancel();
 			}
@@ -800,12 +800,12 @@ public class ButtonDialog extends JDialog {
 
 	/** Will be default button and listen to ESCAPE. */
 	protected JButton makeCloseButton() {
-		Action action = new ResourceAction("close") {
+		final Action action = new ResourceAction("close") {
 
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				wasConfirmed = false;
 				close();
 			}
@@ -813,7 +813,7 @@ public class ButtonDialog extends JDialog {
 		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
 				.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false), "CLOSE");
 		getRootPane().getActionMap().put("CLOSE", action);
-		JButton button = new JButton(action);
+		final JButton button = new JButton(action);
 		getRootPane().setDefaultButton(button);
 		return button;
 	}
@@ -841,7 +841,7 @@ public class ButtonDialog extends JDialog {
 	 *            set to {@code false}.
 	 * @since 6.5.0
 	 */
-	public void accept(boolean accept) {
+	public void accept(final boolean accept) {
 		if (accept) {
 			setConfirmed(true);
 			ok();
@@ -860,17 +860,17 @@ public class ButtonDialog extends JDialog {
 		return wasConfirmed;
 	}
 
-	protected void setConfirmed(boolean b) {
+	protected void setConfirmed(final boolean b) {
 		this.wasConfirmed = b;
 	}
 
-	public static TitledBorder createTitledBorder(String title) {
-		TitledBorder border = new TitledBorder(createBorder(), title) {
+	public static TitledBorder createTitledBorder(final String title) {
+		final TitledBorder border = new TitledBorder(createBorder(), title) {
 
 			private static final long serialVersionUID = 3113821577644055057L;
 
 			@Override
-			public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			public void paintBorder(final Component c, final Graphics g, final int x, final int y, final int width, final int height) {
 				super.paintBorder(c, g, x - EDGE_SPACING, y, width + 2 * EDGE_SPACING, height);
 			}
 		};
@@ -881,21 +881,21 @@ public class ButtonDialog extends JDialog {
 		return BorderFactory.createMatteBorder(1, 1, 1, 1, Color.LIGHT_GRAY);
 	}
 
-	public static GridLayout createGridLayout(int rows, int columns) {
+	public static GridLayout createGridLayout(final int rows, final int columns) {
 		return new GridLayout(rows, columns, GAP, GAP);
 	}
 
-	public void addChangeListener(ChangeListener l) {
+	public void addChangeListener(final ChangeListener l) {
 		listeners.add(l);
 	}
 
-	public void removeChangeListener(ChangeListener l) {
+	public void removeChangeListener(final ChangeListener l) {
 		listeners.remove(l);
 	}
 
 	protected void fireStateChanged() {
-		ChangeEvent e = new ChangeEvent(this);
-		for (ChangeListener l : listeners) {
+		final ChangeEvent e = new ChangeEvent(this);
+		for (final ChangeListener l : listeners) {
 			l.stateChanged(e);
 		}
 	}

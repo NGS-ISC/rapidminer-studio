@@ -22,7 +22,7 @@ import java.awt.Container;
 
 import javax.swing.SwingUtilities;
 
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.vlsolutions.swing.docking.AutoHideExpandPanel;
 import com.vlsolutions.swing.docking.Dockable;
@@ -52,7 +52,7 @@ public class DockingTools {
 	 * @since 6.2.0
 	 */
 	public static DockableState getDockableState(String dockKey) {
-		MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+		MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 		for (DockableState dockableState : mainFrame.getDockingDesktop().getDockables()) {
 			Dockable dockable = dockableState.getDockable();
 			if (dockable.getDockKey().getKey().equals(dockKey)) {
@@ -109,7 +109,7 @@ public class DockingTools {
 		if (dockableState == null) {
 			return;
 		}
-		MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+		MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 		Dockable dockable = dockableState.getDockable();
 		if (dockableState.isClosed()) {
 			if (dockKeyContainer != null) {

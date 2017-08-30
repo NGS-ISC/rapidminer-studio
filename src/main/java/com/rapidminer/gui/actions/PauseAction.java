@@ -18,10 +18,10 @@
 */
 package com.rapidminer.gui.actions;
 
-import com.rapidminer.gui.MainFrame;
-import com.rapidminer.gui.tools.ResourceAction;
-
 import java.awt.event.ActionEvent;
+
+import com.rapidminer.gui.MainUIState;
+import com.rapidminer.gui.tools.ResourceAction;
 
 
 /**
@@ -33,9 +33,9 @@ public class PauseAction extends ResourceAction {
 
 	private static final long serialVersionUID = -8416546573798401295L;
 
-	private final MainFrame mainFrame;
+	private final MainUIState mainFrame;
 
-	public PauseAction(MainFrame mainFrame) {
+	public PauseAction(MainUIState mainFrame) {
 		super("pause");
 		this.mainFrame = mainFrame;
 		setCondition(PROCESS_RUNNING, MANDATORY);

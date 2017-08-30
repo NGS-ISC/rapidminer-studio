@@ -63,7 +63,7 @@ public class SimplePlotterDialog extends JDialog implements MouseMotionListener,
 	}
 
 	public SimplePlotterDialog(DataTable dataTable, boolean modal) {
-		this(RapidMinerGUI.getMainFrame(), dataTable, -1, -1, false, modal);
+		this(RapidMinerGUI.getMainFrame().getWindow(), dataTable, -1, -1, false, modal);
 	}
 
 	public SimplePlotterDialog(Frame owner, final DataTable dataTable, int width, int height,

@@ -57,7 +57,7 @@ public class AddCompatibleOperatorQuickFix extends AbstractQuickFix {
 				} else {
 					unit.addOperator(newOperator, unit.getIndexOfOperator(oldOperator));
 				}
-				if (RapidMinerGUI.getMainFrame().VALIDATE_AUTOMATICALLY_ACTION.isSelected()) {
+				if (RapidMinerGUI.getMainFrame().getValidateAutomaticallyAction().isSelected()) {
 					unit.autoWireSingle(newOperator, CompatibilityLevel.VERSION_5, true, true);
 				}
 			}

@@ -20,7 +20,7 @@ package com.rapidminer.gui.actions;
 
 import java.awt.event.ActionEvent;
 
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.operator.DebugMode;
 
 
@@ -31,11 +31,11 @@ import com.rapidminer.operator.DebugMode;
  */
 public class PropagateRealMetaDataAction extends ToggleAction {
 
-	private MainFrame mainFrame;
+	private MainUIState mainFrame;
 
 	private static final long serialVersionUID = -1317229512005928906L;
 
-	public PropagateRealMetaDataAction(MainFrame mainFrame) {
+	public PropagateRealMetaDataAction(MainUIState mainFrame) {
 		super(true, "process_debug_mode");
 
 		this.mainFrame = mainFrame;

@@ -35,6 +35,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import com.rapidminer.gui.actions.AboutAction;
@@ -90,6 +91,8 @@ public class MainToolBar extends JPanel {
 	/** The cached name of the current perspective */
 	private String perspectiveName;
 
+	private MainUIState mainFrame;
+
 	/**
 	 * Creates a new tool bar instance. The new instance only contains build-in actions and
 	 * perspectives. To display element registered by an extension, the {@link #update()} method
@@ -98,7 +101,8 @@ public class MainToolBar extends JPanel {
 	 * @param mainframe
 	 *            the mainframe that uses this tool bar
 	 */
-	public MainToolBar(final MainFrame mainframe) {
+	public MainToolBar(final AbstractUIState mainframe) {
+		this.mainFrame = mainframe;
 		// use default look and feel background
 		setOpaque(true);
 		setBackground(Colors.WINDOW_BACKGROUND);
@@ -246,8 +250,11 @@ public class MainToolBar extends JPanel {
 
 		// put "About RapidMiner Studio" action as last action if not on ox
 		if (SystemInfoUtilities.getOperatingSystem() != OperatingSystem.OSX || !OSXAdapter.isAdapted()) {
-			builder.addSeparator();
-			builder.add(new AboutAction((MainFrame) ApplicationFrame.getApplicationFrame()));
+			JFrame window = ApplicationFrame.getApplicationFrame();//mainFrame.getWindow();
+			if (window != null) {
+				builder.addSeparator();
+				builder.add(new AboutAction(window));
+			}
 		}
 		return builder.build();
 	}

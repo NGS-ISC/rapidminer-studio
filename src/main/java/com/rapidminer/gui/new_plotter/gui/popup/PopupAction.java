@@ -67,7 +67,7 @@ public class PopupAction extends ResourceAction implements PopupComponentListene
 		private static final long serialVersionUID = 1L;
 
 		public ContainerPopupDialog(Window owner, Component comp, Point point) {
-			super(owner != null ? owner : RapidMinerGUI.getMainFrame());
+			super(owner != null ? owner : RapidMinerGUI.getMainFrame().getWindow());
 			this.add(comp);
 			this.setLocation(point);
 			this.setUndecorated(true);

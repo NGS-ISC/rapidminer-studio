@@ -60,6 +60,7 @@ import javax.swing.text.BadLocationException;
 import com.rapidminer.Process;
 import com.rapidminer.gui.GeneralProcessListener;
 import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.actions.ToggleAction;
 import com.rapidminer.gui.dialog.SearchDialog;
@@ -228,11 +229,11 @@ public class LogViewer extends JPanel implements Dockable {
 	/**
 	 *
 	 *
-	 * /** Creates the {@link LogViewer} instance for the {@link MainFrame}.
+	 * /** Creates the {@link LogViewer} instance for the {@link MainUIState}.
 	 *
 	 * @param mainFrame
 	 */
-	public LogViewer(MainFrame mainFrame) {
+	public LogViewer(MainUIState mainFrame) {
 		super(new BorderLayout());
 
 		// set maximum number of rows to display in the log before oldest entries are discarded
@@ -494,7 +495,7 @@ public class LogViewer extends JPanel implements Dockable {
 		if (logFile != null) {
 			file = RapidMinerGUI.getMainFrame().getProcess().resolveFileName(logFile);
 		}
-		file = SwingTools.chooseFile(RapidMinerGUI.getMainFrame(), file, false, "log", "log file");
+		file = SwingTools.chooseFile(RapidMinerGUI.getMainFrame().getWindow(), file, false, "log", "log file");
 		if (file != null) {
 			try (PrintWriter out = new PrintWriter(new FileWriter(file))) {
 				out.println(textPane.getText());

@@ -59,7 +59,7 @@ public class ImportDataAction extends ResourceAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		DataImportWizardBuilder builder = new DataImportWizardBuilder();
-		JDialog wizard = builder.build(RapidMinerGUI.getMainFrame()).getDialog();
+		JDialog wizard = builder.build(RapidMinerGUI.getMainFrame().getWindow()).getDialog();
 		wizard.setVisible(true);
 	}
 

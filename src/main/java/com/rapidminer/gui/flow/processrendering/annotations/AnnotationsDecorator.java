@@ -56,6 +56,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -414,7 +415,10 @@ public final class AnnotationsDecorator {
 
 		// this listener makes the color edit panel move when required
 		view.addComponentListener(colorPanelMover);
-		ApplicationFrame.getApplicationFrame().addComponentListener(colorPanelMover);
+		/*ApplicationFrame.getApplicationFrame()*/JFrame window = view.getMainFrame().getWindow();
+		if (window != null) {
+			window.addComponentListener(colorPanelMover);
+		}
 	}
 
 	/**

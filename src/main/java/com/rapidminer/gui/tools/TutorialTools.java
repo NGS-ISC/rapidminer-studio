@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import com.rapidminer.Process;
 import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.repository.MalformedRepositoryLocationException;
 import com.rapidminer.tools.XMLException;
@@ -53,7 +54,7 @@ public class TutorialTools {
 			@Override
 			public void run() {
 				try {
-					MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+					MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 					Process tutorialProcess = tutorial.makeProcess();
 					mainFrame.setOpenedProcess(tutorialProcess);
 					mainFrame.getTutorialSelector().setSelectedTutorial(tutorial);

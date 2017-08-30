@@ -18,6 +18,8 @@
 */
 package com.rapidminer.gui.actions;
 
+import java.awt.event.ActionEvent;
+
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.gui.tools.SwingTools;
@@ -28,8 +30,6 @@ import com.rapidminer.repository.RepositoryException;
 import com.rapidminer.repository.RepositoryLocation;
 import com.rapidminer.repository.RepositoryManager;
 import com.rapidminer.repository.gui.RepositoryLocationChooser;
-
-import java.awt.event.ActionEvent;
 
 
 /**
@@ -58,7 +58,7 @@ public class StoreInRepositoryAction extends ResourceAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String loc = RepositoryLocationChooser.selectLocation(lastLocation, "", RapidMinerGUI.getMainFrame(), true, false,
+		String loc = RepositoryLocationChooser.selectLocation(lastLocation, "", RapidMinerGUI.getMainFrame().getWindow(), true, false,
 				true, true, true);
 		if (loc != null) {
 			RepositoryLocation location;

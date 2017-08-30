@@ -20,9 +20,9 @@ package com.rapidminer.gui.actions;
 
 import java.awt.event.ActionEvent;
 
+import javax.swing.JFrame;
+
 import com.rapidminer.RapidMiner;
-import com.rapidminer.core.license.ProductConstraintManager;
-import com.rapidminer.gui.MainFrame;
 import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.gui.tools.dialogs.AboutBox;
 
@@ -34,9 +34,9 @@ import com.rapidminer.gui.tools.dialogs.AboutBox;
 public class AboutAction extends ResourceAction {
 
 	private static final long serialVersionUID = 1L;
-	private MainFrame mainFrame;
+	private JFrame mainFrame;
 
-	public AboutAction(MainFrame mainFrame) {
+	public AboutAction(JFrame mainFrame) {
 		super("about");
 		this.mainFrame = mainFrame;
 		setCondition(EDIT_IN_PROGRESS, DONT_CARE);
@@ -44,7 +44,7 @@ public class AboutAction extends ResourceAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		new AboutBox(mainFrame, RapidMiner.getLongVersion(), ProductConstraintManager.INSTANCE.getActiveLicense())
+		new AboutBox(mainFrame, "RapidMiner", RapidMiner.getLongVersion(), "", "", "", true, null)
 				.setVisible(true);
 	}
 

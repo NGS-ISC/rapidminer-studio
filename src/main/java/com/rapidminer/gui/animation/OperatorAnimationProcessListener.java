@@ -20,7 +20,7 @@ package com.rapidminer.gui.animation;
 
 import com.rapidminer.Process;
 import com.rapidminer.gui.GeneralProcessListener;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.flow.processrendering.model.ProcessRendererModel;
 import com.rapidminer.operator.Operator;
@@ -39,7 +39,7 @@ public class OperatorAnimationProcessListener extends GeneralProcessListener {
 
 	private AnimationTimerProcessListener timerListener;
 
-	public OperatorAnimationProcessListener(MainFrame mainFrame) {
+	public OperatorAnimationProcessListener(final MainUIState mainFrame) {
 		super(mainFrame);
 	}
 
@@ -48,7 +48,7 @@ public class OperatorAnimationProcessListener extends GeneralProcessListener {
 	}
 
 	@Override
-	public void processStarts(Process process) {
+	public void processStarts(final Process process) {
 		if (timerListener == null) {
 			timerListener = new AnimationTimerProcessListener();
 		}
@@ -58,21 +58,21 @@ public class OperatorAnimationProcessListener extends GeneralProcessListener {
 	}
 
 	@Override
-	public void processStartedOperator(Process process, Operator op) {
+	public void processStartedOperator(final Process process, final Operator op) {
 		ProcessAnimationManager.INSTANCE.addAnimationForOperator(op);
 	}
 
 	@Override
-	public void processFinishedOperator(Process process, Operator op) {
+	public void processFinishedOperator(final Process process, final Operator op) {
 		if (!op.isAnimating()) {
 			ProcessAnimationManager.INSTANCE.removeAnimationForOperator(op);
 		}
 	}
 
 	@Override
-	public void processEnded(Process process) {
+	public void processEnded(final Process process) {
 		// need to remove operators here in case the process was stopped
-		for (Operator operator : process.getAllOperators()) {
+		for (final Operator operator : process.getAllOperators()) {
 			ProcessAnimationManager.INSTANCE.removeAnimationForOperator(operator);
 		}
 

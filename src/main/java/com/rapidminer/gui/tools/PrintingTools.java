@@ -44,6 +44,18 @@ import com.rapidminer.tools.I18N;
 import com.vlsolutions.swing.docking.Dockable;
 import com.vlsolutions.swing.docking.DockableState;
 
+import com.rapidminer.gui.Perspective;
+import com.rapidminer.gui.RapidMinerGUI;
+import com.rapidminer.gui.actions.export.PrintableComponent;
+import com.rapidminer.gui.actions.export.PrintableComponentContainer;
+import com.rapidminer.gui.actions.export.ShowPrintAndExportDialogAction;
+import com.rapidminer.gui.actions.export.SimplePrintableComponent;
+import com.rapidminer.gui.tools.components.DropDownButton;
+import com.rapidminer.gui.tools.dialogs.ConfirmDialog;
+import com.rapidminer.tools.I18N;
+import com.vlsolutions.swing.docking.Dockable;
+import com.vlsolutions.swing.docking.DockableState;
+
 
 /**
  * This class has static references to a printer job and page format. It also serves as a factory
@@ -170,7 +182,7 @@ public class PrintingTools {
 		}
 
 		// prompt user for file location
-		File file = SwingTools.chooseFile(RapidMinerGUI.getMainFrame(), i18nKey, null, false, false, fileExtensions,
+		File file = SwingTools.chooseFile(RapidMinerGUI.getMainFrame().getWindow(), i18nKey, null, false, false, fileExtensions,
 				extensionDescriptions, false);
 		if (file == null) {
 			return null;
@@ -231,7 +243,7 @@ public class PrintingTools {
 				.getSelectedPerspective();
 		String perspectiveName = I18N.getGUIMessage("gui.action.workspace_" + currentPerspective.getName() + ".label");
 
-		components.add(new SimplePrintableComponent(RapidMinerGUI.getMainFrame(), perspectiveName,
+		components.add(new SimplePrintableComponent(RapidMinerGUI.getMainFrame().getWindow(), perspectiveName,
 				I18N.getGUIMessage("gui.action.workspace_" + currentPerspective.getName() + ".icon")));
 
 		return components;

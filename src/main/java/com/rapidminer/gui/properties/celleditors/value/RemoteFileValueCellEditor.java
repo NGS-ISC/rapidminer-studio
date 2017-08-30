@@ -136,7 +136,7 @@ public class RemoteFileValueCellEditor extends DefaultRMCellEditor implements Pr
 
 							@Override
 							public void run() {
-								int returnvalue = chooser.showOpenDialog(RapidMinerGUI.getMainFrame());
+								int returnvalue = chooser.showOpenDialog(RapidMinerGUI.getMainFrame().getWindow());
 								if (returnvalue == JFileChooser.APPROVE_OPTION) {
 									((JTextField) editorComponent).setText(type.getRemoteFileSystemView()
 											.getNormalizedPathName(chooser.getSelectedFile()));

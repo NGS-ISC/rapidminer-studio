@@ -47,6 +47,7 @@ import javax.swing.ImageIcon;
 import com.rapidminer.BreakpointListener;
 import com.rapidminer.Process;
 import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.RapidMinerGUI.DragHighlightMode;
 import com.rapidminer.gui.animation.Animation;
@@ -1310,7 +1311,7 @@ public final class ProcessDrawer {
 			if (RapidMinerGUI.getDragHighlighteMode() == DragHighlightMode.FULL) {
 
 				// do nothing if we are in a tutorial process
-				MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+				MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 				if (mainFrame != null) {
 					Process currentProcess = mainFrame.getProcess();
 					if (currentProcess != null) {

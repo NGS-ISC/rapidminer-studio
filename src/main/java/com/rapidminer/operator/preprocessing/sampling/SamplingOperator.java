@@ -171,8 +171,8 @@ public class SamplingOperator extends AbstractSamplingOperator {
 		if (balanceData) {
 			Tools.hasNominalLabels(originalSet, this.getOperatorClassName());
 			label = originalSet.getAttributes().getLabel();
-				perLabelSets = SplittedExampleSet.splitByAttribute(originalSet, label);
-				exampleSet = perLabelSets;
+					perLabelSets = SplittedExampleSet.splitByAttribute(originalSet, label);
+					exampleSet = perLabelSets;
 
 			switch (sample) {
 				case SAMPLE_RELATIVE:

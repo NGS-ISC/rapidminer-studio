@@ -1,25 +1,24 @@
 /**
  * Copyright (C) 2001-2017 by RapidMiner and the contributors
- *
+ * 
  * Complete list of developers available at our web site:
- *
+ * 
  * http://rapidminer.com
- *
+ * 
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU Affero General Public License as published by the Free Software Foundation, either version 3
  * of the License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Affero General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Affero General Public License along with this program.
  * If not, see http://www.gnu.org/licenses/.
- */
+*/
 package com.rapidminer.operator.preprocessing.sampling;
 
 import java.util.List;
-
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.example.set.SplittedExampleSet;
 import com.rapidminer.operator.Operator;
@@ -45,9 +44,10 @@ import com.rapidminer.tools.OperatorResourceConsumptionHandler;
 import com.rapidminer.tools.RandomGenerator;
 
 
+
 /**
  * Divides a data set into the defined partitions and deliver the subsets.
- *
+ * 
  * @author Tobias Malbrecht
  */
 public class PartitionOperator extends Operator {
@@ -57,6 +57,7 @@ public class PartitionOperator extends Operator {
 	public static final String PARAMETER_RATIO = "ratio";
 
 	public static final String PARAMETER_SAMPLING_TYPE = "sampling_type";
+
 
 	private InputPort exampleSetInput = getInputPorts().createPort("example set", ExampleSet.class);
 	private OutputPortExtender outExtender = new OutputPortExtender("partition", getOutputPorts());

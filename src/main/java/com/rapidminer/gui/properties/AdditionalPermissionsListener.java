@@ -8,12 +8,10 @@ import java.util.function.BooleanSupplier;
 import javax.swing.JPanel;
 
 import com.rapidminer.RapidMiner;
-import com.rapidminer.core.license.ProductConstraintManager;
 import com.rapidminer.gui.ApplicationFrame;
 import com.rapidminer.gui.tools.dialogs.ButtonDialog;
 import com.rapidminer.gui.tools.dialogs.ButtonDialog.ButtonDialogBuilder;
 import com.rapidminer.gui.tools.dialogs.ButtonDialog.ButtonDialogBuilder.DefaultButtons;
-import com.rapidminer.license.StudioLicenseConstants;
 import com.rapidminer.tools.ParameterService;
 
 
@@ -44,10 +42,8 @@ public class AdditionalPermissionsListener extends WindowAdapter {
 				ParameterService.getParameterValue(RapidMiner.PROPERTY_RAPIDMINER_UPDATE_ADDITIONAL_PERMISSIONS));
 
 		if (!permissionsActiveBefore && permissionsActiveNow) {
-			BooleanSupplier isAllowed = () -> ProductConstraintManager.INSTANCE.getActiveLicense()
-					.getPrecedence() >= StudioLicenseConstants.UNLIMITED_LICENSE_PRECEDENCE
-					|| ProductConstraintManager.INSTANCE.isTrialLicense();
-			if (ProductConstraintManager.INSTANCE.isInitialized() && isAllowed.getAsBoolean()) {
+			BooleanSupplier isAllowed = () -> true;
+			if (isAllowed.getAsBoolean()) {
 				ButtonDialog dialog = new ButtonDialogBuilder("additional_permissions")
 						.setOwner(ApplicationFrame.getApplicationFrame())
 						.setButtons(DefaultButtons.OK_BUTTON, DefaultButtons.CANCEL_BUTTON)

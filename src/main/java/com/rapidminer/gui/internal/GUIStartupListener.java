@@ -18,7 +18,7 @@
 */
 package com.rapidminer.gui.internal;
 
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 
 
@@ -40,13 +40,13 @@ public interface GUIStartupListener {
 	void splashWillBeShown();
 
 	/**
-	 * Will be called after the {@link MainFrame} has been initialized and after all plugin GUIs
-	 * have been initialized but before the {@link MainFrame} is shown.
+	 * Will be called after the {@link MainUIState} has been initialized and after all plugin GUIs
+	 * have been initialized but before the {@link MainUIState} is shown.
 	 *
 	 * @param mainFrame
-	 *            the {@link MainFrame}
+	 *            the {@link MainUIState}
 	 */
-	void mainFrameInitialized(MainFrame mainFrame);
+	void mainFrameInitialized(MainUIState mainFrame);
 
 	/**
 	 * Will be called right after the Splash screen was hidden.

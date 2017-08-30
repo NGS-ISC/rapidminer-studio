@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -59,10 +60,8 @@ import com.rapidminer.RepositoryProcessLocation;
 import com.rapidminer.core.io.data.source.DataSourceFactoryRegistry;
 import com.rapidminer.gui.actions.OpenAction;
 import com.rapidminer.gui.autosave.AutoSave;
-import com.rapidminer.gui.dialog.EULADialog;
 import com.rapidminer.gui.docking.RapidDockableContainerFactory;
 import com.rapidminer.gui.internal.GUIStartupListener;
-import com.rapidminer.gui.license.LicenseTools;
 import com.rapidminer.gui.look.RapidLookAndFeel;
 import com.rapidminer.gui.look.fc.BookmarkIO;
 import com.rapidminer.gui.look.ui.RapidDockingUISettings;
@@ -75,7 +74,6 @@ import com.rapidminer.gui.tools.logging.LogModel;
 import com.rapidminer.gui.tools.logging.LogModelRegistry;
 import com.rapidminer.gui.tools.logging.LogViewer;
 import com.rapidminer.gui.viewer.MetaDataViewerTableModel;
-import com.rapidminer.license.LicenseManagerRegistry;
 import com.rapidminer.parameter.ParameterTypeBoolean;
 import com.rapidminer.parameter.ParameterTypeCategory;
 import com.rapidminer.parameter.ParameterTypeColor;
@@ -188,6 +186,9 @@ public class RapidMinerGUI extends RapidMiner {
 				DecisionRememberingConfirmDialog.PROPERTY_VALUES, DecisionRememberingConfirmDialog.TRUE));
 		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_ADD_BREAKPOINT_RESULTS_TO_HISTORY, "", false));
 		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_CONFIRM_EXIT, "", false));
+//Removed in 7.1 or 7.2
+//		RapidMiner.registerParameter(new ParameterTypeCategory(PROPERTY_RUN_REMOTE_NOW, "",
+//				DecisionRememberingConfirmDialog.PROPERTY_VALUES, DecisionRememberingConfirmDialog.ASK));
 		RapidMiner.registerParameter(new ParameterTypeCategory(PROPERTY_OPEN_IN_FILEBROWSER, "",
 				DecisionRememberingConfirmDialog.PROPERTY_VALUES, DecisionRememberingConfirmDialog.ASK));
 		RapidMiner.registerParameter(new ParameterTypeCategory(PROPERTY_CLOSE_ALL_RESULTS_NOW, "",
@@ -259,7 +260,7 @@ public class RapidMinerGUI extends RapidMiner {
 
 	private static final int NUMBER_OF_RECENT_FILES = 8;
 
-	private static MainFrame mainFrame;
+	private static MainUIState mainFrame;
 
 	private static LinkedList<ProcessLocation> recentFiles = new LinkedList<>();
 
@@ -330,9 +331,9 @@ public class RapidMinerGUI extends RapidMiner {
 
 		// store (possibly new) active license (necessary, since no
 		// ACTIVE_LICENSE_CHANGED event is fired on startup)
-		LicenseManagerRegistry.INSTANCE.get().getAllActiveLicenses().forEach((l) -> {
-			LicenseTools.storeActiveLicenseProperties(l);
-		});
+//		LicenseManagerRegistry.INSTANCE.get().getAllActiveLicenses().forEach((l) -> {
+//			LicenseTools.storeActiveLicenseProperties(l);
+//		});
 
 		// init logging GUI
 		defaultLogModel = new LogHandlerModel(LogService.getRoot(),
@@ -356,18 +357,18 @@ public class RapidMinerGUI extends RapidMiner {
 		FontTools.checkAndSetFallbackUIFont();
 
 		// check whether current EULA has been accepted
-		if (!EULADialog.getEULAAccepted()) {
-			// show EULA dialog
-			RapidMiner.splashMessage("eula");
-			SwingTools.invokeAndWait(new Runnable() {
-
-				@Override
-				public void run() {
-					EULADialog dialog = new EULADialog();
-					dialog.setVisible(true);
-				}
-			});
-		}
+//		if (!EULADialog.getEULAAccepted()) {
+//			// show EULA dialog
+//			RapidMiner.splashMessage("eula");
+//			SwingTools.invokeAndWait(new Runnable() {
+//
+//				@Override
+//				public void run() {
+//					EULADialog dialog = new EULADialog();
+//					dialog.setVisible(true);
+//				}
+//			});
+//		}
 
 		RapidMiner.splashMessage("history");
 		loadRecentFileList();
@@ -415,7 +416,7 @@ public class RapidMinerGUI extends RapidMiner {
 
 		RapidMiner.splashMessage("show_frame");
 
-		mainFrame.setVisible(true);
+		mainFrame.getWindow().setVisible(true);
 
 		RapidMiner.splashMessage("checks");
 		Plugin.initFinalChecks();
@@ -515,11 +516,11 @@ public class RapidMinerGUI extends RapidMiner {
 		}
 	}
 
-	public static void setMainFrame(final MainFrame mf) {
+	public static void setMainFrame(final MainUIState mf) {
 		mainFrame = mf;
 	}
 
-	public static MainFrame getMainFrame() {
+	public static MainUIState getMainFrame() {
 		return mainFrame;
 	}
 
@@ -644,15 +645,15 @@ public class RapidMinerGUI extends RapidMiner {
 
 	private static void saveGUIProperties() {
 		Properties properties = new Properties();
-		MainFrame mainFrame = getMainFrame();
+		JFrame mainFrame = getMainFrame().getWindow();
 		if (mainFrame != null) {
 			properties.setProperty(PROPERTY_GEOMETRY_X, "" + (int) mainFrame.getLocation().getX());
 			properties.setProperty(PROPERTY_GEOMETRY_Y, "" + (int) mainFrame.getLocation().getY());
 			properties.setProperty(PROPERTY_GEOMETRY_WIDTH, "" + mainFrame.getWidth());
 			properties.setProperty(PROPERTY_GEOMETRY_HEIGHT, "" + mainFrame.getHeight());
 			properties.setProperty(PROPERTY_GEOMETRY_EXTENDED_STATE, "" + mainFrame.getExtendedState());
-			properties.setProperty(PROPERTY_SHOW_PARAMETER_HELP, "" + mainFrame.getPropertyPanel().isShowParameterHelp());
-			properties.setProperty(PROPERTY_EXPERT_MODE, "" + mainFrame.getPropertyPanel().isExpertMode());
+			properties.setProperty(PROPERTY_SHOW_PARAMETER_HELP, "" + getMainFrame().getPropertyPanel().isShowParameterHelp());
+			properties.setProperty(PROPERTY_EXPERT_MODE, "" + getMainFrame().getPropertyPanel().isExpertMode());
 			File file = FileSystemService.getUserConfigFile("gui.properties");
 			OutputStream out = null;
 			try {
@@ -669,13 +670,13 @@ public class RapidMinerGUI extends RapidMiner {
 				} catch (IOException e) {
 				}
 			}
-			mainFrame.getResultDisplay().clearAll();
-			// mainFrame.getApplicationPerspectiveController().saveAll();
-			mainFrame.getPerspectiveController().saveAll();
+			getMainFrame().getResultDisplay().clearAll();
+			// getMainFrame().getApplicationPerspectiveController().saveAll();
+			getMainFrame().getPerspectiveController().saveAll();
 		}
 	}
 
-	private static void loadGUIProperties(final MainFrame mainFrame) {
+	private static void loadGUIProperties(final MainUIState mainFrame) {
 		Properties properties = new Properties();
 		File file = FileSystemService.getUserConfigFile("gui.properties");
 		if (file.exists()) {
@@ -695,17 +696,20 @@ public class RapidMinerGUI extends RapidMiner {
 				}
 			}
 			try {
-				mainFrame.setLocation(Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_X)),
-						Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_Y)));
-				mainFrame.setSize(new Dimension(Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_WIDTH)),
-						Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_HEIGHT))));
-				int extendedState;
-				if (properties.getProperty(PROPERTY_GEOMETRY_EXTENDED_STATE) == null) {
-					extendedState = Frame.NORMAL;
-				} else {
-					extendedState = Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_EXTENDED_STATE));
+				final JFrame window = mainFrame.getWindow();
+				if (window != null) {
+					window.setLocation(Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_X)),
+							Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_Y)));
+					window.setSize(new Dimension(Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_WIDTH)), Integer
+							.parseInt(properties.getProperty(PROPERTY_GEOMETRY_HEIGHT))));
+					int extendedState;
+					if (properties.getProperty(PROPERTY_GEOMETRY_EXTENDED_STATE) == null) {
+						extendedState = Frame.NORMAL;
+					} else {
+						extendedState = Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_EXTENDED_STATE));
+					}
+//TODO Is this ok to not execute?					window.setExtendedState(extendedState);
 				}
-				mainFrame.setExtendedState(extendedState);
 				mainFrame.getPropertyPanel()
 						.setExpertMode(Boolean.valueOf(properties.getProperty(PROPERTY_EXPERT_MODE)).booleanValue());
 
@@ -731,8 +735,8 @@ public class RapidMinerGUI extends RapidMiner {
 	 */
 	private static void setDefaultGUIProperties() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		mainFrame.setLocation((int) (0.05d * screenSize.getWidth()), (int) (0.05d * screenSize.getHeight()));
-		mainFrame.setSize((int) (0.9d * screenSize.getWidth()), (int) (0.9d * screenSize.getHeight()));
+		mainFrame.getWindow().setLocation((int) (0.05d * screenSize.getWidth()), (int) (0.05d * screenSize.getHeight()));
+		mainFrame.getWindow().setSize((int) (0.9d * screenSize.getWidth()), (int) (0.9d * screenSize.getHeight()));
 		mainFrame.getPropertyPanel().setExpertMode(false);
 	}
 
@@ -751,7 +755,10 @@ public class RapidMinerGUI extends RapidMiner {
 			public boolean handleArguments(final String[] args) {
 				LogService.getRoot().log(Level.INFO, "com.rapidminer.gui.RapidMinerGUI.received_message",
 						Arrays.toString(args));
-				mainFrame.requestFocus();
+				final JFrame window = mainFrame.getWindow();
+				if (window != null) {
+					window.requestFocus();
+				}				
 				if (args.length >= 1) {
 					String arg = args[0];
 					if (arg.startsWith(RapidMiner.RAPIDMINER_URL_PREFIX)) {

@@ -18,13 +18,13 @@
 */
 package com.rapidminer.gui.actions;
 
+import java.awt.event.ActionEvent;
+
 import com.rapidminer.Process;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.operator.ports.Port;
 import com.rapidminer.tools.ParameterService;
-
-import java.awt.event.ActionEvent;
 
 
 /**
@@ -46,7 +46,7 @@ public class ValidateAutomaticallyAction extends ToggleAction {
 
 	@Override
 	public void actionToggled(ActionEvent e) {
-		MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+		MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 		if (isSelected()) {
 			mainFrame.validateProcess(mainFrame.getProcessState() != Process.PROCESS_STATE_RUNNING);
 		} else {

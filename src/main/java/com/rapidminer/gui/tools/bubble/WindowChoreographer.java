@@ -135,7 +135,7 @@ public class WindowChoreographer {
 	 * {@value #DEFAULT_TOP_MARGIN} to the top
 	 */
 	public WindowChoreographer() {
-		this(RapidMinerGUI.getMainFrame().getContentPane(), DEFAULT_TOP_MARGIN);
+		this(RapidMinerGUI.getMainFrame().getWindow().getContentPane(), DEFAULT_TOP_MARGIN);
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class WindowChoreographer {
 			throw new IllegalArgumentException("w must not be null!");
 		}
 		// Don't trigger in iconified mode
-		if (RapidMinerGUI.getMainFrame().getExtendedState() == Frame.ICONIFIED) {
+		if (RapidMinerGUI.getMainFrame().getWindow().getExtendedState() == Frame.ICONIFIED) {
 			bubbleStack.add(w);
 			return false;
 		}

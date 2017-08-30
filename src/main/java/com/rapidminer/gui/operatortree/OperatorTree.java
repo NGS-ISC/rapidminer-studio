@@ -34,7 +34,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import com.rapidminer.Process;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.flow.processrendering.view.ProcessRendererView;
 import com.rapidminer.gui.operatortree.actions.CollapseAllAction;
 import com.rapidminer.gui.operatortree.actions.ExpandAllAction;
@@ -65,7 +65,7 @@ ProcessEditor {
 	public transient final Action COLLAPSE_ALL_ACTION = new CollapseAllAction(this, IconSize.SMALL);
 
 	/** The main frame. Used for conditional action updates and property table settings. */
-	private final MainFrame mainFrame;
+	private final MainUIState mainFrame;
 
 	/** The tree model of the operator tree. */
 	private transient ProcessTreeModel treeModel;
@@ -73,7 +73,7 @@ ProcessEditor {
 	private volatile boolean preventEvent = false;
 
 	/** Creates a new operator tree. */
-	public OperatorTree(MainFrame mainFrame) {
+	public OperatorTree(MainUIState mainFrame) {
 		super();
 		this.mainFrame = mainFrame;
 

@@ -8,11 +8,11 @@
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU Affero General Public License as published by the Free Software Foundation, either version 3
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License along with this program.
  * If not, see http://www.gnu.org/licenses/.
 */
@@ -46,7 +46,8 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 
 import com.rapidminer.Process;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.AbstractUIState;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.processeditor.ProcessEditor;
 import com.rapidminer.gui.tools.ExtendedJScrollPane;
 import com.rapidminer.gui.tools.ExtendedJTable;
@@ -63,7 +64,6 @@ import com.rapidminer.operator.ports.quickfix.QuickFix;
 import com.rapidminer.tools.I18N;
 import com.vlsolutions.swing.docking.DockKey;
 import com.vlsolutions.swing.docking.Dockable;
-
 
 /**
  *
@@ -270,10 +270,10 @@ public class ErrorTable extends JPanel implements Dockable, ProcessEditor {
 
 	private final DockKey DOCK_KEY = new ResourceDockKey(ERROR_TABLE_DOCK_KEY);
 	{
-		DOCK_KEY.setDockGroup(MainFrame.DOCK_GROUP_ROOT);
+		DOCK_KEY.setDockGroup(AbstractUIState.DOCK_GROUP_ROOT);
 	}
 
-	private final MainFrame mainFrame;
+	private final MainUIState mainFrame;
 
 	private Operator currentOperator;
 
@@ -293,7 +293,7 @@ public class ErrorTable extends JPanel implements Dockable, ProcessEditor {
 
 	private List<ProcessSetupError> errors = new LinkedList<ProcessSetupError>();
 
-	public ErrorTable(final MainFrame mainFrame) {
+	public ErrorTable(final MainUIState mainFrame) {
 		super(new BorderLayout());
 
 		this.mainFrame = mainFrame;

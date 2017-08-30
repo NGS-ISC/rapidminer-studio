@@ -294,16 +294,16 @@ public class BrowserPopup extends JDialog implements Supplier<String> {
 	 * 		the parent dialog
 	 */
 	public BrowserPopup(String html, int width, int height) {
-		super(RapidMinerGUI.getMainFrame());
+		super(RapidMinerGUI.getMainFrame().getWindow());
 		this.width = width;
 		this.height = height;
 
 		translationDistance = width + RIGHT_MARGIN + BORDER_PADDING;
 
 		// Hack to keep translucent window alive after it was iconified
-		RapidMinerGUI.getMainFrame().addWindowListener(transparencyFix);
+		RapidMinerGUI.getMainFrame().getWindow().addWindowListener(transparencyFix);
 
-		this.setLocationRelativeTo(RapidMinerGUI.getMainFrame());
+		this.setLocationRelativeTo(RapidMinerGUI.getMainFrame().getWindow());
 		this.setDefaultCloseOperation(CLOSE_OPERATION);
 		this.html = html;
 		this.setUndecorated(MODERN_UI);
@@ -368,7 +368,7 @@ public class BrowserPopup extends JDialog implements Supplier<String> {
 		closed.set(true);
 		SwingUtilities.invokeLater(() -> {
 			try {
-				RapidMinerGUI.getMainFrame().removeWindowListener(transparencyFix);
+				RapidMinerGUI.getMainFrame().getWindow().removeWindowListener(transparencyFix);
 				super.dispose();
 			} catch (NullPointerException npe) {
 				/**

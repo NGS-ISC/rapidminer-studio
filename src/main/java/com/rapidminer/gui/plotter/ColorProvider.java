@@ -56,7 +56,7 @@ public class ColorProvider {
 			}
 
 			@Override
-			public void informParameterChanged(String key, String value) {
+			public void informParameterChanged(final String key, final String value) {
 				if (MainFrame.PROPERTY_RAPIDMINER_GUI_PLOTTER_LEGEND_MINCOLOR.equals(key)) {
 					minColor = getColorFromProperty(MainFrame.PROPERTY_RAPIDMINER_GUI_PLOTTER_LEGEND_MINCOLOR,
 							MIN_DEFAULT_COLOR);
@@ -106,7 +106,7 @@ public class ColorProvider {
 	 * @param reduceBrightness
 	 *            if <code>true</code>, will reduce brightness of returned colors
 	 */
-	public ColorProvider(boolean reduceBrightness) {
+	public ColorProvider(final boolean reduceBrightness) {
 		this.reduceBrightness = reduceBrightness;
 	}
 
@@ -124,27 +124,27 @@ public class ColorProvider {
 	 * changes the color a bit to the opponent color if the values are not the same. This might be
 	 * nice for example in case of a predicted value and a real value.
 	 */
-	public double getPointColorValue(DataTable table, DataTableRow row, int column, double min, double max) {
-		double colorValue = row.getValue(column);
+	public double getPointColorValue(final DataTable table, final DataTableRow row, final int column, final double min, final double max) {
+		final double colorValue = row.getValue(column);
 		if (max == min && table.isNominal(column)) {
 			return colorValue / (table.getNumberOfValues(column) - 1);
 		} else {
 			double normalized = (colorValue - min) / (max - min);
 			if (!Double.isNaN(colorValue)) {
 				if (table.isNominal(column) && table.getNumberOfValues(column) == 2) {
-					String columnName = table.getColumnName(column);
-					int startParIndex = columnName.indexOf("(") + 1;
+					final String columnName = table.getColumnName(column);
+					final int startParIndex = columnName.indexOf("(") + 1;
 					if (startParIndex >= 0) {
-						int endParIndex = columnName.indexOf(")", startParIndex);
+						final int endParIndex = columnName.indexOf(")", startParIndex);
 						if (endParIndex >= 0) {
-							String otherColumnName = columnName.substring(startParIndex, endParIndex);
-							int otherColumnIndex = table.getColumnIndex(otherColumnName);
+							final String otherColumnName = columnName.substring(startParIndex, endParIndex);
+							final int otherColumnIndex = table.getColumnIndex(otherColumnName);
 							if (otherColumnIndex >= 0) {
 								if (table.isNominal(otherColumnIndex)) {
-									double compareValue = row.getValue(otherColumnIndex);
+									final double compareValue = row.getValue(otherColumnIndex);
 									if (!Double.isNaN(compareValue)) {
 										int compareIndex = (int) compareValue;
-										String compareString = table.mapIndex(otherColumnIndex, compareIndex);
+										final String compareString = table.mapIndex(otherColumnIndex, compareIndex);
 										compareIndex = table.mapString(column, compareString);
 										if (colorValue != compareIndex) {
 											// both values are different --> change color
@@ -165,25 +165,25 @@ public class ColorProvider {
 		}
 	}
 
-	public Color getPointBorderColor(DataTable table, DataTableRow row, int column) {
+	public Color getPointBorderColor(final DataTable table, final DataTableRow row, final int column) {
 		Color result = Color.BLACK;
 		if (table.isNominal(column)) { // nominal --> try to find compare column
-			double colorValue = row.getValue(column);
+			final double colorValue = row.getValue(column);
 			if (!Double.isNaN(colorValue)) {
-				int colorIndex = (int) colorValue;
-				String columnName = table.getColumnName(column);
-				int startParIndex = columnName.indexOf("(") + 1;
+				final int colorIndex = (int) colorValue;
+				final String columnName = table.getColumnName(column);
+				final int startParIndex = columnName.indexOf("(") + 1;
 				if (startParIndex >= 0) {
-					int endParIndex = columnName.indexOf(")", startParIndex);
+					final int endParIndex = columnName.indexOf(")", startParIndex);
 					if (endParIndex >= 0) {
-						String otherColumnName = columnName.substring(startParIndex, endParIndex);
-						int otherColumnIndex = table.getColumnIndex(otherColumnName);
+						final String otherColumnName = columnName.substring(startParIndex, endParIndex);
+						final int otherColumnIndex = table.getColumnIndex(otherColumnName);
 						if (otherColumnIndex >= 0) {
 							if (table.isNominal(otherColumnIndex)) {
-								double compareValue = row.getValue(otherColumnIndex);
+								final double compareValue = row.getValue(otherColumnIndex);
 								if (!Double.isNaN(compareValue)) {
 									int compareIndex = (int) compareValue;
-									String compareString = table.mapIndex(otherColumnIndex, compareIndex);
+									final String compareString = table.mapIndex(otherColumnIndex, compareIndex);
 									compareIndex = table.mapString(column, compareString);
 									if (colorIndex != compareIndex) {
 										// both values are different --> change color
@@ -206,7 +206,7 @@ public class ColorProvider {
 	/**
 	 * Returns a color for the given value. The value must be normalized, i.e. between zero and one.
 	 */
-	public Color getPointColor(double value) {
+	public Color getPointColor(final double value) {
 		return getPointColor(value, 255);
 	}
 
@@ -214,20 +214,20 @@ public class ColorProvider {
 	 * Returns a color for the given value. The value must be normalized, i.e. between zero and one.
 	 * Please note that high alpha values are more transparent.
 	 */
-	public Color getPointColor(double value, int alpha) {
+	public Color getPointColor(final double value, final int alpha) {
 		if (Double.isNaN(value)) {
 			return Color.LIGHT_GRAY;
 		}
-		Color MIN_LEGEND_COLOR = getMinLegendColor();
-		Color MAX_LEGEND_COLOR = getMaxLegendColor();
-		float[] minCol = Color.RGBtoHSB(MIN_LEGEND_COLOR.getRed(), MIN_LEGEND_COLOR.getGreen(), MIN_LEGEND_COLOR.getBlue(),
+		final Color MIN_LEGEND_COLOR = getMinLegendColor();
+		final Color MAX_LEGEND_COLOR = getMaxLegendColor();
+		final float[] minCol = Color.RGBtoHSB(MIN_LEGEND_COLOR.getRed(), MIN_LEGEND_COLOR.getGreen(), MIN_LEGEND_COLOR.getBlue(),
 				null);
-		float[] maxCol = Color.RGBtoHSB(MAX_LEGEND_COLOR.getRed(), MAX_LEGEND_COLOR.getGreen(), MAX_LEGEND_COLOR.getBlue(),
+		final float[] maxCol = Color.RGBtoHSB(MAX_LEGEND_COLOR.getRed(), MAX_LEGEND_COLOR.getGreen(), MAX_LEGEND_COLOR.getBlue(),
 				null);
 		// double hColorDiff = 1.0f - 0.68f;
-		double hColorDiff = maxCol[0] - minCol[0];
-		double sColorDiff = maxCol[1] - minCol[1];
-		double bColorDiff = maxCol[2] - minCol[2];
+		final double hColorDiff = maxCol[0] - minCol[0];
+		final double sColorDiff = maxCol[1] - minCol[1];
+		final double bColorDiff = maxCol[2] - minCol[2];
 
 		// lower brightness to 90%
 		Color color = new Color(Color.HSBtoRGB((float) (minCol[0] + hColorDiff * value),
@@ -249,10 +249,10 @@ public class ColorProvider {
 	 * @param color
 	 * @return
 	 */
-	public static Color reduceColorBrightness(Color color) {
+	public static Color reduceColorBrightness(final Color color) {
 		// lower brightness to 85% and saturation to 85%
 		int r, g, b;
-		float[] hsb = new float[3];
+		final float[] hsb = new float[3];
 		r = color.getRed();
 		g = color.getGreen();
 		b = color.getBlue();
@@ -264,15 +264,15 @@ public class ColorProvider {
 		return Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
 	}
 
-	private static Color getColorFromProperty(String propertyName, Color errorColor) {
-		String propertyString = ParameterService.getParameterValue(propertyName);
+	private static Color getColorFromProperty(final String propertyName, final Color errorColor) {
+		final String propertyString = ParameterService.getParameterValue(propertyName);
 		if (propertyString != null) {
-			String[] colors = propertyString.split(",");
+			final String[] colors = propertyString.split(",");
 			if (colors.length != 3) {
 				throw new IllegalArgumentException("Color '" + propertyString + "' defined as value for property '"
 						+ propertyName + "' is not a vaild color. Colors must be of the form 'r,g,b'.");
 			} else {
-				Color color = new Color(Integer.parseInt(colors[0].trim()), Integer.parseInt(colors[1].trim()),
+				final Color color = new Color(Integer.parseInt(colors[0].trim()), Integer.parseInt(colors[1].trim()),
 						Integer.parseInt(colors[2].trim()));
 				return color;
 			}

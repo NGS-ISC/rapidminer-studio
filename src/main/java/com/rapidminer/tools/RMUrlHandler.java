@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.HyperlinkListener;
 
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.actions.SettingsAction;
 import com.rapidminer.gui.dialog.BrowserUnavailableDialogFactory;
@@ -84,7 +84,7 @@ public class RMUrlHandler {
 			}
 			if (suffix.startsWith("operator/")) {
 				String opName = suffix.substring("operator/".length());
-				MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+				MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 				mainFrame.selectAndShowOperator(mainFrame.getProcess().getOperator(opName), true);
 				return true;
 			}

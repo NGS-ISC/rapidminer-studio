@@ -113,7 +113,7 @@ public class NotificationPopup extends JWindow {
 	 *            <code>null</code>
 	 */
 	private NotificationPopup(final JPanel content, final int delay, final NotificationPopupListener listener) {
-		super(RapidMinerGUI.getMainFrame());
+		super(RapidMinerGUI.getMainFrame().getWindow());
 
 		// determine what the default GraphicsDevice can support
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();

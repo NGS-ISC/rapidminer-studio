@@ -1068,6 +1068,7 @@ public class Tools {
 	 * will be read with UTF-8 encoding.
 	 */
 	public static String readTextFile(File file) throws IOException {
+
 		// due to a bug in pre-5.2.009, process files were stored in System encoding instead of
 		// UTF-8. So we have to check the process version, and if it's less than 5.2.009 we have
 		// to retrieve the file again with System encoding.
@@ -1077,29 +1078,28 @@ public class Tools {
 		// detected by the old method).
 		boolean useFallback = false;
 		try (FileInputStream inStream = new FileInputStream(file)) {
-
-			try {
-				DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-				Document processXmlDocument = documentBuilder.parse(inStream);
-				XPathFactory xPathFactory = XPathFactory.newInstance();
-				XPath xPath = xPathFactory.newXPath();
-				String versionString = xPath.evaluate("/process/@version", processXmlDocument);
-				VersionNumber version = new VersionNumber(versionString);
-				if (version.isAtMost(5, 2, 8)) {
-					useFallback = true;
-				}
-			} catch (XPathExpressionException e) {
-				useFallback = true;
-			} catch (SAXException e) {
-				useFallback = true;
-			} catch (ParserConfigurationException e) {
-				useFallback = true;
-			} catch (IOException e) {
-				useFallback = true;
-			} catch (NumberFormatException e) {
+		try {
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			Document processXmlDocument = documentBuilder.parse(inStream);
+			XPathFactory xPathFactory = XPathFactory.newInstance();
+			XPath xPath = xPathFactory.newXPath();
+			String versionString = xPath.evaluate("/process/@version", processXmlDocument);
+			VersionNumber version = new VersionNumber(versionString);
+			if (version.isAtMost(5, 2, 8)) {
 				useFallback = true;
 			}
+		} catch (XPathExpressionException e) {
+			useFallback = true;
+		} catch (SAXException e) {
+			useFallback = true;
+		} catch (ParserConfigurationException e) {
+			useFallback = true;
+		} catch (IOException e) {
+			useFallback = true;
+		} catch (NumberFormatException e) {
+			useFallback = true;
+		}
 		}
 
 		InputStreamReader reader = null;

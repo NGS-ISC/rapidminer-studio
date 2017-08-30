@@ -54,7 +54,7 @@ public class NewRepositoryDialog extends MultiPageDialog {
 	private final Map<String, Pair<RepositoryConfigurationPanel, JRadioButton>> repoConfigPanels = new HashMap<>();
 
 	private NewRepositoryDialog() {
-		super(RapidMinerGUI.getMainFrame(), "repositorydialog", true, new Object[] {});
+		super(RapidMinerGUI.getMainFrame().getWindow(), "repositorydialog", true, new Object[] {});
 
 		Box firstPage = new Box(BoxLayout.Y_AXIS);
 		ButtonGroup checkBoxGroup = new ButtonGroup();

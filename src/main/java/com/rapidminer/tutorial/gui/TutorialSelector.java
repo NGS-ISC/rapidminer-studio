@@ -24,7 +24,7 @@ import java.util.List;
 import javax.swing.JButton;
 
 import com.rapidminer.Process;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.Perspective;
 import com.rapidminer.gui.PerspectiveChangeListener;
 import com.rapidminer.gui.PerspectiveModel;
@@ -65,7 +65,7 @@ public class TutorialSelector extends AbstractObservable<Tutorial> {
 		private static final long serialVersionUID = 1L;
 
 		public LeaveTutorialDialog() {
-			super(RapidMinerGUI.getMainFrame(), "close_tutorial_browser", ConfirmDialog.YES_NO_CANCEL_OPTION, false);
+			super(RapidMinerGUI.getMainFrame().getWindow(), "close_tutorial_browser", ConfirmDialog.YES_NO_CANCEL_OPTION, false);
 		}
 
 		@Override
@@ -101,7 +101,7 @@ public class TutorialSelector extends AbstractObservable<Tutorial> {
 	}
 
 	/** the observed mainFrame */
-	private final MainFrame mainFrame;
+	private final MainUIState mainFrame;
 
 	/** the observed perspective model */
 	private final PerspectiveModel perspectiveModel;
@@ -115,7 +115,7 @@ public class TutorialSelector extends AbstractObservable<Tutorial> {
 	/** listener for perspective change events of the {@link #perspectiveModel} */
 	private PerspectiveChangeListener perspectiveListener;
 
-	public TutorialSelector(MainFrame mainFrame, PerspectiveModel perspectveModel) {
+	public TutorialSelector(MainUIState mainFrame, PerspectiveModel perspectveModel) {
 		this.mainFrame = mainFrame;
 		this.perspectiveModel = perspectveModel;
 		registerListeners();
@@ -142,7 +142,7 @@ public class TutorialSelector extends AbstractObservable<Tutorial> {
 				// check if the process is not the tutorial process anymore
 				// since a new process is created on every process change, we check the redo and
 				// undo steps, which are reset when a new process is opened
-				MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+				MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 				if (mainFrame != null && process.getRootOperator() != null
 						&& process.getRootOperator().getUserData(Tutorial.KEY_USER_DATA_FLAG) == null) {
 					// If getUserData(Tutorial.KEY_USER_DATA_FLAG) == null the current process is

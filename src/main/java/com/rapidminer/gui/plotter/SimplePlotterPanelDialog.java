@@ -48,7 +48,7 @@ public class SimplePlotterPanelDialog extends JDialog {
 	}
 
 	public SimplePlotterPanelDialog(DataTable dataTable, boolean modal) {
-		this(RapidMinerGUI.getMainFrame(), dataTable, -1, -1, modal);
+		this(RapidMinerGUI.getMainFrame().getWindow(), dataTable, -1, -1, modal);
 	}
 
 	public SimplePlotterPanelDialog(Frame owner, final DataTable dataTable, int width, int height, boolean modal) {

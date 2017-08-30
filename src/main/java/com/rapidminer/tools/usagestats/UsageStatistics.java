@@ -41,11 +41,8 @@ import org.w3c.dom.Element;
 
 import com.rapidminer.RapidMiner;
 import com.rapidminer.RapidMinerVersion;
-import com.rapidminer.core.license.ProductConstraintManager;
 import com.rapidminer.gui.RapidMinerGUI;
-import com.rapidminer.gui.dialog.EULADialog;
 import com.rapidminer.io.process.XMLTools;
-import com.rapidminer.license.License;
 import com.rapidminer.tools.FileSystemService;
 import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
@@ -185,7 +182,7 @@ public class UsageStatistics {
 	 * @return {@code true} if the usage statistics should be transmitted
 	 */
 	boolean shouldTransmitOnShutdown() {
-		return EULADialog.getEULAAccepted();
+		return false;//EULADialog.getEULAAccepted();
 	}
 
 	private String createRandomKey() {
@@ -231,10 +228,10 @@ public class UsageStatistics {
 			root.setAttribute("os-memory", osMemory);
 		}
 		root.setAttribute("jvm-max-heap", "" + SystemInfoUtilities.getMaxHeapMemorySize());
-		License activeLicense = ProductConstraintManager.INSTANCE.getActiveLicense();
-		if (activeLicense != null && activeLicense.getLicenseID() != null) {
-			root.setAttribute("lid", activeLicense.getLicenseID());
-		}
+//		License activeLicense = ProductConstraintManager.INSTANCE.getActiveLicense();
+//		if (activeLicense != null && activeLicense.getLicenseID() != null) {
+//			root.setAttribute("lid", activeLicense.getLicenseID());
+//		}
 
 		doc.appendChild(root);
 

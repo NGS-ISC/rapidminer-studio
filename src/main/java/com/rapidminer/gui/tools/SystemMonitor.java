@@ -18,6 +18,7 @@
 */
 package com.rapidminer.gui.tools;
 
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -227,4 +228,5 @@ public class SystemMonitor extends JPanel implements Dockable {
 		return new Color(Color.HSBtoRGB((float) (minCol[0] + hColorDiff * value), (float) (minCol[1] + value * sColorDiff),
 				(float) (minCol[2] + value * bColorDiff)));
 	}
+
 }

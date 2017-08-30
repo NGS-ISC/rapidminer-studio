@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2001-2017 by RapidMiner and the contributors
- * 
+ *
  * Complete list of developers available at our web site:
- * 
+ *
  * http://rapidminer.com
- * 
+ *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU Affero General Public License as published by the Free Software Foundation, either version 3
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License along with this program.
  * If not, see http://www.gnu.org/licenses/.
-*/
+ */
 package com.rapidminer.gui.processeditor;
 
 import java.awt.BorderLayout;
@@ -49,8 +49,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import com.rapidminer.core.license.ProductConstraintManager;
-import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.MainUIState;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.dnd.AbstractPatchedTransferHandler;
 import com.rapidminer.gui.dnd.OperatorTransferHandler;
@@ -68,9 +67,6 @@ import com.rapidminer.gui.tools.TextFieldWithAction;
 import com.rapidminer.gui.tools.components.ToolTipWindow;
 import com.rapidminer.gui.tools.components.ToolTipWindow.TipProvider;
 import com.rapidminer.gui.tools.components.ToolTipWindow.TooltipLocation;
-import com.rapidminer.license.LicenseEvent;
-import com.rapidminer.license.LicenseEvent.LicenseEventType;
-import com.rapidminer.license.LicenseManagerListener;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.OperatorCreationException;
 import com.rapidminer.operator.OperatorDescription;
@@ -329,18 +325,6 @@ public class NewOperatorGroupTree extends JPanel implements FilterListener, Sele
 
 		});
 
-		// we need to know when the license changes because operators may become
-		// supported/unsupported
-		ProductConstraintManager.INSTANCE.registerLicenseManagerListener(new LicenseManagerListener() {
-
-			@Override
-			public <S, C> void handleLicenseEvent(final LicenseEvent<S, C> event) {
-				if (event.getType() == LicenseEventType.ACTIVE_LICENSE_CHANGED) {
-					operatorGroupTree.repaint();
-				}
-			}
-		});
-
 		new ToolTipWindow(new TipProvider() {
 
 			@Override
@@ -483,7 +467,7 @@ public class NewOperatorGroupTree extends JPanel implements FilterListener, Sele
 		if (operator == null) {
 			return;
 		}
-		MainFrame mainFrame = RapidMinerGUI.getMainFrame();
+		MainUIState mainFrame = RapidMinerGUI.getMainFrame();
 		mainFrame.getActions().insert(Collections.singletonList(operator));
 		logSearchTerm("inserted", filterField.getText());
 	}

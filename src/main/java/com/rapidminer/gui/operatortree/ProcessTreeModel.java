@@ -35,6 +35,13 @@ import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.OperatorChain;
 import com.rapidminer.tools.LogService;
 
+import com.rapidminer.ProcessSetupListener;
+import com.rapidminer.gui.RapidMinerGUI;
+import com.rapidminer.operator.ExecutionUnit;
+import com.rapidminer.operator.Operator;
+import com.rapidminer.operator.OperatorChain;
+import com.rapidminer.tools.LogService;
+
 
 /**
  * A model view of a process that displays processes as individual nodes. Rewrite of the original
@@ -192,7 +199,7 @@ public class ProcessTreeModel implements TreeModel {
 			String desiredName = ((String) newValue).trim();
 			if (desiredName.length() > 0) {
 				if (desiredName.indexOf('.') >= 0) {
-					JOptionPane.showMessageDialog(RapidMinerGUI.getMainFrame(),
+					JOptionPane.showMessageDialog(RapidMinerGUI.getMainFrame().getWindow(),
 							"Renaming not possible: operator names are now allowed to contain the character '.'",
 							"Renaming failed", JOptionPane.WARNING_MESSAGE);
 				} else {

@@ -100,9 +100,8 @@ public class XMeans extends RMAbstractClusterer {
 
 	@Override
 	protected boolean usesDistanceMeasures() {
-		return true;
-	}
-
+				return true;
+		}
 	@Override
 	protected boolean handlesInfiniteValues() {
 		return false;

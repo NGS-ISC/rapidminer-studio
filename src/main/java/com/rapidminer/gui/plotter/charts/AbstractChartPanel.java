@@ -48,10 +48,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
@@ -339,8 +344,27 @@ public class AbstractChartPanel extends ChartPanel implements PrintableComponent
 	private transient Paint selectionFillPaint;
 
 	/** The resourceBundle for the localization. */
-	protected static ResourceBundle localizationResources = ResourceBundleWrapper
-			.getBundle("org.jfree.chart.LocalizationBundle");
+	protected static ResourceBundle localizationResources;
+	static {
+		try {
+			localizationResources = ResourceBundleWrapper
+				.getBundle("org.jfree.chart.LocalizationBundle");
+		} catch (MissingResourceException e) {
+			Logger.getAnonymousLogger().log(Level.WARNING, "Not found localization: " + e.getMessage(), e);
+			localizationResources = new ResourceBundle() {
+				
+				@Override
+				protected Object handleGetObject(String key) {
+					return key;
+				}
+				
+				@Override
+				public Enumeration<String> getKeys() {
+					return new Vector<String>().elements();
+				}
+			};
+		}
+	}
 
 	/**
 	 * Temporary storage for the width and height of the chart drawing area during panning.

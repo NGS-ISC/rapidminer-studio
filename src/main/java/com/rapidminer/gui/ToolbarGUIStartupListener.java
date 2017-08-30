@@ -35,7 +35,7 @@ public class ToolbarGUIStartupListener implements GUIStartupListener {
 	}
 
 	@Override
-	public void mainFrameInitialized(MainFrame mainFrame) {
+	public void mainFrameInitialized(MainUIState mainFrame) {
 		// ignore
 	}
 
