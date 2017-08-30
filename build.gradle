@@ -10,7 +10,7 @@ buildscript {
 }
 
 apply plugin: 'com.rapidminer.java-basics'
-apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
+// apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
 
 repositories {
     jcenter()
