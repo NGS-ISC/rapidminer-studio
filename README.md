@@ -59,6 +59,12 @@ Please have in mind that the jar file still require all dependencies listed in t
 	2. Install and configure a Gradle plugin for your IDE
 2. Import rapidminer-studio-core as a Gradle project
 
+### Build Rapidminer Studio GUI Launcher
+
+```gradle
+./gradlew shadowJar
+```
+
 ### Start the RapidMiner Studio Core GUI
 
 To start the graphical user interface of RapidMiner Studio Core create a new `GuiLauncher.java` file in __src/main/java__ and run it with your IDE. If you want to use the generated jar, add the jar and all dependencies to the Java class path `java -cp "all;required;jars" GuiLauncher`. You can list the runtime dependencies by executing `gradlew dependencies --configuration runtime`.
