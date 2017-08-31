@@ -280,13 +280,17 @@ public class RapidMinerGUI extends RapidMiner {
 
 		@Override
 		public void run() {
-			LogService.getRoot().log(Level.INFO, "com.rapidminer.gui.RapidMinerGUI.running_shutdown_sequence");
-			RapidMinerGUI.saveRecentFileList();
-			RapidMinerGUI.saveGUIProperties();
-			UsageStatistics.getInstance().save();
-			RepositoryManager.shutdown();
-			UsageStatsTransmissionDialog.transmitOnShutdown();
-			CallToActionScheduler.INSTANCE.shutdown();
+			// only need to do these if at least the MainFrame came up successfully.
+			// Otherwise saving might even be detrimental!
+			if (RapidMinerGUI.getMainFrame() != null) {
+				LogService.getRoot().log(Level.INFO, "com.rapidminer.gui.RapidMinerGUI.running_shutdown_sequence");
+				RapidMinerGUI.saveRecentFileList();
+				RapidMinerGUI.saveGUIProperties();
+				UsageStatistics.getInstance().save();
+				RepositoryManager.shutdown();
+				UsageStatsTransmissionDialog.transmitOnShutdown();
+				CallToActionScheduler.INSTANCE.shutdown();
+			}
 		}
 	}
 
@@ -467,6 +471,11 @@ public class RapidMinerGUI extends RapidMiner {
 		// init CTA event storage and rule checking system only after all other systems have been
 		// started to avoid overlaying CTA mesages during startup
 		CallToActionScheduler.INSTANCE.init();
+
+		// After all is done, clean up memory for the best possible starting conditions
+		if (Boolean.parseBoolean(ParameterService.getParameterValue(RapidMiner.PROPERTY_RAPIDMINER_UPDATE_BETA_FEATURES))) {
+			System.gc();
+		}
 	}
 
 	private void setupToolTipManager() {
@@ -590,8 +599,8 @@ public class RapidMinerGUI extends RapidMiner {
 			return;
 		}
 		BufferedReader in = null;
-		try {
-			in = new BufferedReader(new FileReader(file));
+		try (FileReader fr = new FileReader(file)) {
+			in = new BufferedReader(fr);
 			recentFiles.clear();
 			String line = null;
 			while ((line = in.readLine()) != null) {
@@ -624,18 +633,12 @@ public class RapidMinerGUI extends RapidMiner {
 
 	private static void saveRecentFileList() {
 		File file = FileSystemService.getUserConfigFile("history");
-		PrintWriter out = null;
-		try {
-			out = new PrintWriter(new FileWriter(file));
+		try (FileWriter fw = new FileWriter(file); PrintWriter out = new PrintWriter(fw)) {
 			for (ProcessLocation loc : recentFiles) {
 				out.println(loc.toHistoryFileString());
 			}
 		} catch (IOException e) {
 			SwingTools.showSimpleErrorMessage("cannot_write_history_file", e);
-		} finally {
-			if (out != null) {
-				out.close();
-			}
 		}
 	}
 
