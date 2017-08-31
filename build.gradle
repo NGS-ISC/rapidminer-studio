@@ -6,19 +6,33 @@ buildscript {
 	dependencies {
 		classpath 'com.rapidminer.gradle:java-basics:0.4.0'
 		classpath 'com.rapidminer.gradle:java-publishing:0.2.0'
-//        classpath "com.athaydes.gradle.osgi:osgi-run-core:1.3.1"
+        classpath "com.athaydes.gradle.osgi:osgi-run-core:1.3.1"
+		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
 	}
 }
 
-plugins {
-    id "com.athaydes.osgi-run" version "1.5.4"
-}
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'com.rapidminer.gui.GuiLauncher'
+
+//plugins {
+//    id "com.athaydes.osgi-run" version "1.5.4"
+//}
 
 apply plugin: 'com.rapidminer.java-basics'
-apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
+// apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
 
 apply plugin: 'osgi'
-//apply plugin: 'com.athaydes.osgi-run'
+apply plugin: 'com.athaydes.osgi-run'
+apply plugin: 'java'
+
+shadowJar {
+	baseName = 'rapidminer-studio'
+//	classifier = null
+//	version = null
+}
 
 configurations {
     embedded
@@ -228,6 +242,7 @@ dependencies {
 	// up until 7.4.1 this was a transitive dependency coming from license-commons (jackson version 2.4.0)
 	compile 'com.fasterxml.jackson.core:jackson-core:2.6.6'
 	compile 'com.fasterxml.jackson.core:jackson-databind:2.6.6'
+
 }
 
 jar {
@@ -240,6 +255,8 @@ jar {
 		instruction 'Require-Capability', 'osgi.ee;filter:="(&(osgi.ee=JavaSE)(version>=1.7))"'
 		//instruction 'Require-Bundle', 'com.rapidminer.license.rapidminer-license-api;bundle-version="[3.2.0,4.0.0)",com.rapidminer.license.rapidminer-license-commons;bundle-version="[3.2.1,4.0.0)"'
 		instruction 'Bundle-ActivationPolicy', 'lazy'
+		attributes 'Main-Class': 'com.rapidminer.gui.GuiLauncher',
+				'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
 	}
 	//From: http://kennethjorgensen.com/blog/2014/fat-jars-with-excluded-dependencies-in-gradle
 	dependsOn configurations.runtime
@@ -255,6 +272,12 @@ jar {
 }
 
 task wrapper(type: Wrapper) { gradleVersion = '2.14.1' }
+
+task myRun(type: JavaExec) {
+  classpath 'build/libs/rapidminer-studio-7.5.1.20170628.jar'
+	main = 'com.rapidminer.gui.GuiLauncher'
+  // args "arg1", "arg2"
+}
 
 apply from: 'gradle/wsimport.gradle'
 apply from: 'gradle/props.gradle'
