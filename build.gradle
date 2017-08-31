@@ -1,13 +1,13 @@
 buildscript {
-	repositories {
-		jcenter()
-		maven { url 'https://maven.rapidminer.com/content/groups/public/' }
-	}
-	dependencies {
-		classpath 'com.rapidminer.gradle:java-basics:0.4.0'
-		classpath 'com.rapidminer.gradle:java-publishing:0.2.0'
+    repositories {
+        jcenter()
+        maven { url 'https://maven.rapidminer.com/content/groups/public/' }
+    }
+    dependencies {
+        classpath 'com.rapidminer.gradle:java-basics:0.4.0'
+        classpath 'com.rapidminer.gradle:java-publishing:0.2.0'
 		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
-	}
+    }
 }
 
 apply plugin: 'java'
@@ -30,8 +30,8 @@ configurations {
 }
 
 repositories {
-	jcenter()
-	maven { url 'https://maven.rapidminer.com/content/groups/public/' }
+    jcenter()
+    maven { url 'https://maven.rapidminer.com/content/groups/public/' }
 }
 
 compileJava {
@@ -41,8 +41,8 @@ compileJava {
 
 dependencies {
 
-	// OS X adapter to add platform specific UI
-	compile 'com.rapidminer.studio:rapidminer-studio-osx-adapter:1.0.1'
+    // OS X adapter to add platform specific UI
+    compile 'com.rapidminer.studio:rapidminer-studio-osx-adapter:1.0.1'
 
 	// RapidMiner license framework for license management
 	compile 'com.rapidminer.license:rapidminer-license-api:4.0.0'
@@ -171,3 +171,6 @@ task wrapper(type: Wrapper) { gradleVersion = '4.0.1' }
 apply from: 'gradle/wsimport.gradle'
 apply from: 'gradle/props.gradle'
 apply from: 'gradle/tutorial.gradle'
+
+// Jacoco for code coverage information
+apply from: 'jacoco.gradle'
