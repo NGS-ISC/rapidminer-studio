@@ -6,15 +6,43 @@ buildscript {
 	dependencies {
 		classpath 'com.rapidminer.gradle:java-basics:0.4.0'
 		classpath 'com.rapidminer.gradle:java-publishing:0.2.0'
+		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
 	}
 }
 
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'com.rapidminer.gui.GuiLauncher'
+
+
 apply plugin: 'com.rapidminer.java-basics'
-apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
+// apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
+
+shadowJar {
+	baseName = 'rapidminer-studio'
+//	classifier = null
+//	version = null
+}
+
+configurations {
+    embedded
+    compile.extendsFrom embedded
+}
 
 repositories {
 	jcenter()
 	maven { url 'https://maven.rapidminer.com/content/groups/public/' }
+}
+
+//def equinoxVersion = '3.11.3.v20170209-1843'
+def equinoxVersion = '3.11.2.v20161107-1947'
+//def equinoxVersion = '3.12.0'
+
+compileJava {
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
 }
 
 dependencies {
