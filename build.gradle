@@ -6,15 +6,37 @@ buildscript {
     dependencies {
         classpath 'com.rapidminer.gradle:java-basics:0.4.0'
         classpath 'com.rapidminer.gradle:java-publishing:0.2.1'
+		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
     }
 }
 
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'com.rapidminer.gui.GuiLauncher'
 apply plugin: 'com.rapidminer.java-basics'
-apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
+//apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
+
+shadowJar {
+	baseName = 'rapidminer-studio'
+//	classifier = null
+//	version = null
+}
+
+configurations {
+    embedded
+    compile.extendsFrom embedded
+}
 
 repositories {
     jcenter()
     maven { url 'https://maven.rapidminer.com/content/groups/public/' }
+}
+
+compileJava {
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
 }
 
 dependencies {
@@ -93,7 +115,6 @@ dependencies {
 
 	// HttpClient used by the Bugzilla XML RPC client (http://hc.apache.org/httpcomponents-client)
 	compile 'commons-httpclient:commons-httpclient:3.1'
-
 	// FileUtils useful for various things
 	compile 'commons-io:commons-io:2.6'
 
@@ -145,7 +166,6 @@ dependencies {
 	// up until 7.4.1 this was a transitive dependency coming from license-commons (jackson version 2.4.0)
 	compile 'com.fasterxml.jackson.core:jackson-core:2.6.6'
 	compile 'com.fasterxml.jackson.core:jackson-databind:2.6.6'
-
 	// Advanced Search functionality via Lucene
 	compile 'org.apache.lucene:lucene-queryparser:7.2.0'
 	// Highlight Lucene search result matches
@@ -154,7 +174,6 @@ dependencies {
 
 	// tests require mockito
 	testCompile 'org.mockito:mockito-core:2.13.0'
-
 }
 
 task wrapper(type: Wrapper) { gradleVersion = '4.0.1' }
