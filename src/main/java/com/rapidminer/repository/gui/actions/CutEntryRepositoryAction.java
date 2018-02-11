@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -43,7 +43,7 @@ public class CutEntryRepositoryAction extends AbstractRepositoryAction<Entry> {
 
 	/** Fires action event */
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void loggedActionPerformed(ActionEvent e) {
 		String actionCommand = e.getActionCommand();
 		Action action = tree.getActionMap().get(actionCommand);
 		if (action != null) {

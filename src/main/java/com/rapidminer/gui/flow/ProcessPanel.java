@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -355,7 +355,7 @@ public class ProcessPanel extends JPanel implements Dockable, ProcessEditor {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				fireProcessZoomWillChange();
 				model.zoomIn();
 				model.fireProcessZoomChanged();
@@ -366,7 +366,7 @@ public class ProcessPanel extends JPanel implements Dockable, ProcessEditor {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				fireProcessZoomWillChange();
 				model.zoomOut();
 				model.fireProcessZoomChanged();
@@ -377,7 +377,7 @@ public class ProcessPanel extends JPanel implements Dockable, ProcessEditor {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				fireProcessZoomWillChange();
 				model.resetZoom();
 				model.fireProcessZoomChanged();
@@ -390,7 +390,7 @@ public class ProcessPanel extends JPanel implements Dockable, ProcessEditor {
 		toolBar.add(zoomOut);
 
 		toolBar.add(annotationsHandler.makeAddAnnotationAction(null), ViewToolBar.RIGHT);
-		toolBar.add(new AutoWireAction(mainFrame), ViewToolBar.RIGHT);
+		toolBar.add(new AutoWireAction(), ViewToolBar.RIGHT);
 
 		toolBar.add(flowVisualizer.SHOW_ORDER_TOGGLEBUTTON, ViewToolBar.RIGHT);
 		toolBar.add(renderer.getAutoFitAction(), ViewToolBar.RIGHT);
@@ -615,7 +615,7 @@ public class ProcessPanel extends JPanel implements Dockable, ProcessEditor {
 	 * @param center
 	 *            the point to focus on
 	 * @since 7.5
-	 * @see #scrollToProcessPosition(Point)
+	 * @see #scrollToProcessPosition(Point, int)
 	 */
 	public void scrollToViewPosition(Point center) {
 		getViewPort().scrollRectToVisible(getScrollRectangle(center));

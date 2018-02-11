@@ -1,21 +1,21 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
- * 
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ *
  * Complete list of developers available at our web site:
- * 
+ *
  * http://rapidminer.com
- * 
+ *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU Affero General Public License as published by the Free Software Foundation, either version 3
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License along with this program.
  * If not, see http://www.gnu.org/licenses/.
-*/
+ */
 package com.rapidminer.gui.tools;
 
 import java.awt.event.FocusEvent;
@@ -267,6 +267,28 @@ public abstract class ResourceAction extends ConditionalAction {
 		}
 	}
 
+	@Override
+	public void setEnabled(boolean newValue) {
+		// overwritten because we need to update it's state if it is registered in the global search
+
+		boolean changed = isEnabled() != newValue;
+		super.setEnabled(newValue);
+
+		if (!changed || !isGlobalSearchReady()) {
+			return;
+		}
+
+		// this must not crash the EDT, so it's wrapped in try/catch
+		try {
+			if (RapidMinerGUI.getMainFrame().getActionsGlobalSearchManager().isActionRegistered(this)) {
+				RapidMinerGUI.getMainFrame().getActionsGlobalSearchManager().addAction(this);
+			}
+		} catch (Throwable e) {
+			// We cannot risk blowing up the EDT, so catch absolutely everything here
+			LogService.getRoot().log(Level.WARNING, "com.rapidminer.gui.tools.ResourceAction.error.update_global_search", e);
+		}
+	}
+
 	/**
 	 * Adds the action to the input and action map of the component.
 	 *
@@ -288,6 +310,34 @@ public abstract class ResourceAction extends ConditionalAction {
 	}
 
 	/**
+	 * Adds this action to the Global Search for actions (see {@link com.rapidminer.search.GlobalSearchManager}.
+	 * Only call after {@link com.rapidminer.gui.MainFrame} has been initialized!
+	 * <p>
+	 *     See {@link #removeFromGlobalSearch()} to remove it again.
+	 * </p>
+	 * @since 8.1
+	 */
+	public void addToGlobalSearch() {
+		if (!isGlobalSearchReady()) {
+			return;
+		}
+
+		RapidMinerGUI.getMainFrame().getActionsGlobalSearchManager().addAction(this);
+	}
+
+	/**
+	 * Removes this action from the Global Search (see {@link com.rapidminer.search.GlobalSearchManager}.
+	 * @since 8.1
+	 */
+	public void removeFromGlobalSearch() {
+		if (!isGlobalSearchReady()) {
+			return;
+		}
+
+		RapidMinerGUI.getMainFrame().getActionsGlobalSearchManager().removeAction(this);
+	}
+
+	/**
 	 * This returns the i18n key of this action.
 	 */
 	public String getKey() {
@@ -302,6 +352,17 @@ public abstract class ResourceAction extends ConditionalAction {
 		return iconType;
 	}
 
+	/**
+	 * Whether the Global Search is ready or not.
+	 *
+	 * @return {@code true} if it is ready; {@code false} otherwise
+	 */
+	private boolean isGlobalSearchReady() {
+		return RapidMinerGUI.getMainFrame() != null &&
+				RapidMinerGUI.getMainFrame().getActionsGlobalSearchManager() != null &&
+				RapidMinerGUI.getMainFrame().getActionsGlobalSearchManager().isInitialized();
+	}
+
 	private static String getMessage(String key) {
 		return I18N.getMessage(I18N.getGUIBundle(), "gui.action." + key);
 	}
@@ -309,4 +370,5 @@ public abstract class ResourceAction extends ConditionalAction {
 	private static String getMessageOrNull(String key) {
 		return I18N.getMessageOrNull(I18N.getGUIBundle(), "gui.action." + key);
 	}
+
 }

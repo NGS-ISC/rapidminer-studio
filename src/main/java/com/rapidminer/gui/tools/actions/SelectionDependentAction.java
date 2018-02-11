@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -57,7 +57,7 @@ public abstract class SelectionDependentAction extends ResourceAction {
 	}
 
 	@Override
-	public final void actionPerformed(ActionEvent e) {
+	public final void loggedActionPerformed(ActionEvent e) {
 		if (dependency != null) {
 			actionPerformed(e, dependency.getSelectedObject());
 		}

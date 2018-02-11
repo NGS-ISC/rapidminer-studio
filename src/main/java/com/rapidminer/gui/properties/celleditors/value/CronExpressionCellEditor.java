@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -101,7 +101,7 @@ public class CronExpressionCellEditor extends AbstractCellEditor implements Prop
 			private static final long serialVersionUID = 3989811306286704326L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				CronEditorDialog dialog = new CronEditorDialog(operator, type);
 				String cronExpression = textField.getText();
 

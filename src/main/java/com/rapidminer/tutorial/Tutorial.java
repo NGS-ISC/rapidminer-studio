@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -197,20 +197,38 @@ public class Tutorial implements ZipStreamResource {
 				}
 			}
 		}
-		InputStream rawIn = getInputStream();
-		ZipInputStream zip = new ZipInputStream(rawIn);
-		ZipEntry entry;
-		while ((entry = zip.getNextEntry()) != null) {
-			if (entry.isDirectory() || !entry.getName().startsWith(folder)
-					|| entry.getName().replaceFirst("/", "").contains("/")) {
-				continue;
+		InputStream rawIn = null;
+		ZipInputStream zip = null;
+		try {
+			rawIn = getInputStream();
+			zip = new ZipInputStream(rawIn);
+			ZipEntry entry;
+			while ((entry = zip.getNextEntry()) != null) {
+				if (entry.isDirectory() || !entry.getName().startsWith(folder)
+						|| entry.getName().replaceFirst("/", "").contains("/")) {
+					continue;
+				}
+				String entryName = entry.getName();
+				if (localeStepsName.equals(entryName.replaceFirst(folder, ""))
+						|| !localeAvailable && STEPS_XML.equals(entryName.replaceFirst(folder, ""))) {
+					return zip;
+				}
 			}
-			String entryName = entry.getName();
-			if (localeStepsName.equals(entryName.replaceFirst(folder, ""))) {
-				return zip;
-			} else if (!localeAvailable && STEPS_XML.equals(entryName.replaceFirst(folder, ""))) {
-				return zip;
+		} catch (Exception e) {
+			if (zip != null) {
+				try {
+					zip.close();
+				} catch (IOException ioe) {
+					// ignore
+				}
+			} else if (rawIn != null) {
+				try {
+					rawIn.close();
+				} catch (IOException ioe) {
+					// ignore
+				}
 			}
+			throw e;
 		}
 		return null;
 	}

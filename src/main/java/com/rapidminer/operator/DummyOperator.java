@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -103,7 +103,7 @@ public class DummyOperator extends Operator {
 					private static final long serialVersionUID = 1423879776955743834L;
 
 					@Override
-					public void actionPerformed(ActionEvent e) {
+					public void loggedActionPerformed(ActionEvent e) {
 						try {
 							UpdateManagerRegistry.INSTANCE.get().showUpdateDialog(false, getExtensionId());
 						} catch (URISyntaxException | IOException e1) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -18,6 +18,7 @@
 */
 package com.rapidminer.gui.operatortree.actions;
 
+import com.rapidminer.gui.LoggedAbstractAction;
 import com.rapidminer.gui.operatortree.OperatorTree;
 import com.rapidminer.gui.tools.IconSize;
 import com.rapidminer.gui.tools.SwingTools;
@@ -25,7 +26,6 @@ import com.rapidminer.gui.tools.SwingTools;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-import javax.swing.AbstractAction;
 import javax.swing.Icon;
 
 
@@ -34,7 +34,7 @@ import javax.swing.Icon;
  * 
  * @author Ingo Mierswa
  */
-public class ExpandAllAction extends AbstractAction {
+public class ExpandAllAction extends LoggedAbstractAction {
 
 	private static final long serialVersionUID = -1779888083256884608L;
 
@@ -59,7 +59,7 @@ public class ExpandAllAction extends AbstractAction {
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void loggedActionPerformed(ActionEvent e) {
 		this.operatorTree.expandAll();
 	}
 }

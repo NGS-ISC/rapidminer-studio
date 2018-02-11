@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -295,7 +295,7 @@ class RepositoryLocationsEditor<T extends Ports<?>> extends JPanel {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				model.add();
 			}
 		}, ViewToolBar.RIGHT);
@@ -304,7 +304,7 @@ class RepositoryLocationsEditor<T extends Ports<?>> extends JPanel {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				int[] selected = table.getSelectedRows();
 				for (int i = selected.length - 1; i >= 0; i--) {
 					model.remove(selected[i]);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -1021,6 +1021,9 @@ public abstract class BubbleWindow extends JDialog {
 	 *            if true the listeners will be removed and added again after the repaint
 	 */
 	protected void paintAgain(final boolean reregisterListeners) {
+		if (!isVisible()) {
+			return;
+		}
 		Alignment newAlignment = this.calculateAlignment(realAlignment);
 		if (realAlignment.equals(newAlignment)) {
 			this.pointAtComponent();

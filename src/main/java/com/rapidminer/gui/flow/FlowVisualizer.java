@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -98,7 +98,7 @@ public class FlowVisualizer {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void loggedActionPerformed(ActionEvent e) {
 			if (hoveringOperator != null) {
 				hoveringOperator.getExecutionUnit().moveToIndex(hoveringOperator, 0);
 			}
@@ -468,7 +468,7 @@ public class FlowVisualizer {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-				public void actionPerformed(ActionEvent e) {
+				public void loggedActionPerformed(ActionEvent e) {
 					ALTER_EXECUTION_ORDER.actionPerformed(e);
 				}
 			});

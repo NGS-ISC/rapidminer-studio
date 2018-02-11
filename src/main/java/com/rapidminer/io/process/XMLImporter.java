@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,7 +41,7 @@ import com.rapidminer.Process;
 import com.rapidminer.ProcessContext;
 import com.rapidminer.RapidMiner;
 import com.rapidminer.gui.tools.VersionNumber;
-import com.rapidminer.gui.tools.VersionNumber.VersionNumberExcpetion;
+import com.rapidminer.gui.tools.VersionNumber.VersionNumberException;
 import com.rapidminer.io.process.rules.AbstractGenericParseRule;
 import com.rapidminer.io.process.rules.ChangeParameterValueRule;
 import com.rapidminer.io.process.rules.DeleteAfterAutoWireRule;
@@ -146,7 +144,7 @@ public class XMLImporter {
 			LogService.getRoot().log(Level.CONFIG, "com.rapidminer.io.process.XMLImporter.reading_parse_rules",
 					rulesResource);
 			try {
-				Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(rulesResource.openStream());
+				Document doc = XMLTools.createDocumentBuilder().parse(rulesResource.openStream());
 				if (!doc.getDocumentElement().getTagName().equals("parserules")) {
 					LogService.getRoot().log(Level.SEVERE, "com.rapidminer.io.process.XMLImporter.xml_document_start_error",
 							rulesResource);
@@ -529,7 +527,7 @@ public class XMLImporter {
 		if (versionString != null && !versionString.isEmpty()) {
 			try {
 				opVersion = new OperatorVersion(versionString);
-			} catch (VersionNumberExcpetion e) {
+			} catch (VersionNumberException e) {
 				addMessage(
 						"Failed to parse version string '" + versionString + "' for operator " + operator.getName() + ".");
 				// fall back to 5.0 on malformed version string

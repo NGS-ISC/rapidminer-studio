@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -98,7 +98,7 @@ public class SingleResultOverview extends JPanel {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void loggedActionPerformed(ActionEvent e) {
 			final ProgressThread downloadProgressThread = new ProgressThread("download_from_repository") {
 
 				@Override
@@ -133,7 +133,7 @@ public class SingleResultOverview extends JPanel {
 		private static final long serialVersionUID = 1L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void loggedActionPerformed(ActionEvent e) {
 			ResultObject referenced = ioObject.get();
 			if (referenced != null) {
 				RapidMinerGUI.getMainFrame().getResultDisplay().showResult(referenced);

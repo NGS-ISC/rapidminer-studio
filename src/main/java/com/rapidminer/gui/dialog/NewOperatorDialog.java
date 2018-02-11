@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -176,7 +176,7 @@ public final class NewOperatorDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				searchText = "";
 				searchField.setText(searchText);
 				searchField.requestFocusInWindow();
@@ -195,7 +195,7 @@ public final class NewOperatorDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				isFullText = fullTextCheckBox.isSelected();
 			}
 		});
@@ -360,7 +360,7 @@ public final class NewOperatorDialog extends ButtonDialog {
 				private static final long serialVersionUID = -6725386765826715152L;
 
 				@Override
-				public void actionPerformed(ActionEvent e) {
+				public void loggedActionPerformed(ActionEvent e) {
 					add();
 				}
 			});

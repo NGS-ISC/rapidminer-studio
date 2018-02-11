@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -43,7 +43,7 @@ public class LogCloseAction extends ResourceAction {
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void loggedActionPerformed(ActionEvent e) {
 		LogModel currentLogModel = this.logviewer.getLogSelectionModel().getCurrentLogModel();
 		if (currentLogModel.isClosable()) {
 			LogModelRegistry.INSTANCE.unregister(currentLogModel);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -114,7 +114,7 @@ public class MetaDataViewer extends JPanel implements Tableable {
 				private static final long serialVersionUID = 8763079896628342561L;
 
 				@Override
-				public void actionPerformed(ActionEvent e) {
+				public void loggedActionPerformed(ActionEvent e) {
 					ProgressThread t = new ProgressThread("calculate_statistics") {
 
 						@Override

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -54,7 +54,7 @@ public class UpgradeLicenseAction extends ResourceAction {
 	}
 
 	@Override
-	public void actionPerformed(final ActionEvent e) {
+	public void loggedActionPerformed(final ActionEvent e) {
 		createUpgradeWorker().execute();
 		if (e != null && e.getSource() != null) {
 			NotificationPopup popup = (NotificationPopup) SwingUtilities.getAncestorOfClass(NotificationPopup.class,

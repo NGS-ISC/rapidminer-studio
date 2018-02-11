@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -45,6 +45,13 @@ import com.rapidminer.studio.internal.ParameterServiceRegistry;
  * @since 7.4
  */
 public interface ConcurrencyExecutionService {
+
+	/**
+	 * Can be used to set an overriding {@link com.rapidminer.core.concurrency.ConcurrencyContext} to the {@link
+	 * com.rapidminer.operator.ProcessRootOperator}. This is then used instead of the regular {@link
+	 * StudioConcurrencyContext}. <p/> Internal API, do not use!
+	 */
+	String OVERRIDING_CONTEXT = "com.rapidminer.core.concurrency.OverridingConcurrencyContext";
 
 	/**
 	 * Calculates the recommended batch size for parallel operators. Use when deciding how many

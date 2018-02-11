@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -197,7 +197,7 @@ public class SliderUI extends BasicSliderUI {
 
 			// draw fill bar
 			int curVal = this.slider.getModel().getValue();
-			double percentage = (double) curVal / (slider.getModel().getMaximum() - slider.getModel().getExtent());
+			double percentage = (double) (curVal - slider.getModel().getMinimum()) / (double)(slider.getModel().getMaximum() - slider.getModel().getMinimum());
 
 			g2.setColor(Colors.SLIDER_TRACK_FOREGROUND);
 			g2.fill(new Rectangle2D.Double(4, trackTop + 2, (length - trackBuffer) * percentage, 3));
@@ -222,7 +222,7 @@ public class SliderUI extends BasicSliderUI {
 
 			// draw fill bar
 			int curVal = this.slider.getModel().getValue();
-			double percentage = (double) curVal / (slider.getModel().getMaximum() - slider.getModel().getExtent());
+			double percentage = (double) (curVal - slider.getModel().getMinimum()) / (double)(slider.getModel().getMaximum() - slider.getModel().getMinimum());
 
 			g2.setColor(Colors.SLIDER_TRACK_FOREGROUND);
 			g2.fill(new Rectangle2D.Double(trackLeft + 2, (h - trackBuffer) * (1d - percentage), 3, (h - trackBuffer)

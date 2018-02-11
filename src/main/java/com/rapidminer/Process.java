@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -42,9 +42,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
 import javax.swing.event.EventListenerList;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -58,6 +56,7 @@ import com.rapidminer.example.table.AttributeFactory;
 import com.rapidminer.gui.tools.ProgressThread;
 import com.rapidminer.gui.tools.ProgressThreadStoppedException;
 import com.rapidminer.io.process.XMLImporter;
+import com.rapidminer.io.process.XMLTools;
 import com.rapidminer.license.violation.LicenseViolation;
 import com.rapidminer.operator.Annotations;
 import com.rapidminer.operator.DebugMode;
@@ -80,6 +79,7 @@ import com.rapidminer.operator.nio.file.RepositoryBlobObject;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.operator.ports.Port;
+import com.rapidminer.parameter.UndefinedParameterError;
 import com.rapidminer.report.ReportStream;
 import com.rapidminer.repository.BlobEntry;
 import com.rapidminer.repository.Entry;
@@ -104,6 +104,7 @@ import com.rapidminer.tools.Tools;
 import com.rapidminer.tools.WebServiceTools;
 import com.rapidminer.tools.WrapperLoggingHandler;
 import com.rapidminer.tools.XMLException;
+import com.rapidminer.tools.XMLParserException;
 import com.rapidminer.tools.container.Pair;
 import com.rapidminer.tools.usagestats.ActionStatisticsCollector;
 
@@ -1191,117 +1192,115 @@ public class Process extends AbstractObservable<Process> implements Cloneable {
 	 */
 	public final IOContainer run(final IOContainer input, int logVerbosity, final Map<String, String> macroMap,
 			final boolean storeOutput) throws OperatorException {
-		// make sure the process flow filter is registered
-		ProcessFlowFilter filter = ProcessFlowFilterRegistry.INSTANCE.getProcessFlowFilter();
-		if (filter != null && !processFlowFilters.contains(filter)) {
-			addProcessFlowFilter(filter);
-		}
-
-		// make sure licensing constraints are not violated
-		// iterate over all operators in the process
-		for (Operator op : rootOperator.getAllInnerOperators()) {
-			// we only care about enabled operators
-			if (op.isEnabled()) {
-
-				// Check for annotations that constrain access to the current operator
-				List<LicenseViolation> licenseViolations = ProductConstraintManager.INSTANCE.checkAnnotationViolations(op,
-						true);
-				if (!licenseViolations.isEmpty()) {
-					throw new LicenseViolationException(op, licenseViolations);
-				}
-
-				// as a side effect mark all enabled operators as dirty
-				// so it is clear which ones have already been executed
-				op.makeDirty();
+		ActionStatisticsCollector.getInstance().logExecutionStarted(this);
+		try {
+			// make sure the process flow filter is registered
+			ProcessFlowFilter filter = ProcessFlowFilterRegistry.INSTANCE.getProcessFlowFilter();
+			if (filter != null && !processFlowFilters.contains(filter)) {
+				addProcessFlowFilter(filter);
 			}
+
+			// make sure licensing constraints are not violated
+			// iterate over all operators in the process
+			for (Operator op : rootOperator.getAllInnerOperators()) {
+				// we only care about enabled operators
+				if (op.isEnabled()) {
+
+					// Check for annotations that constrain access to the current operator
+					List<LicenseViolation> licenseViolations = ProductConstraintManager.INSTANCE.checkAnnotationViolations(op,
+							true);
+					if (!licenseViolations.isEmpty()) {
+						throw new LicenseViolationException(op, licenseViolations);
+					}
+
+					// as a side effect mark all enabled operators as dirty
+					// so it is clear which ones have already been executed
+					op.makeDirty();
+				}
+			}
+
+			int myVerbosity = rootOperator.getParameterAsInt(ProcessRootOperator.PARAMETER_LOGVERBOSITY);
+			if (logVerbosity == LogService.UNKNOWN_LEVEL) {
+				logVerbosity = LogService.OFF;
+			}
+			logVerbosity = Math.min(logVerbosity, myVerbosity);
+
+			prepareRun(logVerbosity);
+
+			// apply macros
+			applyContextMacros();
+			if (macroMap != null) {
+				for (Map.Entry<String, String> entry : macroMap.entrySet()) {
+					getMacroHandler().addMacro(entry.getKey(), entry.getValue());
+				}
+			}
+
+			Handler logHandler = generateLogHandler();
+			if (logHandler != null) {
+				getLogger().addHandler(logHandler);
+			}
+
+			long start = System.currentTimeMillis();
+
+			rootOperator.processStarts();
+
+			final int firstInput = input != null ? input.getIOObjects().length : 0;
+			if (checkForInitialData(firstInput)) {
+				// load data as specified in process context
+				ProgressThread pt = new ProgressThread("load_context_data", false) {
+
+					@Override
+					public void run() {
+						try {
+							loadInitialData(firstInput, getProgressListener());
+							setLastInitException(null);
+						} catch (ProgressThreadStoppedException ptse) {
+							// do nothing, it's checked below (pt.isCancelled)
+						} catch (Exception e) {
+							setLastInitException(e);
+						}
+					}
+				};
+				pt.setShowDialogTimerDelay(5000);
+				pt.setStartDialogShowTimer(true);
+
+				pt.startAndWait();
+				if (lastInitException != null) {
+					Throwable e = lastInitException;
+					lastInitException = null;
+					finishProcess(logHandler);
+					OperatorException oe;
+					if (e instanceof OperatorException) {
+						oe = (OperatorException) e;
+					} else {
+						oe = new OperatorException("context_problem_other", e, e.getMessage());
+					}
+					throw oe;
+				}
+				if (pt.isCancelled() || shouldStop()) {
+					finishProcess(logHandler);
+					throw new ProcessStoppedException();
+				}
+			}
+			return execute(input, storeOutput, logHandler, start);
+		} catch (Exception e) {
+			ActionStatisticsCollector.getInstance().logExecutionException(this, e);
+
+			throw e;
 		}
+	}
+
+	private IOContainer execute(IOContainer input, boolean storeOutput, Handler logHandler, long start) throws OperatorException {
 		// fetching process name for logging
-		String name = null;
+		final String name;
 		if (getProcessLocation() != null) {
 			name = getProcessLocation().toString();
-		}
-
-		int myVerbosity = rootOperator.getParameterAsInt(ProcessRootOperator.PARAMETER_LOGVERBOSITY);
-		if (logVerbosity == LogService.UNKNOWN_LEVEL) {
-			logVerbosity = LogService.OFF;
-		}
-		logVerbosity = Math.min(logVerbosity, myVerbosity);
-
-		prepareRun(logVerbosity);
-
-		// apply macros
-		applyContextMacros();
-		if (macroMap != null) {
-			for (Map.Entry<String, String> entry : macroMap.entrySet()) {
-				getMacroHandler().addMacro(entry.getKey(), entry.getValue());
-			}
-		}
-
-		String logFilename = rootOperator.getParameter(ProcessRootOperator.PARAMETER_LOGFILE);
-		Handler logHandler = null;
-		if (logFilename != null) {
-			try {
-				logHandler = new FileHandler(logFilename);
-				logHandler.setFormatter(new SimpleFormatter());
-				logHandler.setLevel(Level.ALL);
-				getLogger().config("Logging process to file " + logFilename);
-			} catch (Exception e) {
-				getLogger().warning("Cannot create log file '" + logFilename + "': " + e);
-			}
-		}
-		if (logHandler != null) {
-			getLogger().addHandler(logHandler);
-		}
-
-		long start = System.currentTimeMillis();
-
-		rootOperator.processStarts();
-
-		final int firstInput = input != null ? input.getIOObjects().length : 0;
-		if (checkForInitialData(firstInput)) {
-			// load data as specified in process context
-			ProgressThread pt = new ProgressThread("load_context_data", false) {
-
-				@Override
-				public void run() {
-					try {
-						loadInitialData(firstInput, getProgressListener());
-						setLastInitException(null);
-					} catch (ProgressThreadStoppedException ptse) {
-						// do nothing, it's checked below (pt.isCancelled)
-					} catch (Exception e) {
-						setLastInitException(e);
-					}
-				}
-			};
-			pt.setShowDialogTimerDelay(5000);
-			pt.setStartDialogShowTimer(true);
-
-			pt.startAndWait();
-			if (lastInitException != null) {
-				Throwable e = lastInitException;
-				lastInitException = null;
-				finishProcess(logHandler);
-				OperatorException oe;
-				if (e instanceof OperatorException) {
-					oe = (OperatorException) e;
-				} else {
-					oe = new OperatorException("context_problem_other", e, e.getMessage());
-				}
-				throw oe;
-			}
-			if (pt.isCancelled() || shouldStop()) {
-				finishProcess(logHandler);
-				throw new ProcessStoppedException();
-			}
-		}
-
-		if (name != null) {
-			getLogger().info("Process " + name + " starts");
+			getLogger().log(Level.INFO, () -> "Process " + name + " starts");
 		} else {
-			getLogger().info("Process starts");
+			name = null;
+			getLogger().log(Level.INFO, "Process starts");
 		}
-		getLogger().fine("Process:" + Tools.getLineSeparator() + getRootOperator().createProcessTree(3));
+		getLogger().log(Level.FINE, () -> "Process:" + Tools.getLineSeparator() + getRootOperator().createProcessTree(3));
 
 		try {
 			ActionStatisticsCollector.getInstance().logExecution(this);
@@ -1316,33 +1315,52 @@ public class Process extends AbstractObservable<Process> implements Cloneable {
 			IOContainer result = rootOperator.getResults(isOmittingNullResults());
 			long end = System.currentTimeMillis();
 
-			getLogger().fine("Process:" + Tools.getLineSeparator() + getRootOperator().createProcessTree(3));
+			getLogger().log(Level.FINE, () -> "Process:" + Tools.getLineSeparator() + getRootOperator().createProcessTree(3));
 			if (name != null) {
-				getLogger().info("Process " + name + " finished successfully after " + Tools.formatDuration(end - start));
+				getLogger().log(Level.INFO, () -> "Process " + name + " finished successfully after " + Tools.formatDuration(end - start));
 			} else {
-				getLogger().info("Process finished successfully after " + Tools.formatDuration(end - start));
+				getLogger().log(Level.INFO, () -> "Process finished successfully after " + Tools.formatDuration(end - start));
 			}
 
+			ActionStatisticsCollector.getInstance().logExecutionSuccess(this);
+
 			return result;
+		} catch (ProcessStoppedException e) {
+			Operator op = getOperator(e.getOperatorName());
+			ActionStatisticsCollector.getInstance().log(op, ActionStatisticsCollector.OPERATOR_EVENT_STOPPED);
+			throw e;
+		} catch (UserError e) {
+			ActionStatisticsCollector.getInstance().log(getCurrentOperator(), ActionStatisticsCollector.OPERATOR_EVENT_FAILURE);
+			ActionStatisticsCollector.getInstance().log(e.getOperator(), ActionStatisticsCollector.OPERATOR_EVENT_USER_ERROR);
+			throw e;
 		} catch (OperatorException e) {
-			if (e instanceof ProcessStoppedException) {
-				Operator op = getOperator(((ProcessStoppedException) e).getOperatorName());
-				ActionStatisticsCollector.getInstance().log(op, ActionStatisticsCollector.OPERATOR_EVENT_STOPPED);
-			} else {
-				ActionStatisticsCollector.getInstance().log(getCurrentOperator(),
-						ActionStatisticsCollector.OPERATOR_EVENT_FAILURE);
-				if (e instanceof UserError) {
-					ActionStatisticsCollector.getInstance().log(((UserError) e).getOperator(),
-							ActionStatisticsCollector.OPERATOR_EVENT_USER_ERROR);
-				} else {
-					ActionStatisticsCollector.getInstance().log(getCurrentOperator(),
-							ActionStatisticsCollector.OPERATOR_EVENT_OPERATOR_EXCEPTION);
-				}
-			}
+			ActionStatisticsCollector.getInstance().log(getCurrentOperator(), ActionStatisticsCollector.OPERATOR_EVENT_FAILURE);
+			ActionStatisticsCollector.getInstance().log(getCurrentOperator(), ActionStatisticsCollector.OPERATOR_EVENT_OPERATOR_EXCEPTION);
 			throw e;
 		} finally {
 			finishProcess(logHandler);
 		}
+	}
+
+	/**
+	 * Sets up the {@link Handler}} for the executed process.
+	 *
+	 * @throws UndefinedParameterError
+	 */
+	private Handler generateLogHandler() throws UndefinedParameterError {
+		String logFilename = rootOperator.getParameter(ProcessRootOperator.PARAMETER_LOGFILE);
+		Handler logHandler = null;
+		if (logFilename != null) {
+			try {
+				logHandler = new FileHandler(logFilename);
+				logHandler.setFormatter(new SimpleFormatter());
+				logHandler.setLevel(Level.ALL);
+				getLogger().log(Level.CONFIG, () -> "Logging process to file " + logFilename);
+			} catch (Exception e) {
+				getLogger().warning("Cannot create log file '" + logFilename + "': " + e);
+			}
+		}
+		return logHandler;
 	}
 
 	/** The last thrown exception during context loading */
@@ -1484,7 +1502,7 @@ public class Process extends AbstractObservable<Process> implements Cloneable {
 			progressListener.setCompleted(0);
 		}
 		try {
-			Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(in));
+			Document document = XMLTools.createDocumentBuilder().parse(new InputSource(in));
 			if (progressListener != null) {
 				progressListener.setCompleted(20);
 			}
@@ -1494,7 +1512,7 @@ public class Process extends AbstractObservable<Process> implements Cloneable {
 
 			nameMapBackup = operatorNameMap;
 			rootOperator.clear(Port.CLEAR_ALL);
-		} catch (javax.xml.parsers.ParserConfigurationException e) {
+		} catch (XMLParserException e) {
 			throw new XMLException(e.toString(), e);
 		} catch (SAXException e) {
 			throw new XMLException("Cannot parse document: " + e.getMessage(), e);

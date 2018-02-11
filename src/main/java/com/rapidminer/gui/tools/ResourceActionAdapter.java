@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -41,8 +41,5 @@ public class ResourceActionAdapter extends ResourceAction {
 	public ResourceActionAdapter(boolean smallIcon, String i18nKey, Object... i18nArgs) {
 		super(smallIcon, i18nKey, i18nArgs);
 	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {}
 
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -83,6 +83,7 @@ import com.rapidminer.tools.cipher.KeyGenerationException;
 import com.rapidminer.tools.cipher.KeyGeneratorTool;
 import com.rapidminer.tools.config.ConfigurationManager;
 import com.rapidminer.tools.plugin.Plugin;
+import com.rapidminer.tools.usagestats.ActionStatisticsCollector;
 import com.rapidminer.tools.usagestats.UsageStatistics;
 
 
@@ -669,7 +670,6 @@ public class RapidMiner {
 	 * {@link LicenseLocation} from {@link ProductConstraintManager} will be used.
 	 */
 	public static void init(final Product product, final LicenseLocation licenseLocation) {
-
 		RapidMiner.splashMessage("init_i18n");
 		I18N.getErrorBundle();
 
@@ -724,11 +724,18 @@ public class RapidMiner {
 			}
 		}
 		UsageStatistics.getInstance(); // initializes as a side effect
+		ActionStatisticsCollector.getInstance().log(ActionStatisticsCollector.TYPE_CONSTANT, ActionStatisticsCollector.VALUE_CONSTANT_START, null);
+		ActionStatisticsCollector.getInstance().log(ActionStatisticsCollector.TYPE_CONSTANT, ActionStatisticsCollector.VALUE_MODE, RapidMiner.getExecutionMode().name());
+		ActionStatisticsCollector.getInstance().startTimer(RapidMiner.class, ActionStatisticsCollector.TYPE_CONSTANT, ActionStatisticsCollector.VALUE_EXECUTION, ActionStatisticsCollector.ARG_RUNTIME);
 
 		// registering operators
 		RapidMiner.splashMessage("register_plugins");
 		Plugin.initAll();
 		Plugin.initPluginSplashTexts(RapidMiner.splashScreen);
+
+		// initialize renderers
+		RapidMiner.splashMessage("init_renderers");
+		RendererService.init();
 
 		RapidMiner.splashMessage("init_ops");
 		OperatorService.init();
@@ -742,9 +749,7 @@ public class RapidMiner {
 		RapidMiner.splashMessage("init_configurables");
 		ConfigurationManager.getInstance().initialize();
 
-		// initialize renderers
-		RapidMiner.splashMessage("init_renderers");
-		RendererService.init();
+
 
 		// initialize xml serialization
 		RapidMiner.splashMessage("xml_serialization");
@@ -963,6 +968,8 @@ public class RapidMiner {
 	}
 
 	public synchronized static void quit(final ExitMode exitMode) {
+		ActionStatisticsCollector.getInstance().stopTimer(RapidMiner.class);
+
 		for (Runnable hook : shutdownHooks) {
 			try {
 				hook.run();

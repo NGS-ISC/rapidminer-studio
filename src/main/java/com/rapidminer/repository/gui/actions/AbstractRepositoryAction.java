@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -42,7 +42,7 @@ import com.rapidminer.repository.gui.RepositoryTree;
 public abstract class AbstractRepositoryAction<T extends Entry> extends ResourceAction {
 
 	/** the tree to which the action belongs to */
-	protected final RepositoryTree tree;
+	protected final transient RepositoryTree tree;
 
 	/** the required selection type for the action to show/enable */
 	private final Class<T> requiredSelectionType;
@@ -97,7 +97,7 @@ public abstract class AbstractRepositoryAction<T extends Entry> extends Resource
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void loggedActionPerformed(ActionEvent e) {
 
 		List<Entry> entries = tree.getSelectedEntries();
 

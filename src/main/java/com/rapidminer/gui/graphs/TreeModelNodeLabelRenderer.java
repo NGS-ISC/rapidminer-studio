@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -171,7 +171,8 @@ public class TreeModelNodeLabelRenderer<V, E> implements Renderer.VertexLabel<V,
 			p = getAnchorPoint(bounds, d, position);
 		}
 
-		if (graphCreator.isLeaf((String) v)) {
+		if (graphCreator.isLeaf((String) v) && !graphCreator.getModel().getRoot().isNumerical()) {
+			// shift the label if there is a frequency bar
 			p.setLocation(p.x, p.y + LEAF_LABEL_OFFSET_Y);
 		}
 		g.draw(component, rc.getRendererPane(), p.x, p.y, d.width, d.height, true);

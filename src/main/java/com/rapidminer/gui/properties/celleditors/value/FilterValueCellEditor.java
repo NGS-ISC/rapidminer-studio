@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -59,7 +59,7 @@ public class FilterValueCellEditor extends AbstractCellEditor implements Propert
 			private static final long serialVersionUID = 8274776396885048377L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				dialog = new FilterPropertyDialog(operator, type, "filter");
 				dialog.setVisible(true);
 				// no dialog handling necessary, does everything itself

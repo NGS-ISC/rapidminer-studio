@@ -74,6 +74,13 @@
 				<class>com.rapidminer.operator.validation.BatchXValidation</class>
 				<replaces>BatchXValidation</replaces>
 			</operator>
+            <operator>
+                <deprecatedSince>8.0</deprecatedSince>
+                <key>optimize_parameters_grid</key>
+                <class>com.rapidminer.operator.meta.GridSearchParameterOptimizationOperator
+                </class>
+                <replaces>GridParameterOptimization</replaces>
+            </operator>
 			<operator>
 				<deprecatedSince>7.4</deprecatedSince>
 				<key>loop</key>
@@ -100,10 +107,36 @@
 				<replaces>ValueIterator</replaces>
 			</operator>
 			<operator>
+				<deprecatedSince>8.0</deprecatedSince>
+				<key>loop_parameters</key>
+				<class>com.rapidminer.operator.meta.ParameterIteration</class>
+				<replaces>ParameterIteration</replaces>
+			</operator>
+			<operator>
 			<deprecatedSince>7.5</deprecatedSince>
 				<key>create_learning_curve</key>
 				<class>com.rapidminer.operator.meta.LearningCurveOperator</class>
 				<replaces>LearningCurve</replaces>
+			</operator>
+			<operator>
+				<deprecatedSince>8.1</deprecatedSince>
+				<key>join</key>
+				<class>com.rapidminer.operator.preprocessing.join.ExampleSetJoin
+				</class>
+				<replaces>ExampleSetJoin</replaces>
+			</operator>
+			<operator>
+				<deprecatedSince>8.1</deprecatedSince>
+				<key>correlation_matrix</key>
+				<class>com.rapidminer.operator.visualization.dependencies.CorrelationMatrixOperator
+				</class>
+				<replaces>CorrelationMatrix</replaces>
+			</operator>
+			<operator>
+				<deprecatedSince>8.1</deprecatedSince>
+				<key>k_means</key>
+				<class>com.rapidminer.operator.clustering.clusterer.KMeans</class>
+				<replaces>KMeans</replaces>
 			</operator>
 		</group>
 		<group key="data_access">
@@ -596,12 +629,7 @@
 						<class>com.rapidminer.operator.preprocessing.join.ExampleSetMerge
 						</class>
 						<replaces>ExampleSetMerge</replaces>
-					</operator>
-					<operator>
-						<key>join</key>
-						<class>com.rapidminer.operator.preprocessing.join.ExampleSetJoin
-						</class>
-						<replaces>ExampleSetJoin</replaces>
+						<priority>100</priority>
 					</operator>
 					<operator>
 						<key>set_minus</key>
@@ -1228,11 +1256,6 @@
 			<group key="segmentation">
 				<icon>chart_dot.png</icon>
 				<operator>
-					<key>k_means</key>
-					<class>com.rapidminer.operator.clustering.clusterer.KMeans</class>
-					<replaces>KMeans</replaces>
-				</operator>
-				<operator>
 					<key>k_means_kernel</key>
 					<class>com.rapidminer.operator.clustering.clusterer.KernelKMeans
 					</class>
@@ -1339,12 +1362,6 @@
 			</group>
 			<group key="correlations">
 				<icon>table_selection_range.png</icon>
-				<operator>
-					<key>correlation_matrix</key>
-					<class>com.rapidminer.operator.visualization.dependencies.CorrelationMatrixOperator
-					</class>
-					<replaces>CorrelationMatrix</replaces>
-				</operator>
 				<operator>
 					<key>covariance_matrix</key>
 					<class>com.rapidminer.operator.visualization.dependencies.CovarianceMatrixOperator
@@ -1521,12 +1538,6 @@
 			<group key="optimization">
 				<group key="parameters">
 					<icon>form.png</icon>
-					<operator>
-						<key>optimize_parameters_grid</key>
-						<class>com.rapidminer.operator.meta.GridSearchParameterOptimizationOperator
-						</class>
-						<replaces>GridParameterOptimization</replaces>
-					</operator>
 					<operator>
 						<key>optimize_parameters_quadratic</key>
 						<class>com.rapidminer.operator.meta.QuadraticParameterOptimizationOperator
@@ -1944,24 +1955,22 @@
 						<replaces>RepeatUntilOperatorChain</replaces>
 					</operator>
 					<operator>
-						<key>loop_parameters</key>
-						<class>com.rapidminer.operator.meta.ParameterIteration</class>
-						<replaces>ParameterIteration</replaces>
-					</operator>
-					<operator>
 						<key>loop_collection</key>
 						<class>com.rapidminer.operator.collections.CollectionIterationOperator
 						</class>
 						<replaces>CollectionIterator</replaces>
+                        <priority>-1</priority>
 					</operator>
 					
 					<operator>
 						<key>loop_repository</key>
 						<class>com.rapidminer.operator.meta.RepositoryIterator</class>
+                        <priority>-1</priority>
 					</operator>
 					<operator>
 						<key>loop_zipfile_entries</key>
 						<class>com.rapidminer.operator.meta.ZippedFileIterator</class>
+                        <priority>-1</priority>
 					</operator>
 				</group>
 				<group key="branches">

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -40,7 +40,7 @@ public abstract class InfoOperatorAction extends ResourceAction {
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void loggedActionPerformed(ActionEvent e) {
 		Operator selectedOperator = getOperator();
 		if (selectedOperator != null) {
 			OperatorInfoScreen infoScreen = new OperatorInfoScreen(selectedOperator);

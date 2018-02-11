@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -98,7 +98,7 @@ public class RegexpValueCellEditor extends AbstractCellEditor implements Propert
 			private static final long serialVersionUID = 3989811306286704326L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				RegexpPropertyDialog dialog = new RegexpPropertyDialog(type.getPreviewList(), textField.getText(),
 						type.getDescription());
 				dialog.setVisible(true);

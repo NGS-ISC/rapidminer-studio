@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -712,14 +712,7 @@ public class ConfigurableDialog extends ButtonDialog {
 		parameterPanel.removeAll();
 
 		// save previously edited parameters
-		if (configParamPanel != null && previousConfigurable != null) {
-			if (previousConfigurable.getSource() == null) {
-				localController.saveConfigurable(previousConfigurable, configParamPanel.getParameters());
-			} else {
-				remoteControllers.get(previousConfigurable.getSource().getName()).saveConfigurable(previousConfigurable,
-						configParamPanel.getParameters());
-			}
-		}
+		updateModel();
 		if (config != null) {
 			try {
 				// stripped text depending on the size of the panel
@@ -1117,7 +1110,7 @@ public class ConfigurableDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				boolean done = false;
 				final Configurable config = getSelectedValue();
 				if (config == null) {
@@ -1213,7 +1206,7 @@ public class ConfigurableDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				Configurable selectedValue = getSelectedValue();
 				if (selectedValue == null) {
 					return;
@@ -1277,7 +1270,7 @@ public class ConfigurableDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				// skip if we started this without configurable
 				if (getSelectedValue() == null) {
 					return;
@@ -1335,7 +1328,7 @@ public class ConfigurableDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				// skip if we started this without configurable
 				if (getSelectedValue() == null) {
 					return;
@@ -1399,7 +1392,7 @@ public class ConfigurableDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				Configurable configurable = getSelectedValue();
 				ConfigurableUserAccessDialog accessDialog = new ConfigurableUserAccessDialog(ConfigurableDialog.this,
 						configurable);
@@ -1443,7 +1436,7 @@ public class ConfigurableDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 
 				Configurable selected = getSelectedValue();
 				RemoteRepository source = selected == null ? null : selected.getSource();
@@ -1486,7 +1479,7 @@ public class ConfigurableDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 
 				// now we need to save the changes the user made
 				// in a separate thread
@@ -1613,7 +1606,7 @@ public class ConfigurableDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 
 				// show the glass pane
 				okButton.setEnabled(false);
@@ -2051,5 +2044,19 @@ public class ConfigurableDialog extends ButtonDialog {
 		remoteControllers.get(source).getModel().resetConfigurables();
 		// reload the configurables (contains resetConnection)
 		updateConfigurables(source, remoteTaskPanes.get(source));
+	}
+
+	/**
+	 * Updates the underlying {@link ConfigurableModel} with the currently displayed parameter data
+	 */
+	public void updateModel(){
+		if (configParamPanel != null && previousConfigurable != null) {
+			if (previousConfigurable.getSource() == null) {
+				localController.saveConfigurable(previousConfigurable, configParamPanel.getParameters());
+			} else {
+				remoteControllers.get(previousConfigurable.getSource().getName()).saveConfigurable(previousConfigurable,
+						configParamPanel.getParameters());
+			}
+		}
 	}
 }

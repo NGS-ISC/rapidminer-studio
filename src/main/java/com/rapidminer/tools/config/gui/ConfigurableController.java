@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -20,6 +20,8 @@ package com.rapidminer.tools.config.gui;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.security.Key;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +44,7 @@ import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
 import com.rapidminer.tools.PasswordInputCanceledException;
 import com.rapidminer.tools.XMLException;
+import com.rapidminer.tools.cipher.KeyGeneratorTool;
 import com.rapidminer.tools.config.AbstractConfigurable;
 import com.rapidminer.tools.config.AbstractConfigurator;
 import com.rapidminer.tools.config.Configurable;
@@ -69,6 +72,24 @@ public class ConfigurableController {
 	/** the model behind the view */
 	private ConfigurableModel model;
 
+	/** key used by server */
+	private static final Key serverPublicKey = new Key(){
+
+		@Override
+		public String getAlgorithm() {
+			return "PLAIN";
+		}
+
+		@Override
+		public String getFormat() {
+			return null;
+		}
+
+		@Override
+		public byte[] getEncoded() {
+			return null;
+		}
+	};
 	/**
 	 * Creates a new {@link ConfigurableController} instance.
 	 *
@@ -164,7 +185,17 @@ public class ConfigurableController {
 	 */
 	protected void renameConfigurable(Configurable configurable, String newName) {
 		String oldConfigurableName = configurable.getName();
-		configurable.setName(newName);
+
+		//Update permitted groups
+		if (configurable.getSource() != null) {
+			Set<String> permittedGroups = ConfigurationManager.getInstance().getPermittedGroupsForConfigurable(configurable);
+			//Clear old entries
+			ConfigurationManager.getInstance().setPermittedGroupsForConfigurable(configurable, Collections.emptySet());
+			configurable.setName(newName);
+			ConfigurationManager.getInstance().setPermittedGroupsForConfigurable(configurable, permittedGroups);
+		} else {
+			configurable.setName(newName);
+		}
 
 		// Update ParameterHandler
 		ConfigurationManager.getInstance().getAbstractConfigurator(configurable.getTypeId())
@@ -308,9 +339,9 @@ public class ConfigurableController {
 								conn.setUseCaches(false);
 								conn.setAllowUserInteraction(false);
 								conn.setRequestProperty("Content-Type", "application/xml");
+								Document xml = ConfigurationManager.getInstance().getConfigurablesAsXMLAndChangeEncryption(typeId,
+								        model.getConfigurables(), repository.getName(), KeyGeneratorTool.getUserKey(), serverPublicKey);
 
-								Document xml = ConfigurationManager.getInstance().getConfigurablesAsXML(typeId,
-								        model.getConfigurables(), repository.getName());
 								// create and write xml content
 								XMLTools.stream(xml, conn.getOutputStream(), null);
 								conn.disconnect();

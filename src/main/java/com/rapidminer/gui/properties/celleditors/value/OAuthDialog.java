@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -174,7 +174,7 @@ public class OAuthDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1154127549553798757L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				open(authUrlText.getText());
 
 			}
@@ -210,7 +210,7 @@ public class OAuthDialog extends ButtonDialog {
 			private static final long serialVersionUID = -5000971936611417944L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				urlButton.setVisible(false);
 				authUrlText.setVisible(true);
 
@@ -272,7 +272,7 @@ public class OAuthDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				if (oAuth.isOAuth2() && !validateCode()) {
 					return;
 				}
@@ -287,7 +287,7 @@ public class OAuthDialog extends ButtonDialog {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void loggedActionPerformed(ActionEvent e) {
 				OAuthDialog.this.dispose();
 			}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2017 by RapidMiner and the contributors
+ * Copyright (C) 2001-2018 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
-
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -58,6 +57,8 @@ import com.rapidminer.RapidMiner;
 import com.rapidminer.RepositoryProcessLocation;
 import com.rapidminer.core.io.data.source.DataSourceFactoryRegistry;
 import com.rapidminer.gui.actions.OpenAction;
+import com.rapidminer.gui.actions.search.ActionsGlobalSearch;
+import com.rapidminer.gui.actions.search.ActionsGlobalSearchGUIProvider;
 import com.rapidminer.gui.autosave.AutoSave;
 import com.rapidminer.gui.dialog.EULADialog;
 import com.rapidminer.gui.docking.RapidDockableContainerFactory;
@@ -67,7 +68,11 @@ import com.rapidminer.gui.look.RapidLookAndFeel;
 import com.rapidminer.gui.look.fc.BookmarkIO;
 import com.rapidminer.gui.look.ui.RapidDockingUISettings;
 import com.rapidminer.gui.plotter.PlotterPanel;
+import com.rapidminer.gui.processeditor.search.OperatorGlobalSearch;
+import com.rapidminer.gui.processeditor.search.OperatorGlobalSearchGUIProvider;
 import com.rapidminer.gui.safemode.SafeMode;
+import com.rapidminer.gui.search.GlobalSearchGUIRegistry;
+import com.rapidminer.gui.search.GlobalSearchPanel;
 import com.rapidminer.gui.tools.SwingTools;
 import com.rapidminer.gui.tools.dialogs.DecisionRememberingConfirmDialog;
 import com.rapidminer.gui.tools.logging.LogHandlerModel;
@@ -83,6 +88,10 @@ import com.rapidminer.parameter.ParameterTypeInt;
 import com.rapidminer.repository.MalformedRepositoryLocationException;
 import com.rapidminer.repository.RepositoryLocation;
 import com.rapidminer.repository.RepositoryManager;
+import com.rapidminer.repository.gui.search.RepositoryGlobalSearchGUIProvider;
+import com.rapidminer.repository.search.RepositoryGlobalSearch;
+import com.rapidminer.search.GlobalSearchIndexer;
+import com.rapidminer.search.GlobalSearchRegistry;
 import com.rapidminer.security.PluginSandboxPolicy;
 import com.rapidminer.security.PluginSecurityManager;
 import com.rapidminer.studio.io.data.internal.file.LocalFileDataSourceFactory;
@@ -103,6 +112,7 @@ import com.rapidminer.tools.plugin.Plugin;
 import com.rapidminer.tools.update.internal.UpdateManagerRegistry;
 import com.rapidminer.tools.usagestats.CallToActionScheduler;
 import com.rapidminer.tools.usagestats.UsageStatistics;
+import com.rapidminer.tools.usagestats.UsageStatsScheduler;
 import com.rapidminer.tools.usagestats.UsageStatsTransmissionDialog;
 import com.vlsolutions.swing.docking.DockableContainerFactory;
 import com.vlsolutions.swing.docking.ui.DockingUISettings;
@@ -284,11 +294,12 @@ public class RapidMinerGUI extends RapidMiner {
 			// Otherwise saving might even be detrimental!
 			if (RapidMinerGUI.getMainFrame() != null) {
 				LogService.getRoot().log(Level.INFO, "com.rapidminer.gui.RapidMinerGUI.running_shutdown_sequence");
+				RapidMinerGUI.getMainFrame().getPerspectiveController().shutdown();
 				RapidMinerGUI.saveRecentFileList();
 				RapidMinerGUI.saveGUIProperties();
 				UsageStatistics.getInstance().save();
 				RepositoryManager.shutdown();
-				UsageStatsTransmissionDialog.transmitOnShutdown();
+				UsageStatsScheduler.transmitOnShutdown();
 				CallToActionScheduler.INSTANCE.shutdown();
 			}
 		}
@@ -321,12 +332,21 @@ public class RapidMinerGUI extends RapidMiner {
 
 		RapidMiner.showSplash();
 
+		RapidMiner.splashMessage("plaf");
+		setupToolTipManager();
+		setupGUI();
+		FontTools.checkAndSetFallbackUIFont();
+
 		RapidMiner.splashMessage("basic");
+
+		// initialize Global Search framework
+		GlobalSearchIndexer.INSTANCE.initialize();
 
 		// initialize RapidMiner
 		// As side effect this also initialized the ConstraintManager
 		// with the default product and constraints
 		RapidMiner.init();
+
 
 		// store (possibly new) active license (necessary, since no
 		// ACTIVE_LICENSE_CHANGED event is fired on startup)
@@ -349,11 +369,7 @@ public class RapidMinerGUI extends RapidMiner {
 		LogModelRegistry.INSTANCE.register(defaultLogModel);
 
 		RapidMiner.splashMessage("workspace");
-		RapidMiner.splashMessage("plaf");
 
-		setupToolTipManager();
-		setupGUI();
-		FontTools.checkAndSetFallbackUIFont();
 
 		// check whether current EULA has been accepted
 		if (!EULADialog.getEULAAccepted()) {
@@ -385,6 +401,9 @@ public class RapidMinerGUI extends RapidMiner {
 		});
 		RapidMiner.splashMessage("gui_properties");
 		loadGUIProperties(mainFrame);
+		
+		// initialize Global Search for actions
+		mainFrame.initActionsGlobalSearch();
 
 		RapidMiner.splashMessage("plugin_gui");
 		Plugin.initPluginGuis(mainFrame);
@@ -426,6 +445,20 @@ public class RapidMinerGUI extends RapidMiner {
 		// otherwise the last extension log is active
 		mainFrame.getLogViewer().getLogSelectionModel().setSelectedLogModel(RapidMinerGUI.getDefaultLogModel());
 
+		// Global Search GUI Provider initialization
+		if (GlobalSearchRegistry.INSTANCE.getSearchCategoryById(OperatorGlobalSearch.CATEGORY_ID) != null) {
+			GlobalSearchGUIRegistry.INSTANCE.registerSearchVisualizationProvider(GlobalSearchRegistry.INSTANCE.getSearchCategoryById(
+					OperatorGlobalSearch.CATEGORY_ID), new OperatorGlobalSearchGUIProvider());
+		}
+		if (GlobalSearchRegistry.INSTANCE.getSearchCategoryById(RepositoryGlobalSearch.CATEGORY_ID) != null) {
+			GlobalSearchGUIRegistry.INSTANCE.registerSearchVisualizationProvider(GlobalSearchRegistry.INSTANCE.getSearchCategoryById(
+					RepositoryGlobalSearch.CATEGORY_ID), new RepositoryGlobalSearchGUIProvider());
+		}
+		if (GlobalSearchRegistry.INSTANCE.getSearchCategoryById(ActionsGlobalSearch.CATEGORY_ID) != null) {
+			GlobalSearchGUIRegistry.INSTANCE.registerSearchVisualizationProvider(GlobalSearchRegistry.INSTANCE.getSearchCategoryById(
+					ActionsGlobalSearch.CATEGORY_ID), new ActionsGlobalSearchGUIProvider());
+		}
+		
 		RapidMiner.hideSplash();
 
 		// inform listeners that the Splash screen was hidden
@@ -437,7 +470,10 @@ public class RapidMinerGUI extends RapidMiner {
 			}
 		}
 
-		UsageStatsTransmissionDialog.init();
+		// init visualization after extensions had the chance to add their GUI providers as well
+		GlobalSearchPanel.getInstance().initializeSearchResultVisualization();
+
+		UsageStatsScheduler.init();
 
 		if (openLocation != null) {
 			if (!RepositoryLocation.isAbsolute(openLocation)) {
