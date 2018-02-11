@@ -18,4 +18,4 @@ idea:
 ide: idea
 
 upgrade:
-	./gradlew build --refresh-dependencies
+	./gradlew build --refresh-dependencies -x test
