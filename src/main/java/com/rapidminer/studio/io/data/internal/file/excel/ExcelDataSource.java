@@ -19,7 +19,6 @@
 package com.rapidminer.studio.io.data.internal.file.excel;
 
 import java.nio.file.Path;
-import java.text.DateFormat;
 
 import com.rapidminer.core.io.data.DataSet;
 import com.rapidminer.core.io.data.DataSetException;
@@ -44,7 +43,7 @@ import com.rapidminer.studio.io.data.internal.ResultSetAdapterUtils;
  * @author Nils Woehler
  * @since 7.0.0
  */
-final class ExcelDataSource extends FileDataSource {
+public final class ExcelDataSource extends FileDataSource {
 
 	private DataSetMetaData metaData = null;
 
@@ -143,13 +142,7 @@ final class ExcelDataSource extends FileDataSource {
 				endRow = endRowByLength;
 			}
 		}
-		DateFormatProvider provider = new DateFormatProvider() {
-
-			@Override
-			public DateFormat geDateFormat() {
-				return getMetadata().getDateFormat();
-			}
-		};
+		DateFormatProvider provider = () -> getMetadata().getDateFormat();
 		return new ExcelResultSetAdapter(getResultSetConfiguration().makeDataResultSet(null, readMode, provider), startRow,
 				endRow);
 	}
@@ -227,7 +220,7 @@ final class ExcelDataSource extends FileDataSource {
 	 *             in case the guessing failed (e.g. because of file reading errors, wrong file
 	 *             path, etc.)
 	 */
-	void createMetaData() throws DataSetException {
+	public void createMetaData() throws DataSetException {
 		// create a new Excel ResultSet configuration which reads the whole selected sheet
 		// we cannot call getData() here as it might already skip the first lines
 		try (ExcelResultSetConfiguration configuration = new ExcelResultSetConfiguration()) {

@@ -50,16 +50,20 @@ import com.rapidminer.gui.search.GlobalSearchableGUIProvider;
 import com.rapidminer.gui.tools.IconSize;
 import com.rapidminer.gui.tools.SwingTools;
 import com.rapidminer.operator.Model;
+import com.rapidminer.repository.ConnectionRepository;
 import com.rapidminer.repository.Entry;
 import com.rapidminer.repository.IOObjectEntry;
 import com.rapidminer.repository.MalformedRepositoryLocationException;
 import com.rapidminer.repository.ProcessEntry;
+import com.rapidminer.repository.Repository;
+import com.rapidminer.repository.RepositoryException;
 import com.rapidminer.repository.RepositoryLocation;
 import com.rapidminer.repository.gui.RepositoryTree;
 import com.rapidminer.repository.search.RepositoryGlobalSearch;
 import com.rapidminer.search.GlobalSearchUtilities;
 import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
+import com.rapidminer.tools.usagestats.DefaultUsageLoggable;
 
 
 /**
@@ -73,7 +77,7 @@ public class RepositoryGlobalSearchGUIProvider implements GlobalSearchableGUIPro
 	/**
 	 * Drag & Drop support for repository entries.
 	 */
-	private static final class RepositoryDragGesture implements DragGestureListener {
+	private static final class RepositoryDragGesture extends DefaultUsageLoggable implements DragGestureListener {
 
 		private final RepositoryLocation location;
 
@@ -95,8 +99,15 @@ public class RepositoryGlobalSearchGUIProvider implements GlobalSearchableGUIPro
 			}
 
 			// set the repository entry as the Transferable
-			event.startDrag(cursor, new TransferableRepositoryEntry(location));
+			TransferableRepositoryEntry transferable = new TransferableRepositoryEntry(location);
+			if (usageLogger != null) {
+				transferable.setUsageStatsLogger(usageLogger);
+			} else if (usageObject != null) {
+				transferable.setUsageObject(usageObject);
+			}
+			event.startDrag(cursor, transferable);
 		}
+
 	}
 
 	private static final ImageIcon PROCESS_ICON = SwingTools.createIcon("16/gearwheel.png");
@@ -198,7 +209,16 @@ public class RepositoryGlobalSearchGUIProvider implements GlobalSearchableGUIPro
 
 		try {
 			RepositoryLocation location = new RepositoryLocation(absoluteLocation);
-
+			try {
+				Repository repository = location.getRepository();
+				if (repository instanceof ConnectionRepository && !((ConnectionRepository) repository).isConnected()) {
+					// skip scrolling if the repository was disconnected
+					return;
+				}
+			} catch (RepositoryException e) {
+				// repo not available, no scrolling necessary
+				return;
+			}
 			// scroll to location
 			// twice because otherwise the repository browser selects the parent...
 			RapidMinerGUI.getMainFrame().getRepositoryBrowser().getRepositoryTree().expandAndSelectIfExists(location);
@@ -249,6 +269,12 @@ public class RepositoryGlobalSearchGUIProvider implements GlobalSearchableGUIPro
 			protected void done() {
 				try {
 					Entry locatedEntry = get();
+					// GlobalSearch uses a different API than the actual repository for some repositories (e.g. RM ServeR)
+					// so we can have a hit in the GlobalSearch but the repository does not yet know about it.
+					if (locatedEntry == null) {
+						iconListLabel.setIcon(UNKNOWN_ICON);
+						return;
+					}
 					// no error here? Entry located successfully.
 
 					// put icon in cache for faster retrieval next time

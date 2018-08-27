@@ -24,27 +24,36 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-
+import java.util.Map.Entry;
 import javax.swing.JOptionPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 
+import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.flow.processrendering.draw.ProcessDrawUtils;
 import com.rapidminer.gui.flow.processrendering.draw.ProcessDrawer;
 import com.rapidminer.gui.flow.processrendering.model.ProcessRendererModel;
+import com.rapidminer.gui.properties.celleditors.value.PropertyValueCellEditor;
 import com.rapidminer.gui.tools.SwingTools;
 import com.rapidminer.operator.ExecutionUnit;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.OperatorChain;
+import com.rapidminer.operator.ports.IncompatibleMDClassException;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.operator.ports.Port;
 import com.rapidminer.operator.ports.PortException;
+import com.rapidminer.operator.ports.PortOwner;
+import com.rapidminer.operator.ports.metadata.CompatibilityLevel;
+import com.rapidminer.operator.ports.metadata.MetaData;
+import com.rapidminer.parameter.ParameterType;
 import com.rapidminer.tools.I18N;
+import com.rapidminer.tools.usagestats.ActionStatisticsCollector;
 
 
 /**
@@ -109,30 +118,28 @@ public class ProcessRendererMouseHandler {
 	 */
 	public void mouseDragged(final MouseEvent e) {
 		// Pan viewport
-		if ((e.getModifiers() & InputEvent.BUTTON2_MASK) != 0) {
-			if (view.getParent() instanceof JViewport) {
-				JViewport jv = (JViewport) view.getParent();
-				Point p = jv.getViewPosition();
-				int newX = p.x - (e.getX() - mousePositionAtDragStart.x);
-				int newY = p.y - (e.getY() - mousePositionAtDragStart.y);
-				int maxX = view.getWidth() - jv.getWidth();
-				int maxY = view.getHeight() - jv.getHeight();
-				if (newX < 0) {
-					newX = 0;
-				}
-				if (newX > maxX) {
-					newX = maxX;
-				}
-				if (newY < 0) {
-					newY = 0;
-				}
-				if (newY > maxY) {
-					newY = maxY;
-				}
-				jv.setViewPosition(new Point(newX, newY));
-				e.consume();
-				return;
+		if ((e.getModifiers() & InputEvent.BUTTON2_MASK) != 0 && view.getParent() instanceof JViewport) {
+			JViewport jv = (JViewport) view.getParent();
+			Point p = jv.getViewPosition();
+			int newX = p.x - (e.getX() - mousePositionAtDragStart.x);
+			int newY = p.y - (e.getY() - mousePositionAtDragStart.y);
+			int maxX = view.getWidth() - jv.getWidth();
+			int maxY = view.getHeight() - jv.getHeight();
+			if (newX < 0) {
+				newX = 0;
 			}
+			if (newX > maxX) {
+				newX = maxX;
+			}
+			if (newY < 0) {
+				newY = 0;
+			}
+			if (newY > maxY) {
+				newY = maxY;
+			}
+			jv.setViewPosition(new Point(newX, newY));
+			e.consume();
+			return;
 		}
 
 		// drag ports
@@ -143,7 +150,6 @@ public class ProcessRendererMouseHandler {
 			if (model.getConnectingPortSource().getPorts().getOwner().getOperator() == model.getDisplayedChain()
 					&& e.isShiftDown()) {
 				cancelConnectionDragging();
-				connectionDraggingCanceled = true;
 			}
 			e.consume();
 		}
@@ -153,14 +159,12 @@ public class ProcessRendererMouseHandler {
 			ExecutionUnit draggingInSubprocess = draggedOperatorsOrigins.keySet().iterator().next().getExecutionUnit();
 			Operator hoveringOperator = model.getHoveringOperator();
 			if (hoveringOperator != null) {
-				if (draggedOperatorsOrigins.size() == 1) {
-					if (ProcessDrawUtils.hasOperatorFreePorts(hoveringOperator)) {
-						int pid = controller.getIndex(draggingInSubprocess);
-						Point processSpace = view.toProcessSpace(e.getPoint(), pid);
-						if (processSpace != null) {
-							model.setHoveringConnectionSource(
-									controller.getPortForConnectorNear(processSpace, draggingInSubprocess));
-						}
+				if (draggedOperatorsOrigins.size() == 1 && ProcessDrawUtils.hasOperatorFreePorts(hoveringOperator)) {
+					int pid = controller.getIndex(draggingInSubprocess);
+					Point processSpace = view.toProcessSpace(e.getPoint(), pid);
+					if (processSpace != null) {
+						model.setHoveringConnectionSource(
+								controller.getPortForConnectorNear(processSpace, draggingInSubprocess));
 					}
 				}
 
@@ -201,17 +205,13 @@ public class ProcessRendererMouseHandler {
 				double maxY = 0;
 
 				// shift
-				for (Operator op : draggedOperatorsOrigins.keySet()) {
-					Rectangle2D origin = draggedOperatorsOrigins.get(op);
-					if (origin.getMaxX() + difX >= unitWidth) {
-						if (origin.getMaxX() + difX > maxX) {
-							maxX = origin.getMaxX() + difX;
-						}
+				for (Entry<Operator, Rectangle2D> opAndRectangle : draggedOperatorsOrigins.entrySet()) {
+					Rectangle2D origin = opAndRectangle.getValue();
+					if (origin.getMaxX() + difX >= unitWidth && origin.getMaxX() + difX > maxX) {
+						maxX = origin.getMaxX() + difX;
 					}
-					if (origin.getMaxY() + difY >= unitHeight) {
-						if (origin.getMaxY() + difY > maxY) {
-							maxY = origin.getMaxY() + difY;
-						}
+					if (origin.getMaxY() + difY >= unitHeight && origin.getMaxY() + difY > maxY) {
+						maxY = origin.getMaxY() + difY;
 					}
 
 					if (origin.getMinY() + difY < 0) {
@@ -222,7 +222,7 @@ public class ProcessRendererMouseHandler {
 					}
 					Rectangle2D opPos = new Rectangle2D.Double(Math.floor(origin.getX() + difX),
 							Math.floor(origin.getY() + difY), origin.getWidth(), origin.getHeight());
-					model.setOperatorRect(op, opPos);
+					model.setOperatorRect(opAndRectangle.getKey(), opPos);
 				}
 				model.fireOperatorsMoved(draggedOperatorsOrigins.keySet());
 				e.consume();
@@ -265,13 +265,11 @@ public class ProcessRendererMouseHandler {
 		pressedMouseButton = e.getButton();
 		connectionDraggingCanceled = false;
 
-		if (SwingUtilities.isLeftMouseButton(e)) {
-			if (model.getHoveringOperator() == null && model.getHoveringPort() == null
-					&& model.getSelectedConnectionSource() != model.getHoveringConnectionSource()) {
-				model.setSelectedConnectionSource(model.getHoveringConnectionSource());
-				model.fireMiscChanged();
-				e.consume();
-			}
+		if (SwingUtilities.isLeftMouseButton(e) && model.getHoveringOperator() == null && model.getHoveringPort() == null
+				&& model.getSelectedConnectionSource() != model.getHoveringConnectionSource()) {
+			model.setSelectedConnectionSource(model.getHoveringConnectionSource());
+			model.fireMiscChanged();
+			e.consume();
 		}
 
 		if (e.getButton() == MouseEvent.BUTTON2) {
@@ -282,15 +280,7 @@ public class ProcessRendererMouseHandler {
 		// disconnect when clicking with alt + left mouse on connection
 		if (model.getHoveringConnectionSource() != null && model.getHoveringOperator() == null
 				&& SwingUtilities.isLeftMouseButton(e) && e.isAltDown()) {
-			OutputPort port = model.getHoveringConnectionSource();
-			if (port.isConnected()) {
-				port.disconnect();
-				model.setHoveringConnectionSource(null);
-				if (model.getSelectedConnectionSource() != null && model.getSelectedConnectionSource().equals(port)) {
-					model.setSelectedConnectionSource(null);
-				}
-				model.fireMiscChanged();
-			}
+			ProcessRendererView.disconnectHoveredConnection(model);
 			e.consume();
 		}
 
@@ -301,7 +291,6 @@ public class ProcessRendererMouseHandler {
 			// cancel if right mouse button is pressed
 			if (SwingUtilities.isRightMouseButton(e)) {
 				cancelConnectionDragging();
-				connectionDraggingCanceled = true;
 				e.consume();
 				return;
 			}
@@ -309,7 +298,6 @@ public class ProcessRendererMouseHandler {
 			// cancel if any button is pressed but not over hovering port
 			if (model.getHoveringPort() == null) {
 				cancelConnectionDragging();
-				connectionDraggingCanceled = true;
 				e.consume();
 				return;
 			}
@@ -322,63 +310,39 @@ public class ProcessRendererMouseHandler {
 
 			// Left mouse button pressed on port with alt pressed -> remove connection
 			if (e.isAltDown()) {
-				if (hoveringPort instanceof OutputPort) {
-					if (((OutputPort) hoveringPort).isConnected()) {
+				if (hoveringPort.isConnected()) {
+					if (hoveringPort instanceof OutputPort) {
 						((OutputPort) hoveringPort).disconnect();
-					}
-				} else if (hoveringPort instanceof InputPort) {
-					if (((InputPort) hoveringPort).isConnected()) {
+					} else if (hoveringPort instanceof InputPort) {
 						((InputPort) hoveringPort).getSource().disconnect();
 					}
 				}
 				view.repaint();
 			} else {
 				// Left mouse button pressed on port -> start connecting ports
-				if (hoveringPort instanceof OutputPort) {
-					if (connectingPortSource != null && connectingPortSource instanceof InputPort) {
-						connectConnectingPortSourceWithHoveringPort((InputPort) connectingPortSource,
-								(OutputPort) hoveringPort, hoveringPort);
-					} else {
-						if (!e.isShiftDown()) {
-							model.setConnectingPortSource(hoveringPort);
-						}
-					}
-				} else if (hoveringPort instanceof InputPort) {
-					if (connectingPortSource != null && connectingPortSource instanceof OutputPort) {
-						connectConnectingPortSourceWithHoveringPort((InputPort) hoveringPort,
-								(OutputPort) connectingPortSource, hoveringPort);
-					} else {
-						if (!e.isShiftDown()) {
-							model.setConnectingPortSource(hoveringPort);
-						}
+				try {
+					verifyAndConnectConnectingPortSourceWithHoveringPort();
+				} catch (IncompatiblePortsException ex) {
+					if (!e.isShiftDown()) {
+						model.setConnectingPortSource(hoveringPort);
 					}
 				}
 			}
 			e.consume();
-		} else if (model.getHoveringOperator() == null) {
+		} else if (model.getHoveringOperator() == null && !e.isShiftDown() && !(SwingTools.isControlOrMetaDown(e) && e.getButton() == 1) &&
+				(model.getSelectedOperators().isEmpty() || !model.getSelectedOperators().get(0).equals(model.getDisplayedChain()))) {
 			// deselect unless shift is pressed
-			if (!e.isShiftDown() && !(SwingTools.isControlOrMetaDown(e) && e.getButton() == 1)) {
-				if (model.getSelectedOperators().isEmpty() || model.getSelectedOperators().size() >= 1
-						&& !model.getSelectedOperators().get(0).equals(model.getDisplayedChain())) {
-					controller.selectOperator(model.getDisplayedChain(), true);
-				}
-			}
+			controller.selectOperator(model.getDisplayedChain(), true);
 		}
 
 		if (hoveringPort != null) {
 			controller.selectOperator(hoveringPort.getPorts().getOwner().getOperator(), true);
 			pressHasSelected = true;
 			e.consume();
-		} else {
-			if (model.getHoveringOperator() == null) {
-				if (!e.isShiftDown() && !(SwingTools.isControlOrMetaDown(e) && e.getButton() == 1)) {
-					if (model.getSelectedOperators().isEmpty() || model.getSelectedOperators().size() >= 1
-							&& !model.getSelectedOperators().get(0).equals(model.getDisplayedChain())) {
-						controller.selectOperator(model.getDisplayedChain(), true);
-						pressHasSelected = true;
-					}
-				}
-			}
+		} else if (model.getHoveringOperator() == null && !e.isShiftDown() && !(SwingTools.isControlOrMetaDown(e) && e.getButton() == 1) &&
+				(model.getSelectedOperators().isEmpty() || !model.getSelectedOperators().get(0).equals(model.getDisplayedChain()))) {
+			controller.selectOperator(model.getDisplayedChain(), true);
+			pressHasSelected = true;
 		}
 
 		if (model.getHoveringOperator() != null) {
@@ -416,22 +380,22 @@ public class ProcessRendererMouseHandler {
 		// WINDOWS: mouseReleased
 		// LINUX: mousePressed
 		// DO NOT HANDLE BACKGROUND CLICKS HERE, they are handled in a later RenderPhase
-		Operator clickedOperator = null;
+		showOperatorPopup(e, !model.getDisplayedChain().equals(getClickedOperator()) || model.getHoveringConnectionSource() != null);
+	}
+
+	private Operator getClickedOperator() {
 		if (model.getHoveringPort() != null) {
-			clickedOperator = model.getHoveringPort().getPorts().getOwner().getOperator();
-		} else if (model.getHoveringOperator() != null) {
-			clickedOperator = model.getHoveringOperator();
-		} else {
-			clickedOperator = model.getDisplayedChain();
+			return model.getHoveringPort().getPorts().getOwner().getOperator();
 		}
-		if (e.isPopupTrigger()
-				&& (!model.getDisplayedChain().equals(clickedOperator) || model.getHoveringConnectionSource() != null)) {
-			if (!connectionDraggingCanceled) {
-				if (view.showPopupMenu(e)) {
-					e.consume();
-					return;
-				}
-			}
+		if (model.getHoveringOperator() != null) {
+			return model.getHoveringOperator();
+		}
+		return model.getDisplayedChain();
+	}
+
+	private void showOperatorPopup(MouseEvent e, boolean condition) {
+		if (e.isPopupTrigger() && condition && !connectionDraggingCanceled && view.showPopupMenu(e)) {
+			e.consume();
 		}
 	}
 
@@ -448,22 +412,7 @@ public class ProcessRendererMouseHandler {
 		// WINDOWS: mouseReleased
 		// LINUX: mousePressed
 		// ONLY HANDLE BACKGROUND CLICKS HERE
-		Operator clickedOperator = null;
-		if (model.getHoveringPort() != null) {
-			clickedOperator = model.getHoveringPort().getPorts().getOwner().getOperator();
-		} else if (model.getHoveringOperator() != null) {
-			clickedOperator = model.getHoveringOperator();
-		} else {
-			clickedOperator = model.getDisplayedChain();
-		}
-		if (e.isPopupTrigger() && model.getDisplayedChain().equals(clickedOperator)) {
-			if (!connectionDraggingCanceled) {
-				if (view.showPopupMenu(e)) {
-					e.consume();
-					return;
-				}
-			}
-		}
+		showOperatorPopup(e, model.getDisplayedChain().equals(getClickedOperator()));
 	}
 
 	/**
@@ -484,26 +433,25 @@ public class ProcessRendererMouseHandler {
 			// cancel if right mouse button is released
 			if (SwingUtilities.isRightMouseButton(e)) {
 				cancelConnectionDragging();
-				connectionDraggingCanceled = true;
 			}
 
 			Port hoveringPort = model.getHoveringPort();
 			// cancel if any button is released but not over hovering port
 			if (hoveringPort == null) {
 				cancelConnectionDragging();
-				connectionDraggingCanceled = true;
 			}
 
 			// connect when released over hovering port
 			if (SwingUtilities.isLeftMouseButton(e) && hoveringPort != null && !e.isAltDown()) {
-				if (hoveringPort instanceof InputPort && connectingPortSource instanceof OutputPort) {
-					connectConnectingPortSourceWithHoveringPort((InputPort) hoveringPort, (OutputPort) connectingPortSource,
-							hoveringPort);
-				} else if (hoveringPort instanceof OutputPort && connectingPortSource instanceof InputPort) {
-					connectConnectingPortSourceWithHoveringPort((InputPort) connectingPortSource, (OutputPort) hoveringPort,
-							hoveringPort);
+				try {
+					verifyAndConnectConnectingPortSourceWithHoveringPort();
+				} catch (IncompatiblePortsException ex) {
+					if (!e.isShiftDown() && !hoveringPort.equals(connectingPortSource)) {
+						cancelConnectionDragging();
+					}
 				}
 			}
+
 			e.consume();
 		}
 
@@ -543,10 +491,13 @@ public class ProcessRendererMouseHandler {
 					}
 				}
 				model.setSelectionRectangle(null);
+				model.fireMiscChanged();
 				e.consume();
 			} else {
 				if (hasDragged && draggedOperatorsOrigins != null && draggedOperatorsOrigins.size() == 1) {
-					controller.insertIntoHoveringConnection(model.getHoveringOperator());
+					if (ProcessDrawUtils.canOperatorBeInsertedIntoConnection(model, model.getHoveringOperator())) {
+						controller.insertIntoHoveringConnection(model.getHoveringOperator());
+					}
 					e.consume();
 				} else if (!hasDragged && model.getHoveringOperator() != null && !e.isPopupTrigger()
 						&& SwingUtilities.isLeftMouseButton(e)
@@ -577,25 +528,10 @@ public class ProcessRendererMouseHandler {
 		// WINDOWS: mouseReleased
 		// LINUX: mousePressed
 		// DO NOT HANDLE BACKGROUND CLICKS HERE, they are handled in a later RenderPhase
-		Operator clickedOperator = null;
-		if (model.getHoveringPort() != null) {
-			clickedOperator = model.getHoveringPort().getPorts().getOwner().getOperator();
-		} else if (model.getHoveringOperator() != null) {
-			clickedOperator = model.getHoveringOperator();
-		} else {
-			clickedOperator = model.getDisplayedChain();
+		showOperatorPopup(e, !model.getDisplayedChain().equals(getClickedOperator()) || model.getHoveringConnectionSource() != null);
+		if (!e.isConsumed()) {
+			view.repaint();
 		}
-		if (e.isPopupTrigger()
-				&& (!model.getDisplayedChain().equals(clickedOperator) || model.getHoveringConnectionSource() != null)) {
-			if (!connectionDraggingCanceled) {
-				if (view.showPopupMenu(e)) {
-					e.consume();
-					return;
-				}
-			}
-		}
-
-		view.repaint();
 	}
 
 	/**
@@ -611,22 +547,7 @@ public class ProcessRendererMouseHandler {
 		// WINDOWS: mouseReleased
 		// LINUX: mousePressed
 		// ONLY HANDLE BACKGROUND CLICKS HERE
-		Operator clickedOperator = null;
-		if (model.getHoveringPort() != null) {
-			clickedOperator = model.getHoveringPort().getPorts().getOwner().getOperator();
-		} else if (model.getHoveringOperator() != null) {
-			clickedOperator = model.getHoveringOperator();
-		} else {
-			clickedOperator = model.getDisplayedChain();
-		}
-		if (e.isPopupTrigger() && model.getDisplayedChain().equals(clickedOperator)) {
-			if (!connectionDraggingCanceled) {
-				if (view.showPopupMenu(e)) {
-					e.consume();
-					return;
-				}
-			}
-		}
+		showOperatorPopup(e, model.getDisplayedChain().equals(getClickedOperator()));
 	}
 
 	/**
@@ -636,20 +557,68 @@ public class ProcessRendererMouseHandler {
 	 */
 	public void mouseClicked(final MouseEvent e) {
 		if (SwingUtilities.isLeftMouseButton(e)) {
-			if (e.getClickCount() == 2) {
-				if (model.getHoveringOperator() != null) {
-					if (model.getHoveringOperator() instanceof OperatorChain) {
-						model.setDisplayedChainAndFire((OperatorChain) model.getHoveringOperator());
-					}
+			if (e.getClickCount() != 2) {
+				return;
+			}
+			Operator hoveringOperator = model.getHoveringOperator();
+			if (hoveringOperator != null) {
+				if (model.isHoveringOperatorName()) {
+					ActionStatisticsCollector.getInstance().logOperatorDoubleClick(hoveringOperator, ActionStatisticsCollector.OPERATOR_ACTION_RENAME);
+					controller.rename(hoveringOperator);
 					e.consume();
+					return;
+				}
+				if (hoveringOperator instanceof OperatorChain && e.getModifiersEx() != InputEvent.ALT_DOWN_MASK) {
+					// dive into operator chain, unless user has pressed ALT key. ALT + double-click = activate primary parameter
+					ActionStatisticsCollector.getInstance().logOperatorDoubleClick(hoveringOperator, ActionStatisticsCollector.OPERATOR_ACTION_OPEN);
+					model.setDisplayedChainAndFire((OperatorChain) hoveringOperator);
+					e.consume();
+					return;
+				}
+				// look for a primary parameter, and activate it if found
+				ParameterType primaryParameter = hoveringOperator.getPrimaryParameter();
+				ActionStatisticsCollector.getInstance().logOperatorDoubleClick(model.getHoveringOperator(), ActionStatisticsCollector.OPERATOR_ACTION_PRIMARY_PARAMETER);
+				if (primaryParameter != null) {
+					PropertyValueCellEditor editor = RapidMinerGUI.getMainFrame().getPropertyPanel().getEditorForKey(primaryParameter.getKey());
+					if (editor != null) {
+						editor.activate();
+						e.consume();
+						return;
+					}
 				}
 			}
-		} else if (SwingUtilities.isRightMouseButton(e)) {
-			if (model.getConnectingPortSource() != null) {
-				cancelConnectionDragging();
-				connectionDraggingCanceled = true;
-				e.consume();
+			if (model.getHoveringPort() == null) {
+				return;
 			}
+			Port hoveringPort = model.getHoveringPort();
+			PortOwner hoveringPortOwner = hoveringPort.getPorts().getOwner();
+			// should only work for yet unconnected outer ports
+			if (hoveringPortOwner.getPortHandler().equals(hoveringPortOwner.getOperator()) || hoveringPort.isConnected()) {
+				return;
+			}
+			ExecutionUnit surroundingUnit = hoveringPortOwner.getOperator().getExecutionUnit();
+			if (hoveringPort instanceof OutputPort) {
+				OutputPort hoveringOutputPort = (OutputPort) hoveringPort;
+				for (InputPort in : surroundingUnit.getInnerSinks().getAllPorts()) {
+					if (attemptConnection(hoveringOutputPort, in)) {
+						e.consume();
+						return;
+					}
+				}
+			} else {
+				InputPort hoveringInputPort = (InputPort) hoveringPort;
+				for (OutputPort out : surroundingUnit.getInnerSources().getAllPorts()) {
+					if (attemptConnection(out, hoveringInputPort)) {
+						e.consume();
+						return;
+					}
+				}
+			}
+			return;
+		}
+		if (SwingUtilities.isRightMouseButton(e) && model.getConnectingPortSource() != null) {
+			cancelConnectionDragging();
+			e.consume();
 		}
 	}
 
@@ -667,7 +636,7 @@ public class ProcessRendererMouseHandler {
 	 */
 	public void mouseExited(final MouseEvent e) {
 		controller.clearStatus();
-	};
+	}
 
 	/**
 	 * Updates the currently hovered element
@@ -676,12 +645,13 @@ public class ProcessRendererMouseHandler {
 	 */
 	private void updateHoveringState(final MouseEvent e) {
 		int hoveringProcessIndex = model.getHoveringProcessIndex();
-		if (model.getHoveringProcessIndex() != -1) {
-			int relativeX = (int) model.getMousePositionRelativeToProcess().getX();
-			int relativeY = (int) model.getMousePositionRelativeToProcess().getY();
+		if (hoveringProcessIndex != -1) {
+			ExecutionUnit hoveringProcess = model.getProcess(hoveringProcessIndex);
+			Point relativeMousePosition = model.getMousePositionRelativeToProcess();
+			int relativeX = (int) relativeMousePosition.getX();
+			int relativeY = (int) relativeMousePosition.getY();
 
-			OutputPort connectionSourceUnderMouse = controller.getPortForConnectorNear(
-					model.getMousePositionRelativeToProcess(), model.getProcess(hoveringProcessIndex));
+			OutputPort connectionSourceUnderMouse = controller.getPortForConnectorNear(relativeMousePosition, hoveringProcess);
 			if (connectionSourceUnderMouse != model.getHoveringConnectionSource()) {
 				model.setHoveringConnectionSource(connectionSourceUnderMouse);
 				model.fireMiscChanged();
@@ -689,15 +659,34 @@ public class ProcessRendererMouseHandler {
 			}
 
 			// find inner sinks/sources under mouse
-			if (controller.checkPortUnder(model.getProcess(hoveringProcessIndex).getInnerSinks(), relativeX, relativeY)
-					|| controller.checkPortUnder(model.getProcess(hoveringProcessIndex).getInnerSources(), relativeX,
-							relativeY)) {
+			if (controller.checkPortUnder(hoveringProcess.getInnerSinks(), relativeX, relativeY)
+					|| controller.checkPortUnder(hoveringProcess.getInnerSources(), relativeX, relativeY)) {
 				e.consume();
 				return;
 			}
 
 			// find operator under mouse
-			List<Operator> operators = model.getProcess(hoveringProcessIndex).getOperators();
+			List<Operator> operators = hoveringProcess.getOperators();
+			List<Operator> selectedOperators = model.getSelectedOperators();
+			// if there are selected operators, they take precedence
+			if (!operators.isEmpty() && !selectedOperators.isEmpty()) {
+				operators = new ArrayList<>(operators);
+				operators.sort((o1, o2) -> {
+					int index1 = selectedOperators.indexOf(o1);
+					int index2 = selectedOperators.indexOf(o2);
+					if (index1 == index2) {
+						return 0;
+					}
+					if (index1 == -1) {
+						return -1;
+					}
+					if (index2 == -1) {
+						return 1;
+					}
+					return index2 - index1;
+				});
+			}
+
 			ListIterator<Operator> iterator = operators.listIterator(operators.size());
 			while (iterator.hasPrevious()) {
 				Operator op = iterator.previous();
@@ -712,16 +701,21 @@ public class ProcessRendererMouseHandler {
 				if (rect == null) {
 					continue;
 				}
-				if (rect.contains(new Point2D.Double(relativeX, relativeY))) {
+				if (rect.contains(relativeMousePosition)) {
 					if (model.getHoveringOperator() != op) {
 						model.setHoveringPort(null);
 						view.setHoveringOperator(op);
-						if (model.getHoveringOperator() instanceof OperatorChain) {
-							controller.showStatus(I18N.getGUILabel("processRenderer.displayChain.hover"));
+						if (model.getConnectingPortSource() == null) {
+							if (model.getHoveringOperator() instanceof OperatorChain) {
+								controller.showStatus(I18N.getGUILabel("processRenderer.displayChain.hover"));
+							} else {
+								controller.showStatus(I18N.getGUILabel("processRenderer.operator.hover"));
+							}
 						} else {
-							controller.showStatus(I18N.getGUILabel("processRenderer.operator.hover"));
+							controller.showStatus(I18N.getGUILabel("processRenderer.connection.hover_cancel"));
 						}
 					}
+					view.updateCursor();
 					e.consume();
 					return;
 				}
@@ -735,13 +729,43 @@ public class ProcessRendererMouseHandler {
 			view.updateCursor();
 			model.fireMiscChanged();
 		}
-		if (model.getHoveringConnectionSource() != null) {
+		if (model.getHoveringConnectionSource() != null && model.getConnectingPortSource() == null) {
 			controller.showStatus(I18N.getGUILabel("processRenderer.connection.hover"));
+		} else if (model.getConnectingPortSource() != null) {
+			controller.showStatus(I18N.getGUILabel("processRenderer.connection.hover_cancel"));
 		} else {
 			controller.clearStatus();
 		}
 	}
 
+	/**
+	 * Verifies the ports and connect with the connection source port if possible
+	 *
+	 * @throws IncompatiblePortsException in case the connection is not possible
+	 */
+	private void verifyAndConnectConnectingPortSourceWithHoveringPort() throws IncompatiblePortsException {
+		final Port connectingPortSource = model.getConnectingPortSource();
+		final Port hoveringPort = model.getHoveringPort();
+		final InputPort input;
+		final OutputPort output;
+		if (hoveringPort instanceof InputPort && connectingPortSource instanceof OutputPort) {
+			input = (InputPort) hoveringPort;
+			output = (OutputPort) connectingPortSource;
+		} else if (hoveringPort instanceof OutputPort && connectingPortSource instanceof InputPort) {
+			input = (InputPort)  connectingPortSource;
+			output = (OutputPort) hoveringPort;
+		} else {
+			throw new IncompatiblePortsException();
+		}
+
+		Operator destOp = input.getPorts().getOwner().getOperator();
+		Operator sourceOp = output.getPorts().getOwner().getOperator();
+		// outer ports of an operator should not connect to each other
+		if (!destOp.equals(model.getDisplayedChain()) && destOp.equals(sourceOp)) {
+			throw new IncompatiblePortsException();
+		}
+		connectConnectingPortSourceWithHoveringPort(input, output, hoveringPort);
+	}
 	/**
 	 * Connects the clicked port with the connection source port.
 	 *
@@ -816,7 +840,6 @@ public class ProcessRendererMouseHandler {
 			view.repaint();
 		} finally {
 			cancelConnectionDragging();
-			connectionDraggingCanceled = true;
 		}
 	}
 
@@ -835,5 +858,46 @@ public class ProcessRendererMouseHandler {
 	private void cancelConnectionDragging() {
 		model.setConnectingPortSource(null);
 		model.fireMiscChanged();
+		connectionDraggingCanceled = true;
 	}
+
+	/**
+	 * Connects the given ports if they are both not connected yet and the {@link MetaData} matches. If the ports were
+	 * connected, this will also call {@link #cancelConnectionDragging()}.
+	 * Will return {@code true} iff the ports were connected.
+	 *
+	 * @param out
+	 * 		the output port
+	 * @param in
+	 * 		the input port
+	 * @return {@code true} iff the ports were connected.
+	 * @since 8.2
+	 */
+	private boolean attemptConnection(OutputPort out, InputPort in) {
+		MetaData outMetaData;
+		try {
+			outMetaData = out.getMetaData(MetaData.class);
+		} catch (IncompatibleMDClassException e){
+			//Should not happen
+			return false;
+		}
+		if (!in.isConnected() && !out.isConnected() && outMetaData != null && in.isInputCompatible(outMetaData, CompatibilityLevel.VERSION_5)) {
+			out.connectTo(in);
+			cancelConnectionDragging();
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Used to identify incompatible port combinations
+	 *
+	 * @author Jonas Wilms-Pfau
+	 * @see #verifyAndConnectConnectingPortSourceWithHoveringPort
+	 * @since 8.2.0
+	 */
+	private static class IncompatiblePortsException extends Exception {
+		// marker exception
+	}
+
 }

@@ -36,10 +36,13 @@ import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.actions.OperatorActionFactory.ResourceEntry;
 import com.rapidminer.gui.dnd.OperatorTransferHandler;
 import com.rapidminer.gui.flow.AutoWireThread;
+import com.rapidminer.gui.flow.processrendering.model.ProcessRendererModel;
+import com.rapidminer.gui.flow.processrendering.view.ProcessRendererView;
 import com.rapidminer.gui.operatormenu.OperatorMenu;
 import com.rapidminer.gui.operatortree.actions.ActionUtil;
 import com.rapidminer.gui.operatortree.actions.DeleteOperatorAction;
 import com.rapidminer.gui.operatortree.actions.InfoOperatorAction;
+import com.rapidminer.gui.operatortree.actions.RemoveAllBreakpointsAction;
 import com.rapidminer.gui.operatortree.actions.ToggleActivationItem;
 import com.rapidminer.gui.operatortree.actions.ToggleAllBreakpointsItem;
 import com.rapidminer.gui.operatortree.actions.ToggleBreakpointItem;
@@ -92,9 +95,11 @@ public class Actions implements ProcessEditor {
 
 	public final ToggleBreakpointItem TOGGLE_BREAKPOINT[] = {
 			new ToggleBreakpointItem(this, BreakpointListener.BREAKPOINT_BEFORE),
-			new ToggleBreakpointItem(this, BreakpointListener.BREAKPOINT_AFTER) };
+			new ToggleBreakpointItem(this, BreakpointListener.BREAKPOINT_AFTER)};
 
 	public final ToggleAllBreakpointsItem TOGGLE_ALL_BREAKPOINTS = new ToggleAllBreakpointsItem();
+
+	public final RemoveAllBreakpointsAction REMOVE_ALL_BREAKPOINTS = new RemoveAllBreakpointsAction();
 
 	public final Action MAKE_DIRTY_ACTION = new ResourceAction(true, "make_dirty") {
 
@@ -189,37 +194,32 @@ public class Actions implements ProcessEditor {
 		final Operator op = getFirstSelectedOperator();
 		final boolean singleSelection = getSelectedOperators().size() == 1;
 
-		if (op != null && !singleSelection) {
-			if (!(op instanceof ProcessRootOperator) && op.getParent() != null) {
+		OperatorChain displayedChain = mainFrame.getProcessPanel().getProcessRenderer().getModel().getDisplayedChain();
+		if (op != null) {
+			if (!singleSelection && !(op instanceof ProcessRootOperator) && op.getParent() != null) {
 				// enable / disable operator
 				menu.add(TOGGLE_ACTIVATION_ITEM.createMultipleActivationItem());
-			}
-		}
-
-		if (op != null && singleSelection) {
-			if (mainFrame.getProcessPanel().getProcessRenderer().getModel().getDisplayedChain() != op) {
-				menu.add(INFO_OPERATOR_ACTION);
-				menu.add(TOGGLE_ACTIVATION_ITEM.createMenuItem());
-				if (renameAction != null) {
-					menu.add(renameAction);
-				} else {
-					menu.add(RENAME_OPERATOR_ACTION);
-				}
-				if (!op.getErrorList().isEmpty()) {
-					menu.add(SHOW_PROBLEM_ACTION);
-				}
-				menu.addSeparator();
-				if (op instanceof OperatorChain && ((OperatorChain) op).getAllInnerOperators().size() > 0) {
-					menu.add(OperatorMenu.REPLACE_OPERATORCHAIN_MENU);
-				} else {
-					menu.add(OperatorMenu.REPLACE_OPERATOR_MENU);
+			} else {
+				if (singleSelection && displayedChain != op) {
+					menu.add(INFO_OPERATOR_ACTION);
+					menu.add(TOGGLE_ACTIVATION_ITEM.createMenuItem());
+					menu.add(renameAction != null ? renameAction : RENAME_OPERATOR_ACTION);
+					if (!op.getErrorList().isEmpty()) {
+						menu.add(SHOW_PROBLEM_ACTION);
+					}
+					menu.addSeparator();
+					if (op instanceof OperatorChain && ((OperatorChain) op).getAllInnerOperators().size() > 0) {
+						menu.add(OperatorMenu.REPLACE_OPERATORCHAIN_MENU);
+					} else {
+						menu.add(OperatorMenu.REPLACE_OPERATOR_MENU);
+					}
 				}
 			}
-		}
 
-		// add new operator and building block menu
-		if (mainFrame.getProcessPanel().getProcessRenderer().getModel().getDisplayedChain() == op) {
-			menu.add(OperatorMenu.NEW_OPERATOR_MENU);
+			// add new operator and building block menu
+			if (displayedChain == op) {
+				menu.add(OperatorMenu.NEW_OPERATOR_MENU);
+			}
 		}
 
 		// populate menu with registered operator actions (if any)
@@ -240,7 +240,7 @@ public class Actions implements ProcessEditor {
 		}
 
 		menu.addSeparator();
-		boolean enableCutCopy = mainFrame.getProcessPanel().getProcessRenderer().getModel().getDisplayedChain() != op;
+		boolean enableCutCopy = displayedChain != op;
 		OperatorTransferHandler.installMenuItems(menu, enableCutCopy);
 
 		// add further actions here
@@ -259,13 +259,15 @@ public class Actions implements ProcessEditor {
 			}
 		}
 
+		menu.addSeparator();
 		if (op != null && !(op instanceof ProcessRootOperator) && singleSelection) {
-			menu.addSeparator();
 			for (int i = 0; i < TOGGLE_BREAKPOINT.length; i++) {
 				JMenuItem item = TOGGLE_BREAKPOINT[i].createMenuItem();
 				menu.add(item);
 			}
 		}
+
+		menu.add(REMOVE_ALL_BREAKPOINTS);
 
 	}
 
@@ -287,13 +289,7 @@ public class Actions implements ProcessEditor {
 	 */
 	public void enableActions() {
 		synchronized (process) {
-			SwingTools.invokeLater(new Runnable() {
-
-				@Override
-				public void run() {
-					enableActionsNow();
-				}
-			});
+			SwingTools.invokeLater(this::enableActionsNow);
 		}
 		updateCheckboxStates();
 	}
@@ -326,6 +322,8 @@ public class Actions implements ProcessEditor {
 				.isShowing();
 		currentStates[ConditionalAction.PROCESS_RENDERER_HAS_UNDO_STEPS] = mainFrame.hasUndoSteps();
 		currentStates[ConditionalAction.PROCESS_RENDERER_HAS_REDO_STEPS] = mainFrame.hasRedoSteps();
+		currentStates[ConditionalAction.PROCESS_HAS_BREAKPOINTS] = process.hasBreakpoints();
+
 		ConditionalAction.updateAll(currentStates);
 		updateCheckboxStates();
 
@@ -358,27 +356,33 @@ public class Actions implements ProcessEditor {
 		if (selectedNode == null) {
 			SwingTools.showVerySimpleErrorMessage("cannot_insert_operator");
 			return;
-		} else if (mainFrame.getProcessPanel().getProcessRenderer().getModel().getDisplayedChain() == selectedNode) {
-			for (Operator newOperator : newOperators) {
-				int index = mainFrame.getProcessPanel().getProcessRenderer().getProcessIndexUnder(
-						mainFrame.getProcessPanel().getProcessRenderer().getModel().getCurrentMousePosition());
-				if (index == -1) {
-					index = 0;
-				}
-				((OperatorChain) selectedNode).getSubprocess(index).addOperator(newOperator);
+		}
+		ProcessRendererView processRenderer = mainFrame.getProcessPanel().getProcessRenderer();
+		ProcessRendererModel model = processRenderer.getModel();
+		ExecutionUnit process;
+		int i = -1;
+		if (model.getDisplayedChain() == selectedNode) {
+			int index = processRenderer.getProcessIndexUnder(model.getCurrentMousePosition());
+			if (index == -1) {
+				index = 0;
 			}
+			process = ((OperatorChain) selectedNode).getSubprocess(index);
 		} else {
-			int i = 0;
 			Operator selectedOperator = (Operator) selectedNode;
-			ExecutionUnit process = selectedOperator.getExecutionUnit();
-			int parentIndex = process.getOperators().indexOf(selectedOperator) + 1;
-			for (Operator newOperator : newOperators) {
-				process.addOperator(newOperator, parentIndex + i);
-				i++;
-			}
+			process = selectedOperator.getExecutionUnit();
+			i = process.getOperators().indexOf(selectedOperator) + 1;
 		}
 
+		for (Operator newOperator : newOperators) {
+			if (i < 0) {
+				process.addOperator(newOperator);
+			} else {
+				process.addOperator(newOperator, i++);
+			}
+		}
 		AutoWireThread.autoWireInBackground(newOperators, true);
+		// call autofit so each operator has a (valid) location
+		processRenderer.getAutoFitAction().actionPerformed(null);
 		mainFrame.selectOperators(newOperators);
 	}
 

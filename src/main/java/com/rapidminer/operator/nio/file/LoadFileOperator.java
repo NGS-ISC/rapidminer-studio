@@ -18,6 +18,13 @@
 */
 package com.rapidminer.operator.nio.file;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.rapidminer.operator.Annotations;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.OperatorDescription;
@@ -41,15 +48,6 @@ import com.rapidminer.repository.RepositoryException;
 import com.rapidminer.repository.RepositoryLocation;
 import com.rapidminer.tools.Tools;
 import com.rapidminer.tools.WebServiceTools;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.LinkedList;
-import java.util.List;
 
 
 /**
@@ -141,6 +139,7 @@ public class LoadFileOperator extends Operator {
 	@Override
 	public void doWork() throws OperatorException {
 		String source;
+		FileObject result;
 		switch (getParameterAsInt(PARAMETER_SOURCE_TYPE)) {
 			case SOURCE_TYPE_FILE:
 				File file = getParameterAsFile(PARAMETER_FILENAME);
@@ -153,22 +152,14 @@ public class LoadFileOperator extends Operator {
 				}
 
 				source = file.getAbsolutePath();
-				SimpleFileObject result = new SimpleFileObject(file);
-				result.getAnnotations().setAnnotation(Annotations.KEY_SOURCE, source);
-				fileOutputPort.deliver(result);
+				result = new SimpleFileObject(file);
 				break;
 			case SOURCE_TYPE_URL:
-				URL url;
 				try {
-					url = new URL(getParameterAsString(PARAMETER_URL));
+					URL url = new URL(getParameterAsString(PARAMETER_URL));
 					source = url.toString();
-					URLConnection connection = url.openConnection();
-					WebServiceTools.setURLConnectionDefaults(connection);
-					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-					Tools.copyStreamSynchronously(connection.getInputStream(), buffer, true);
-					BufferedFileObject result1 = new BufferedFileObject(buffer.toByteArray());
-					result1.getAnnotations().setAnnotation(Annotations.KEY_SOURCE, source);
-					fileOutputPort.deliver(result1);
+					byte[] fileBytes = Tools.readInputStream(WebServiceTools.openStreamFromURL(url));
+					result = new BufferedFileObject(fileBytes);
 				} catch (MalformedURLException e) {
 					throw new UserError(this, e, "313", getParameterAsString(PARAMETER_URL));
 				} catch (IOException e) {
@@ -192,15 +183,14 @@ public class LoadFileOperator extends Operator {
 				}
 
 				source = location.getAbsoluteLocation();
-				RepositoryBlobObject result2 = new RepositoryBlobObject(location);
-				result2.getAnnotations().setAnnotation(Annotations.KEY_SOURCE, source);
-				fileOutputPort.deliver(result2);
+				result = new RepositoryBlobObject(location);
 				break;
 			default:
 				// cannot happen
 				throw new OperatorException("Illegal source type: " + getParameterAsString(PARAMETER_SOURCE_TYPE));
 		}
-
+		result.getAnnotations().setAnnotation(Annotations.KEY_SOURCE, source);
+		fileOutputPort.deliver(result);
 	}
 
 	@Override
@@ -222,6 +212,7 @@ public class LoadFileOperator extends Operator {
 		ParameterTypeFile parameterTypeFile = new ParameterTypeFile(PARAMETER_FILENAME, "File to open", null, true, false);
 		parameterTypeFile.registerDependencyCondition(new EqualTypeCondition(this, PARAMETER_SOURCE_TYPE, SOURCE_TYPES,
 				true, SOURCE_TYPE_FILE));
+		parameterTypeFile.setPrimary(true);
 		parameterTypes.add(parameterTypeFile);
 
 		ParameterTypeString parameterTypeUrl = new ParameterTypeString(PARAMETER_URL, "URL to open", true, false);
