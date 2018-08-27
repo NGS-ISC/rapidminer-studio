@@ -32,6 +32,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -52,7 +53,7 @@ import com.rapidminer.example.ExampleSet;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.gui.tools.components.AbstractLinkButton;
-import com.rapidminer.io.process.AutoModelProcessXMLFilter;
+import com.rapidminer.io.process.ProcessOriginProcessXMLFilter;
 import com.rapidminer.io.process.XMLTools;
 import com.rapidminer.operator.IOObject;
 import com.rapidminer.operator.Operator;
@@ -61,7 +62,10 @@ import com.rapidminer.operator.UserError;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.operator.ports.Port;
+import com.rapidminer.parameter.ParameterType;
 import com.rapidminer.repository.search.RepositoryGlobalSearch;
+import com.rapidminer.settings.Telemetry;
+import com.rapidminer.tools.Tools;
 import com.rapidminer.tools.XMLException;
 import com.rapidminer.tools.container.Pair;
 
@@ -76,6 +80,18 @@ import com.rapidminer.tools.container.Pair;
 public enum ActionStatisticsCollector {
 
 	INSTANCE;
+
+	/**
+	 * Interface to attach loggable statistics to events/objects with {@link UsageLoggable}
+	 * that might be logged later.
+	 *
+	 * @since 8.1.2
+	 */
+	public static interface UsageObject {
+
+		/** Logs this usage */
+		void logUsage();
+	}
 
 	public static final String TYPE_CONSTANT = "rapidminer";
 	private static final String TYPE_DOCKABLE = "dockable";
@@ -100,6 +116,18 @@ public enum ActionStatisticsCollector {
 
 	/** operator search field (since 7.1.1) */
 	public static final String TYPE_OPERATOR_SEARCH = "operator_search";
+
+	/** new operator dialog actions [quick fixes] (since 8.1.2) */
+	public static final String TYPE_NEW_OPERATOR_DIALOG = "new_operator_dialog";
+
+	/** new operator menu actions [right click in process] (since 8.1.2) */
+	public static final String TYPE_NEW_OPERATOR_MENU = "new_operator_menu";
+
+	/** repository tree actions (since 8.1.2) */
+	public static final String TYPE_REPOSITORY_TREE = "repository_tree";
+
+	/** wisdom of crowds actions (since 8.1.2) */
+	public static final String TYPE_WISDOM_OF_CROWDS = "wisdom_of_crowds";
 
 	/** onboarding dialog (since 7.1.1) */
 	public static final String TYPE_ONBOARDING = "onboarding";
@@ -200,6 +228,10 @@ public enum ActionStatisticsCollector {
 	public static final String VALUE_MODE = "mode";
 	public static final String VALUE_CONSTANT_START = "start";
 
+	/** introduced in 8.1.2 for the new FeedbackForm */
+	private static final String TYPE_FEEDBACK = "feedback";
+	private static final String ARG_FEEDBACK_SPACER = "|";
+
 	/** introduced in 8.1 for the new Global Search */
 	private static final String TYPE_GLOBAL_SEARCH = "global_search";
 	public static final String VALUE_TIMEOUT = "timeout";
@@ -207,9 +239,29 @@ public enum ActionStatisticsCollector {
 	public static final String VALUE_ACTION = "action";
 	public static final String ARG_GLOBAL_SEARCH_SPACER = "|";
 	public static final String ARG_GLOBAL_SEARCH_CATEGORY_ALL = "all";
-	/** introduced in 8.1 */
-	public static final String PREFIX_TYPE_AUTOMODEL_GENERATED = "am_gen_";
-	public static final String PREFIX_TYPE_AUTOMODEL_EXPORTED = "am_exp_";
+
+	/** ab group | number of groups | selected group (since 8.2) */
+	public static final String TYPE_AB_GROUP = "ab_group";
+
+	/** operator / operator_key / double-click|action(open, parameter, rename)|value(primary_parameter_key) (since 8.2) */
+	public static final String ARG_DOUBLE_CLICK = "double-click";
+	public static final String ARG_DOUBLE_CLICK_SEPARATOR = "|";
+	/** operator chain entered */
+	public static final String OPERATOR_ACTION_OPEN = "open";
+	/** primary parameter editor opened */
+	public static final String OPERATOR_ACTION_PRIMARY_PARAMETER = "parameter";
+	/** operator rename started */
+	public static final String OPERATOR_ACTION_RENAME = "rename";
+
+	/** remote_repository | status | uuid (since 8.2.1) */
+	public static final String TYPE_REMOTE_REPOSITORY = "remote_repository";
+
+	public static final String VALUE_CREATED = "created";
+	public static final String VALUE_CONNECTED = "connected";
+	public static final String VALUE_CONNECTION_ERROR = "connection_error";
+	public static final String VALUE_DISCONNECTED = "disconnected";
+	public static final String VALUE_REMOVED = "removed";
+	public static final String ARG_REMOTE_REPOSITORY_SEPARATOR  = "|";
 
 	/** conversion constant for bytes to megabytes */
 	private static final int BYTE_TO_MB = 1024 * 1024;
@@ -220,6 +272,28 @@ public enum ActionStatisticsCollector {
 	private static final boolean DISABLED = RapidMiner.getExecutionMode().isHeadless()
 			&& RapidMiner.getExecutionMode() != RapidMiner.ExecutionMode.COMMAND_LINE;
 
+
+	/**
+	 * Log user feedback via the FeedbackForm. Format for the logged argument is {id}|{positive/negative}|freetext
+	 *
+	 * @param key
+	 * 		the key for the feedback form
+	 * @param id
+	 * 		the id to specify subgroups for the given feedback key to identify what exactly was rated
+	 * @param submitted
+	 * 		{@code true} if user clicked "Submit" button; {@code false} if user just clicked thumbs-up/down buttons
+	 * @param rating
+	 * 		{positive/negative} rating by the user
+	 * @param freeText
+	 * 		the text the user entered. Will be escaped in this method
+	 * @since 8.1.2
+	 */
+	public void logFeedback(final String key, final String id, final boolean submitted, final String rating, final String freeText) {
+		StringBuilder arg = new StringBuilder();
+		arg.append(rating).append(ARG_FEEDBACK_SPACER);
+		arg.append(Tools.escapeXML(Tools.escape(freeText)));
+		log(TYPE_FEEDBACK, key + ARG_FEEDBACK_SPACER + submitted + ARG_FEEDBACK_SPACER + id, arg.toString());
+	}
 
 	/**
 	 * Log usage of the global search.
@@ -810,23 +884,13 @@ public enum ActionStatisticsCollector {
 		}
 	}
 
-	private static String prefixAutoModelUsage(Operator operator) {
+	private static String prefixProcessOriginUsage(Operator operator) {
 		if (operator == null) {
 			return "";
 		}
 
-		AutoModelProcessXMLFilter.AutoModelState autoModelState = AutoModelProcessXMLFilter.getAutoModelState(operator);
-		if (autoModelState == null) {
-			return "";
-		}
-		switch (autoModelState) {
-			case GENERATED:
-				return PREFIX_TYPE_AUTOMODEL_GENERATED;
-			case EXPORTED:
-				return PREFIX_TYPE_AUTOMODEL_EXPORTED;
-			default:
-				return "";
-		}
+		ProcessOriginProcessXMLFilter.ProcessOriginState processOriginState = ProcessOriginProcessXMLFilter.getProcessOriginState(operator);
+		return processOriginState != null ? processOriginState.getPrefix() : "";
 	}
 
 	/**
@@ -841,7 +905,7 @@ public enum ActionStatisticsCollector {
 			return;
 		}
 
-		String autoModelPrefix = prefixAutoModelUsage(process.getRootOperator());
+		String processOriginPrefix = prefixProcessOriginUsage(process.getRootOperator());
 
 		// add listener for operator port volume logging
 		process.getRootOperator().addProcessListener(operatorVolumeListener);
@@ -853,26 +917,26 @@ public enum ActionStatisticsCollector {
 				++size;
 			}
 		}
-		log(autoModelPrefix + TYPE_PROCESS, VALUE_OPERATOR_COUNT, Integer.toString(size));
-		startTimer(process, autoModelPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_RUNTIME);
+		log(processOriginPrefix + TYPE_PROCESS, VALUE_OPERATOR_COUNT, Integer.toString(size));
+		startTimer(process, processOriginPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_RUNTIME);
 	}
 
 	/**
 	 * Logs process execution success
 	 */
 	public void logExecutionSuccess(Process process) {
-		String autoModelPrefix = prefixAutoModelUsage(process.getRootOperator());
+		String processOriginPrefix = prefixProcessOriginUsage(process.getRootOperator());
 
-		log(autoModelPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_SUCCESS);
+		log(processOriginPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_SUCCESS);
 	}
 
 	/**
 	 * Logs process execution start
 	 */
 	public void logExecutionStarted(Process process) {
-		String autoModelPrefix = prefixAutoModelUsage(process.getRootOperator());
+		String processOriginPrefix = prefixProcessOriginUsage(process.getRootOperator());
 
-		log(autoModelPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_STARTED);
+		log(processOriginPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_STARTED);
 	}
 
 	/**
@@ -886,12 +950,12 @@ public enum ActionStatisticsCollector {
 	 *             The exception to be logged.
 	 */
 	public void logExecutionException(Process process, Exception e) {
-		String autoModelPrefix = prefixAutoModelUsage(process.getRootOperator());
+		String processOriginPrefix = prefixProcessOriginUsage(process.getRootOperator());
 
 		if (e instanceof ProcessStoppedException) {
-			log(autoModelPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_STOPPED);
+			log(processOriginPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_STOPPED);
 		} else {
-			log(autoModelPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_FAILED);
+			log(processOriginPrefix + TYPE_PROCESS, VALUE_EXECUTION, ARG_FAILED);
 			StringBuilder exception = new StringBuilder();
 			if (process.getCurrentOperator() != null) {
 				exception.append(process.getCurrentOperator().getOperatorDescription().getKey());
@@ -909,7 +973,7 @@ public enum ActionStatisticsCollector {
 				exception.append("||");
 			}
 			exception.append(getExceptionStackTraceAsString(e));
-			log(autoModelPrefix + TYPE_PROCESS, VALUE_EXCEPTION, exception.toString());
+			log(processOriginPrefix + TYPE_PROCESS, VALUE_EXCEPTION, exception.toString());
 		}
 	}
 
@@ -975,9 +1039,9 @@ public enum ActionStatisticsCollector {
 	 *            the columns of the example set at the port
 	 */
 	private void logInputVolume(Operator operator, InputPort port, int rows, int columns) {
-		String autoModelPrefix = prefixAutoModelUsage(operator);
+		String processOriginPrefix = prefixProcessOriginUsage(operator);
 
-		logVolume(autoModelPrefix + TYPE_INPUT_VOLUME, operator, port, rows, columns);
+		logVolume(processOriginPrefix + TYPE_INPUT_VOLUME, operator, port, rows, columns);
 	}
 
 	/**
@@ -994,18 +1058,42 @@ public enum ActionStatisticsCollector {
 	 *            the columns of the example set at the port
 	 */
 	private void logOutputVolume(Operator operator, OutputPort port, int rows, int columns) {
-		String autoModelPrefix = prefixAutoModelUsage(operator);
+		String processOriginPrefix = prefixProcessOriginUsage(operator);
 
-		logVolume(autoModelPrefix + TYPE_OUTPUT_VOLUME, operator, port, rows, columns);
+		logVolume(processOriginPrefix + TYPE_OUTPUT_VOLUME, operator, port, rows, columns);
+	}
+
+	/**
+	 * Log double click on operator
+	 *
+	 * @param operator
+	 * 		the operator that got double clicked
+	 * @param action
+	 * 		the double click action that got triggered
+	 * @see #OPERATOR_ACTION_OPEN
+	 * @see #OPERATOR_ACTION_PRIMARY_PARAMETER
+	 * @see #OPERATOR_ACTION_RENAME
+	 * @since 8.2
+	 */
+	public void logOperatorDoubleClick(Operator operator, String action) {
+		if (operator == null || action == null) {
+			return;
+		}
+		String value = "";
+		// Log primary parameter key if user triggered the primary parameter action
+		if (OPERATOR_ACTION_PRIMARY_PARAMETER.equals(action)) {
+			value = Optional.ofNullable(operator.getPrimaryParameter()).map(ParameterType::getKey).orElse(value);
+		}
+		log(operator, String.join(ARG_DOUBLE_CLICK_SEPARATOR, ARG_DOUBLE_CLICK, action, value));
 	}
 
 	public void log(Operator op, String event) {
 		if (op == null) {
 			return;
 		}
-		String autoModelPrefix = prefixAutoModelUsage(op);
+		String processOriginPrefix = prefixProcessOriginUsage(op);
 
-		log(autoModelPrefix + TYPE_OPERATOR, op.getOperatorDescription().getKey(), event);
+		log(processOriginPrefix + TYPE_OPERATOR, op.getOperatorDescription().getKey(), event);
 	}
 
 	/** Adds 1 to the aggregated value */
@@ -1023,19 +1111,19 @@ public enum ActionStatisticsCollector {
 	 *            the execution time (in milliseconds) to log
 	 */
 	private void logOperatorExecutionTime(Operator operator, long executionTime) {
-		String autoModelPrefix = prefixAutoModelUsage(operator);
+		String processOriginPrefix = prefixProcessOriginUsage(operator);
 
-		logCountSumMinMax(autoModelPrefix + TYPE_OPERATOR, operator.getOperatorDescription().getKey(), OPERATOR_RUNTIME, executionTime);
+		logCountSumMinMax(processOriginPrefix + TYPE_OPERATOR, operator.getOperatorDescription().getKey(), OPERATOR_RUNTIME, executionTime);
 	}
 
 	/**
 	 * Logs sum, max and count of the total memory currently used.
 	 */
 	private void logMemory(Process process) {
-		String autoModelPrefix = prefixAutoModelUsage(process.getRootOperator());
+		String processOriginPrefix = prefixProcessOriginUsage(process.getRootOperator());
 
 		long totalSize = Runtime.getRuntime().totalMemory() / BYTE_TO_MB;
-		Key key = new Key(autoModelPrefix + TYPE_MEMORY, MEMORY_USED, MEMORY_ARG);
+		Key key = new Key(processOriginPrefix + TYPE_MEMORY, MEMORY_USED, MEMORY_ARG);
 		log(key, totalSize);
 		logMax(key, totalSize);
 		logCount(key, totalSize);
@@ -1074,7 +1162,7 @@ public enum ActionStatisticsCollector {
 	}
 
 	private void log(Key key, long data) {
-		if (DISABLED) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -1084,6 +1172,16 @@ public enum ActionStatisticsCollector {
 		if (key.isAggregatedWith(Key.AggregationIndicator.SUM) || key.isAggregatedWith(Key.AggregationIndicator.COUNT)) {
 			CtaEventAggregator.INSTANCE.log(key, data);
 		}
+	}
+
+	/**
+	 * Check if the ActionStatisticsCollector was disabled for some reason.
+	 *
+	 * @return true if actions should not be collected
+	 * @since 9.0.0
+	 */
+	private boolean isDisabled() {
+		return DISABLED || Telemetry.USAGESTATS.isDenied();
 	}
 
 	/**
@@ -1128,7 +1226,7 @@ public enum ActionStatisticsCollector {
 	 * @param arg
 	 */
 	public void startTimer(String type, String value, String arg) {
-		if (DISABLED) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -1153,7 +1251,7 @@ public enum ActionStatisticsCollector {
 	 * @param arg
 	 */
 	public void startTimer(Object id, String type, String value, String arg) {
-		if (DISABLED) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -1172,7 +1270,7 @@ public enum ActionStatisticsCollector {
 	 * @param arg
 	 */
 	public void stopTimer(String type, String value, String arg) {
-		if (DISABLED) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -1198,7 +1296,7 @@ public enum ActionStatisticsCollector {
 	 * @param id
 	 */
 	public void stopTimer(Object id) {
-		if (DISABLED) {
+		if (isDisabled()) {
 			return;
 		}
 

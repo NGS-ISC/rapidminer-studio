@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
-
 import javax.swing.ImageIcon;
 
 import com.rapidminer.BreakpointListener;
@@ -73,6 +72,7 @@ import com.rapidminer.operator.ports.metadata.Precondition;
 import com.rapidminer.tools.FontTools;
 import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
+import com.rapidminer.tools.OperatorService;
 import com.rapidminer.tutorial.Tutorial;
 
 
@@ -94,6 +94,9 @@ public final class ProcessDrawer {
 	public static final int PORT_SIZE_HIGHLIGHT = (int) (PORT_SIZE * 1.4f);
 	public static final int PORT_OFFSET = OPERATOR_FONT.getSize() + 6 + PORT_SIZE;
 	public static final int WALL_WIDTH = 3;
+
+	public static final int PROCESS_BOX_SHADOW_OFFSET_X = 4;
+	public static final int PROCESS_BOX_SHADOW_OFFSET_Y = 4;
 
 	public static final int GRID_WIDTH = OPERATOR_WIDTH * 3 / 4;
 	public static final int GRID_HEIGHT = OPERATOR_MIN_HEIGHT * 3 / 4;
@@ -134,11 +137,11 @@ public final class ProcessDrawer {
 	private static final Stroke PORT_STROKE = new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 	private static final Stroke PORT_HIGHLIGHT_STROKE = new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 	private static final Stroke SELECTION_RECT_STROKE = new BasicStroke(1f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
-			5f, new float[] { 2f, 2f }, 0f);
+			5f, new float[]{2f, 2f}, 0f);
 	private static final Paint SELECTION_RECT_PAINT = Color.GRAY;
 	private static final Color PROCESS_TITLE_COLOR = SHADOW_COLOR;
 	private static final Stroke BORDER_DRAG_STROKE = new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER,
-			10.0f, new float[] { 10.0f }, 0.0f);
+			10.0f, new float[]{10.0f}, 0.0f);
 	private static final int DRAG_BORDER_PADDING = 30;
 	private static final int DRAG_BORDER_CORNER = 15;
 
@@ -196,18 +199,26 @@ public final class ProcessDrawer {
 	private static final double MAX_HEADER_RATIO = 1.35;
 
 	private static final ImageIcon IMAGE_WARNING = SwingTools.createIcon("16/sign_warning2.png");
+	private static final ImageIcon IMAGE_WARNING_ZOOMED = SwingTools.createIcon("32/sign_warning2.png");
 	private static final ImageIcon IMAGE_BREAKPOINT_WITHIN = SwingTools.createIcon("16/breakpoint.png");
+	private static final ImageIcon IMAGE_BREAKPOINT_WITHIN_ZOOMED = SwingTools.createIcon("32/breakpoint.png");
 	private static final ImageIcon IMAGE_BREAKPOINTS = SwingTools.createIcon("16/breakpoints.png");
+	private static final ImageIcon IMAGE_BREAKPOINTS_ZOOMED = SwingTools.createIcon("32/breakpoints.png");
 	private static final ImageIcon IMAGE_BREAKPOINT_BEFORE = SwingTools.createIcon("16/breakpoint_left.png");
+	private static final ImageIcon IMAGE_BREAKPOINT_BEFORE_ZOOMED = SwingTools.createIcon("32/breakpoint_left.png");
 	private static final ImageIcon IMAGE_BREAKPOINT_AFTER = SwingTools.createIcon("16/breakpoint_right.png");
+	private static final ImageIcon IMAGE_BREAKPOINT_AFTER_ZOOMED = SwingTools.createIcon("32/breakpoint_right.png");
 	private static final ImageIcon IMAGE_BREAKPOINT_WITHIN_LARGE = SwingTools.createIcon("24/breakpoint.png");
 	private static final ImageIcon IMAGE_BREAKPOINTS_LARGE = SwingTools.createIcon("24/breakpoints.png");
 	private static final ImageIcon IMAGE_BREAKPOINT_BEFORE_LARGE = SwingTools.createIcon("24/breakpoint_left.png");
 	private static final ImageIcon IMAGE_BREAKPOINT_AFTER_LARGE = SwingTools.createIcon("24/breakpoint_right.png");
-	private static final ImageIcon IMAGE_BRANCH = SwingTools.createIcon("16/elements_tree.png");
+	private static final ImageIcon IMAGE_BLACKLISTED = SwingTools.createIcon("16/lock.png");
+	private static final ImageIcon IMAGE_BLACKLISTED_ZOOMED = SwingTools.createIcon("32/lock.png");
 
 	private static final ImageIcon OPERATOR_RUNNING = SwingTools.createIcon("16/media_play2.png");
+	private static final ImageIcon OPERATOR_RUNNING_ZOOMED = SwingTools.createIcon("32/media_play2.png");
 	private static final ImageIcon OPERATOR_READY = SwingTools.createIcon("16/check.png");
+	private static final ImageIcon OPERATOR_READY_ZOOMED = SwingTools.createIcon("32/check.png");
 
 	/** the size of the operator icon */
 	private static final int OPERATOR_ICON_SIZE = 24;
@@ -228,10 +239,10 @@ public final class ProcessDrawer {
 	 * Creates a new drawer instance which can be used to draw the process specified in the model.
 	 *
 	 * @param model
-	 *            the model containing the data needed to draw the process. See
-	 *            {@link ProcessRendererModel} for a minimal configuration
+	 * 		the model containing the data needed to draw the process. See
+	 * 		{@link ProcessRendererModel} for a minimal configuration
 	 * @param drawHighlight
-	 *            if {@code true} will highlight drop area in the process during drag & drop
+	 * 		if {@code true} will highlight drop area in the process during drag & drop
 	 */
 	public ProcessDrawer(final ProcessRendererModel model, final boolean drawHighlight) {
 		if (model == null) {
@@ -256,9 +267,9 @@ public final class ProcessDrawer {
 	 * decorators are called during their respective {@link RenderPhase}s.
 	 *
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void draw(final Graphics2D g2, final boolean printing) {
 		Graphics2D g = (Graphics2D) g2.create();
@@ -380,9 +391,9 @@ public final class ProcessDrawer {
 	 * units.
 	 *
 	 * @param process
-	 *            the process to draw the wall for
+	 * 		the process to draw the wall for
 	 * @param g2
-	 *            the graphics context to draw on
+	 * 		the graphics context to draw on
 	 */
 	private void renderProcessWall(ExecutionUnit process, Graphics2D g2) {
 		double width = model.getProcessWidth(process);
@@ -401,11 +412,11 @@ public final class ProcessDrawer {
 	 * calls all registered {@link ProcessDrawDecorator}s for the background render phase.
 	 *
 	 * @param process
-	 *            the process to draw the background for
+	 * 		the process to draw the background for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawBackground(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		Graphics2D gBG = (Graphics2D) g2.create();
@@ -418,11 +429,11 @@ public final class ProcessDrawer {
 	 * annotations render phase.
 	 *
 	 * @param process
-	 *            the process to draw the annotations for
+	 * 		the process to draw the annotations for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawAnnotations(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		// let decorators draw
@@ -434,11 +445,11 @@ public final class ProcessDrawer {
 	 * the annotations render phase.
 	 *
 	 * @param process
-	 *            the process to draw the operator backgrounds for
+	 * 		the process to draw the operator backgrounds for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawOperatorBackgrounds(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		Graphics2D gBG = (Graphics2D) g2.create();
@@ -477,11 +488,11 @@ public final class ProcessDrawer {
 	 * then calls all registered {@link ProcessDrawDecorator}s for the connections render phase.
 	 *
 	 * @param process
-	 *            the process to draw the connections for
+	 * 		the process to draw the connections for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawConnections(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		Graphics2D gCo = (Graphics2D) g2.create();
@@ -503,11 +514,11 @@ public final class ProcessDrawer {
 	 * the annotations render phase.
 	 *
 	 * @param process
-	 *            the process to draw the operator annotations for
+	 * 		the process to draw the operator annotations for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawOperatorAnnotations(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		// let decorators draw
@@ -520,11 +531,11 @@ public final class ProcessDrawer {
 	 * {@link ProcessDrawDecorator}s for the operator render phase.
 	 *
 	 * @param process
-	 *            the process to draw the operators for
+	 * 		the process to draw the operators for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawOperators(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		Graphics2D gOp = (Graphics2D) g2.create();
@@ -557,11 +568,11 @@ public final class ProcessDrawer {
 	 * the operator additions render phase.
 	 *
 	 * @param process
-	 *            the process to draw the operator additions for
+	 * 		the process to draw the operator additions for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawOperatorAdditions(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		// let decorators draw
@@ -574,11 +585,11 @@ public final class ProcessDrawer {
 	 * for the overlay render phase.
 	 *
 	 * @param process
-	 *            the process to draw the overlay for
+	 * 		the process to draw the overlay for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawOverlay(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		// let decorators draw
@@ -590,11 +601,11 @@ public final class ProcessDrawer {
 	 * calls all registered {@link ProcessDrawDecorator}s for the foreground render phase.
 	 *
 	 * @param process
-	 *            the process to draw the foreground for
+	 * 		the process to draw the foreground for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	public void drawForeground(final ExecutionUnit process, final Graphics2D g2, final boolean printing) {
 		Graphics2D gBG = (Graphics2D) g2.create();
@@ -606,14 +617,14 @@ public final class ProcessDrawer {
 	 * Draws the given {@link Operator} if inside the graphics clip bounds.
 	 *
 	 * @param op
-	 *            the operator to draw. Note that it must have a position attached, see
-	 *            {@link GUIProcessXMLFilter}
+	 * 		the operator to draw. Note that it must have a position attached, see
+	 * 		{@link GUIProcessXMLFilter}
 	 * @param drawPorts
-	 *            if {@true} will also draw operator ports, otherwise will not draw ports
+	 * 		if {@true} will also draw operator ports, otherwise will not draw ports
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 *
 	 */
 	public void drawOperator(final Operator op, final boolean drawPorts, final Graphics2D g2, final boolean printing) {
@@ -641,11 +652,11 @@ public final class ProcessDrawer {
 	 * Adds the given draw decorator for the specified render phase.
 	 *
 	 * @param decorator
-	 *            the decorator instance to add
+	 * 		the decorator instance to add
 	 * @param phase
-	 *            the phase during which the decorator should be called to draw. If multiple
-	 *            decorators want to draw during the same phase, they are called in the order they
-	 *            were registered
+	 * 		the phase during which the decorator should be called to draw. If multiple
+	 * 		decorators want to draw during the same phase, they are called in the order they
+	 * 		were registered
 	 */
 	public void addDecorator(final ProcessDrawDecorator decorator, final RenderPhase phase) {
 		if (decorator == null) {
@@ -663,9 +674,9 @@ public final class ProcessDrawer {
 	 * removed, does nothing.
 	 *
 	 * @param decorator
-	 *            the decorator instance to remove
+	 * 		the decorator instance to remove
 	 * @param phase
-	 *            the phase from which the decorator should be removed
+	 * 		the phase from which the decorator should be removed
 	 */
 	public void removeDecorator(final ProcessDrawDecorator decorator, final RenderPhase phase) {
 		if (decorator == null) {
@@ -683,7 +694,7 @@ public final class ProcessDrawer {
 	 * was drawn.
 	 *
 	 * @param decorator
-	 *            the decorator instance to add
+	 * 		the decorator instance to add
 	 */
 	public void addDecorator(final OperatorDrawDecorator decorator) {
 		if (decorator == null) {
@@ -698,7 +709,7 @@ public final class ProcessDrawer {
 	 * nothing.
 	 *
 	 * @param decorator
-	 *            the decorator instance to remove
+	 * 		the decorator instance to remove
 	 */
 	public void removeDecorator(final OperatorDrawDecorator decorator) {
 		if (decorator == null) {
@@ -712,9 +723,9 @@ public final class ProcessDrawer {
 	 * Draws the given {@link Operator}.
 	 *
 	 * @param operator
-	 *            the operator to draw
+	 * 		the operator to draw
 	 * @param g2
-	 *            the graphics context
+	 * 		the graphics context
 	 */
 	private void renderOperator(final Operator operator, final Graphics2D g2) {
 		Rectangle2D frame = model.getOperatorRect(operator);
@@ -744,22 +755,27 @@ public final class ProcessDrawer {
 			baseColor = Color.LIGHT_GRAY;
 		}
 
+		if (operator instanceof OperatorChain) {
+			Rectangle shadowRect = new Rectangle(bodyShape.getBounds());
+			shadowRect.setLocation(shadowRect.x - PROCESS_BOX_SHADOW_OFFSET_X, shadowRect.y + PROCESS_BOX_SHADOW_OFFSET_Y);
+			Shape shadowShape = new RoundRectangle2D.Double(shadowRect.getMinX(), shadowRect.getMinY(),
+					shadowRect.getWidth(), shadowRect.getHeight(), OPERATOR_CORNER, OPERATOR_CORNER);
+
+			g2.setPaint(baseColor);
+			g2.fill(shadowShape);
+
+			g2.setPaint(LINE_COLOR);
+			g2.setStroke(LINE_STROKE);
+			drawOperatorShape(g2, isSelected, isHovered, shadowShape);
+		}
+
 		g2.setPaint(baseColor);
 		g2.fill(bodyShape);
 
 		g2.setPaint(LINE_COLOR);
 		g2.setStroke(LINE_STROKE);
-		if (isSelected) {
-			g2.setPaint(OPERATOR_BORDER_COLOR_SELECTED);
-			g2.setStroke(OPERATOR_STROKE_SELECTED);
-		} else if (isHovered) {
-			g2.setPaint(OPERATOR_BORDER_COLOR_HIGHLIGHT);
-			g2.setStroke(OPERATOR_STROKE_HIGHLIGHT);
-		} else {
-			g2.setPaint(OPERATOR_BORDER_COLOR);
-			g2.setStroke(OPERATOR_STROKE_NORMAL);
-		}
-		g2.draw(bodyShape);
+
+		drawOperatorShape(g2, isSelected, isHovered, bodyShape);
 
 		// Label: Name
 		g2.setFont(OPERATOR_FONT);
@@ -804,69 +820,106 @@ public final class ProcessDrawer {
 			animation.draw(g2);
 			g2.setTransform(transformBefore);
 		} else {
-			// Icon
-			ImageIcon icon = operator.getOperatorDescription().getIcon();
+			// Icon double size of required icon to make zooming in look smooth
+			ImageIcon icon = operator.getOperatorDescription().getLargeIcon();
 			if (icon != null) {
 				if (!operator.isEnabled()) {
 					icon = ProcessDrawUtils.getIcon(operator, icon);
 				}
-				icon.paintIcon(null, g2, (int) (frame.getX() + frame.getWidth() / 2 - icon.getIconWidth() / 2),
-						(int) yPosition);
+				int iconSize = 24;
+				RenderingHints originalRenderingHints = g2.getRenderingHints();
+				g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+				g2.drawImage(icon.getImage(), (int) (frame.getX() + frame.getWidth() / 2 - iconSize / 2), (int) yPosition, iconSize, iconSize, null);
+				g2.setRenderingHints(originalRenderingHints);
 			}
 		}
 
 		// Small icons
 		int iconX = (int) frame.getX() + 3;
+		int iconSize = 16;
 		// Dirtyness
 		ImageIcon opIcon;
 		if (operator.isRunning()) {
-			opIcon = OPERATOR_RUNNING;
+			opIcon = model.getZoomFactor() <= 1d ? OPERATOR_RUNNING : OPERATOR_RUNNING_ZOOMED;
 		} else if (!operator.isDirty()) {
-			opIcon = OPERATOR_READY;
+			opIcon = model.getZoomFactor() <= 1d ? OPERATOR_READY : OPERATOR_READY_ZOOMED;
 		} else {
 			opIcon = null;
 		}
 
 		if (opIcon != null) {
-			ProcessDrawUtils.getIcon(operator, opIcon).paintIcon(null, g2, iconX,
-					(int) (frame.getY() + frame.getHeight() - opIcon.getIconHeight() - 1));
+			ImageIcon icon = ProcessDrawUtils.getIcon(operator, opIcon);
+			RenderingHints originalRenderingHints = g2.getRenderingHints();
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g2.drawImage(icon.getImage(), iconX, (int) (frame.getY() + frame.getHeight() - iconSize - 1), iconSize, iconSize, null);
+			g2.setRenderingHints(originalRenderingHints);
 		}
-		iconX += 16;
+		iconX += iconSize + 1;
 
 		// Errors
-		if (!operator.getErrorList().isEmpty()) {
-			int iconY = (int) (frame.getY() + frame.getHeight() - IMAGE_WARNING.getIconHeight() - 2);
-			ProcessDrawUtils.getIcon(operator, IMAGE_WARNING).paintIcon(null, g2, iconX, iconY);
+		boolean isBlacklisted = OperatorService.isOperatorBlacklisted(operator.getOperatorDescription().getKey());
+		ImageIcon errorIcon;
+		if (model.getZoomFactor() <= 1d) {
+			errorIcon = isBlacklisted ? IMAGE_BLACKLISTED : IMAGE_WARNING;
+		} else {
+			errorIcon = isBlacklisted ? IMAGE_BLACKLISTED_ZOOMED : IMAGE_WARNING_ZOOMED;
 		}
-		iconX += IMAGE_WARNING.getIconWidth() + 1;
+		if (!operator.getErrorList().isEmpty() || isBlacklisted) {
+			int iconY = (int) (frame.getY() + frame.getHeight() - iconSize - 2);
+			ImageIcon icon = ProcessDrawUtils.getIcon(operator, errorIcon);
+			RenderingHints originalRenderingHints = g2.getRenderingHints();
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g2.drawImage(icon.getImage(), iconX, iconY, iconSize, iconSize, null);
+			g2.setRenderingHints(originalRenderingHints);
+		}
+		iconX += iconSize + 1;
 
 		// Breakpoint
 		if (operator.hasBreakpoint()) {
 			ImageIcon breakpointIcon;
 			if (operator.getNumberOfBreakpoints() == 1) {
 				if (operator.hasBreakpoint(BreakpointListener.BREAKPOINT_BEFORE)) {
-					breakpointIcon = IMAGE_BREAKPOINT_BEFORE;
+					breakpointIcon = model.getZoomFactor() <= 1d ? IMAGE_BREAKPOINT_BEFORE : IMAGE_BREAKPOINT_BEFORE_ZOOMED;
 				} else if (operator.hasBreakpoint(BreakpointListener.BREAKPOINT_AFTER)) {
-					breakpointIcon = IMAGE_BREAKPOINT_AFTER;
+					breakpointIcon = model.getZoomFactor() <= 1d ? IMAGE_BREAKPOINT_AFTER : IMAGE_BREAKPOINT_AFTER_ZOOMED;
 				} else {
-					breakpointIcon = IMAGE_BREAKPOINT_WITHIN;
+					breakpointIcon = model.getZoomFactor() <= 1d ? IMAGE_BREAKPOINT_WITHIN : IMAGE_BREAKPOINT_WITHIN_ZOOMED;
 				}
 			} else {
-				breakpointIcon = IMAGE_BREAKPOINTS;
+				breakpointIcon = model.getZoomFactor() <= 1d ? IMAGE_BREAKPOINTS : IMAGE_BREAKPOINTS_ZOOMED;
 			}
-			ProcessDrawUtils.getIcon(operator, breakpointIcon).paintIcon(null, g2, iconX,
-					(int) (frame.getY() + frame.getHeight() - breakpointIcon.getIconHeight() - 1));
+			ImageIcon icon = ProcessDrawUtils.getIcon(operator, breakpointIcon);
+			RenderingHints originalRenderingHints = g2.getRenderingHints();
+			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g2.drawImage(icon.getImage(), iconX, (int) (frame.getY() + frame.getHeight() - iconSize - 1), iconSize, iconSize, null);
+			g2.setRenderingHints(originalRenderingHints);
 		}
-		iconX += IMAGE_BREAKPOINTS.getIconWidth() + 1;
+	}
 
-		// placeholder for workflow annotations icon
-		iconX += IMAGE_BREAKPOINTS.getIconWidth() + 1;
-
-		if (operator instanceof OperatorChain) {
-			ProcessDrawUtils.getIcon(operator, IMAGE_BRANCH).paintIcon(null, g2, iconX,
-					(int) (frame.getY() + frame.getHeight() - IMAGE_BRANCH.getIconHeight() - 1));
+	/**
+	 * Draw the given shape with color settings for an Operator
+	 *
+	 * @param graphics2D
+	 * 		The graphics to use for drawing
+	 * @param isSelected
+	 * 		if true set colors to show selection
+	 * @param isHovered
+	 * 		if true set colors to show hovering
+	 * @param bodyShape
+	 * 		a shape to be drawn
+	 */
+	private void drawOperatorShape(Graphics2D graphics2D, boolean isSelected, boolean isHovered, Shape bodyShape) {
+		if (isSelected) {
+			graphics2D.setPaint(OPERATOR_BORDER_COLOR_SELECTED);
+			graphics2D.setStroke(OPERATOR_STROKE_SELECTED);
+		} else if (isHovered) {
+			graphics2D.setPaint(OPERATOR_BORDER_COLOR_HIGHLIGHT);
+			graphics2D.setStroke(OPERATOR_STROKE_HIGHLIGHT);
+		} else {
+			graphics2D.setPaint(OPERATOR_BORDER_COLOR);
+			graphics2D.setStroke(OPERATOR_STROKE_NORMAL);
 		}
-		iconX += IMAGE_BRANCH.getIconWidth() + 1;
+		graphics2D.draw(bodyShape);
 	}
 
 	/**
@@ -1049,9 +1102,9 @@ public final class ProcessDrawer {
 	 * Draws the connections for the given ports.
 	 *
 	 * @param ports
-	 *            the output ports for which to draw connections
+	 * 		the output ports for which to draw connections
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 */
 	@SuppressWarnings("deprecation")
 	private void renderConnections(final OutputPorts ports, final Graphics2D g2) {
@@ -1118,9 +1171,9 @@ public final class ProcessDrawer {
 	 * Draws the operator background (white round rectangle).
 	 *
 	 * @param operator
-	 *            the operator to draw the background for
+	 * 		the operator to draw the background for
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 */
 	private void renderOperatorBackground(final Operator operator, final Graphics2D g2) {
 		Rectangle2D frame = model.getOperatorRect(operator);
@@ -1131,8 +1184,15 @@ public final class ProcessDrawer {
 			return;
 		}
 
-		RoundRectangle2D background = new RoundRectangle2D.Double(frame.getX() - 7, frame.getY() - 3, frame.getWidth() + 14,
-				frame.getHeight() + 11, OPERATOR_BG_CORNER, OPERATOR_BG_CORNER);
+		int expandLeft = 0;
+		int expandHeight = 0;
+		if (operator instanceof OperatorChain) {
+			expandLeft = PROCESS_BOX_SHADOW_OFFSET_X;
+			expandHeight = PROCESS_BOX_SHADOW_OFFSET_Y;
+		}
+		RoundRectangle2D background = new RoundRectangle2D.Double(frame.getX() - 7 - expandLeft, frame.getY() - 3,
+				frame.getWidth() + 14 + expandLeft, frame.getHeight() + 11 + expandHeight,
+				OPERATOR_BG_CORNER, OPERATOR_BG_CORNER);
 		g2.setColor(Color.WHITE);
 		g2.fill(background);
 
@@ -1159,11 +1219,11 @@ public final class ProcessDrawer {
 	 * Draws the connections background (round pipe) for the given ports.
 	 *
 	 * @param inputPorts
-	 *            the input ports for which to draw connection backgrounds
+	 * 		the input ports for which to draw connection backgrounds
 	 * @param ports
-	 *            the output ports for which to draw connection backgrounds
+	 * 		the output ports for which to draw connection backgrounds
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 */
 	@SuppressWarnings("deprecation")
 	private void renderConnectionsBackground(final InputPorts inputPorts, final OutputPorts ports, final Graphics2D g2) {
@@ -1237,9 +1297,9 @@ public final class ProcessDrawer {
 	 * Draws the background for the given process.
 	 *
 	 * @param process
-	 *            the process for which to render the background
+	 * 		the process for which to render the background
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 */
 	private void renderBackground(final ExecutionUnit process, final Graphics2D g2, boolean printing) {
 		double width = model.getProcessWidth(process);
@@ -1388,9 +1448,9 @@ public final class ProcessDrawer {
 	 * Renders the drag border if needed.
 	 *
 	 * @param process
-	 *            the process for which to render the background
+	 * 		the process for which to render the background
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 */
 	private void renderForeground(final ExecutionUnit process, final Graphics2D g2, boolean printing) {
 		if (drawHighlight && !printing && (model.isDragStarted() || model.isDropTargetSet() && model.isImportDragged())
@@ -1412,9 +1472,9 @@ public final class ProcessDrawer {
 	 * Draws the drag border.
 	 *
 	 * @param process
-	 *            the process for which to render the background
+	 * 		the process for which to render the background
 	 * @param g2
-	 *            the graphics context to draw upon
+	 * 		the graphics context to draw upon
 	 */
 	private void drawDragBorder(final ExecutionUnit process, final Graphics2D g2) {
 		double width = model.getProcessWidth(process);
@@ -1430,17 +1490,17 @@ public final class ProcessDrawer {
 	 * Lets the decorators draw for the specified {@link RenderPhase}.
 	 *
 	 * @param process
-	 *            the process which should be decorated
+	 * 		the process which should be decorated
 	 * @param g2
-	 *            the graphics context. Each decorator gets a new context which is disposed
-	 *            afterwards
+	 * 		the graphics context. Each decorator gets a new context which is disposed
+	 * 		afterwards
 	 * @param phase
-	 *            the render phase which determines the decorators that are called
+	 * 		the render phase which determines the decorators that are called
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	private void drawPhaseDecorators(final ExecutionUnit process, final Graphics2D g2, final RenderPhase phase,
-			final boolean printing) {
+									 final boolean printing) {
 		double width = model.getProcessWidth(process) * (1 / model.getZoomFactor());
 		double height = model.getProcessHeight(process) * (1 / model.getZoomFactor());
 		int borderWidth = 2;
@@ -1471,12 +1531,12 @@ public final class ProcessDrawer {
 	 * Lets the decorators draw for the specified {@link RenderPhase}.
 	 *
 	 * @param operator
-	 *            the operator which should be decorated
+	 * 		the operator which should be decorated
 	 * @param g2
-	 *            the graphics context. Each decorator gets a new context which is disposed
-	 *            afterwards
+	 * 		the graphics context. Each decorator gets a new context which is disposed
+	 * 		afterwards
 	 * @param printing
-	 *            if {@code true} we are printing instead of drawing to the screen
+	 * 		if {@code true} we are printing instead of drawing to the screen
 	 */
 	private void drawOperatorDecorators(final Operator operator, final Graphics2D g2, final boolean printing) {
 		double width = model.getProcessWidth(operator.getExecutionUnit()) * (1 / model.getZoomFactor());
@@ -1511,16 +1571,16 @@ public final class ProcessDrawer {
 	 * Draws text centered in the process.
 	 *
 	 * @param process
-	 *            the process in question
+	 * 		the process in question
 	 * @param g2
-	 *            the graphics context
+	 * 		the graphics context
 	 * @param font
 	 * @param text
 	 * @param color
 	 * @param yOffset
 	 */
 	private void drawCenteredText(ExecutionUnit process, Graphics2D g2, Font font, String text, Color color,
-			double yOffset) {
+								  double yOffset) {
 		double width = model.getProcessWidth(process);
 		double height = model.getProcessHeight(process);
 

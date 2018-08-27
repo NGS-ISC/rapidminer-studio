@@ -21,14 +21,23 @@ package com.rapidminer.tools;
 import java.util.List;
 
 import com.rapidminer.Process;
+import com.rapidminer.io.process.ProcessOriginProcessXMLFilter;
+import com.rapidminer.io.process.ProcessOriginProcessXMLFilter.ProcessOriginState;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.OperatorChain;
 import com.rapidminer.operator.ProcessRootOperator;
 import com.rapidminer.operator.ProcessSetupError;
 import com.rapidminer.operator.ports.Port;
 import com.rapidminer.operator.ports.metadata.InputMissingMetaDataError;
+import com.rapidminer.operator.preprocessing.filter.attributes.SubsetAttributeFilter;
+import com.rapidminer.operator.tools.AttributeSubsetSelector;
 import com.rapidminer.parameter.ParameterType;
 import com.rapidminer.parameter.ParameterTypeAttribute;
+import com.rapidminer.repository.Repository;
+import com.rapidminer.repository.RepositoryException;
+import com.rapidminer.repository.RepositoryLocation;
+import com.rapidminer.repository.RepositoryManager;
+import com.rapidminer.repository.resource.ResourceRepository;
 import com.rapidminer.tools.container.Pair;
 
 
@@ -95,10 +104,10 @@ public final class ProcessTools {
 	 *
 	 * @param process
 	 *            the process in question
-	 * @return the first {@link Port} found if the process contains at least one operator with an
+	 * @return the first {@link Port} along with it's error that is found if the process contains at least one operator with an
 	 *         input port which is not connected; {@code null} otherwise
 	 */
-	public static Port getPortWithoutMandatoryConnection(final Process process) {
+	public static Pair<Port, ProcessSetupError> getPortWithoutMandatoryConnection(final Process process) {
 		if (process == null) {
 			throw new IllegalArgumentException("process must not be null!");
 		}
@@ -120,7 +129,7 @@ public final class ProcessTools {
 					InputMissingMetaDataError err = (InputMissingMetaDataError) error;
 					// as we don't know what will be sent at runtime, we only look for unconnected
 					if (!err.getPort().isConnected()) {
-						return err.getPort();
+						return new Pair<>(err.getPort(), err);
 					}
 				}
 			}
@@ -141,17 +150,17 @@ public final class ProcessTools {
 	 *
 	 * @param operator
 	 *            the operator for which to check for unconnected mandatory ports
-	 * @return the first {@link Port} found if the operator has at least one input port which is not
+	 * @return the first {@link Port} along with it's error that is found if the operator has at least one input port which is not
 	 *         connected; {@code null} otherwise
 	 */
-	public static Port getMissingPortConnection(Operator operator) {
+	public static Pair<Port, ProcessSetupError> getMissingPortConnection(Operator operator) {
 		// look for matching errors. We can only identify this via metadata errors
 		for (ProcessSetupError error : operator.getErrorList()) {
 			if (error instanceof InputMissingMetaDataError) {
 				InputMissingMetaDataError err = (InputMissingMetaDataError) error;
 				// as we don't know what will be sent at runtime, we only look for unconnected
 				if (!err.getPort().isConnected()) {
-					return err.getPort();
+					return new Pair<>(err.getPort(), err);
 				}
 			}
 		}
@@ -234,6 +243,67 @@ public final class ProcessTools {
 	}
 
 	/**
+	 * Makes the "subset" parameter of the attribute selector the primary parameter. If the given list does not contain that parameter type, nothing is done.
+	 *
+	 * @param parameterTypes
+	 * 		the list of parameter types which contain the {@link AttributeSubsetSelector#getParameterTypes()}. If {@code null} or empty, the input is returned
+	 * @param primary
+	 * 		if {@code true} the subset parameter will become a primary parameter type, otherwise it will become a non-primary parameter type
+	 * @return the original input
+	 * @since 8.2.0
+	 */
+	public static List<ParameterType> setSubsetSelectorPrimaryParameter(final List<ParameterType> parameterTypes, final boolean primary) {
+		if (parameterTypes == null || parameterTypes.isEmpty()) {
+			return parameterTypes;
+		}
+
+		// look for attribute "subset" parameter, and make it primary if found
+		for (ParameterType type : parameterTypes) {
+			if (SubsetAttributeFilter.PARAMETER_ATTRIBUTES.equals(type.getKey())) {
+				type.setPrimary(primary);
+				break;
+			}
+		}
+
+		return parameterTypes;
+	}
+
+	/**
+	 * Tags the given process with an {@link ProcessOriginState origin} if possible. If the {@link Process} is not stored
+	 * in a {@link Repository}, this does nothing. If it is stored in a {@link ResourceRepository}, it will be tagged
+	 * with {@link ProcessOriginState#GENERATED_SAMPLE}. Otherwise a lookup of
+	 * {@link RepositoryManager#getSpecialRepositoryOrigin(Repository)} is performed.
+	 *
+	 * @param process
+	 * 		the process to be tagged with an origin
+	 * @since 9.0.0
+	 */
+	public static void setProcessOrigin(Process process) {
+		RepositoryLocation repositoryLocation = process.getRepositoryLocation();
+		if (repositoryLocation == null) {
+			return;
+		}
+		Repository repository = null;
+		try {
+			repository = repositoryLocation.getRepository();
+		} catch (RepositoryException e) {
+			// nothing to do here
+			return;
+		}
+		if (repository == null) {
+			return;
+		}
+		ProcessOriginState origin;
+		// resource based repos cannot be created in user interface; tag as sample
+		if (repository instanceof ResourceRepository) {
+			origin = ProcessOriginState.GENERATED_SAMPLE;
+		} else {
+			origin = RepositoryManager.getInstance(null).getSpecialRepositoryOrigin(repository);
+		}
+		ProcessOriginProcessXMLFilter.setProcessOriginState(process, origin);
+	}
+
+	/**
 	 * Checks whether the given operator has a mandatory parameter which has no value and no default
 	 * value and returns the parameter. If no such parameter can be found, returns {@code null}.
 	 *
@@ -245,13 +315,9 @@ public final class ProcessTools {
 	private static ParameterType getMissingMandatoryParameter(Operator operator) {
 		for (String key : operator.getParameters().getKeys()) {
 			ParameterType param = operator.getParameterType(key);
-			if (!param.isOptional()) {
-				if (operator.getParameters().getParameterOrNull(key) == null) {
-					return param;
-				} else if (param instanceof ParameterTypeAttribute
-						&& "".equals(operator.getParameters().getParameterOrNull(key))) {
-					return param;
-				}
+			if (!param.isOptional() && (operator.getParameters().getParameterOrNull(key) == null
+					|| param instanceof ParameterTypeAttribute && "".equals(operator.getParameters().getParameterOrNull(key)))) {
+				return param;
 			}
 		}
 		return null;

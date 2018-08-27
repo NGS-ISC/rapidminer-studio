@@ -141,7 +141,6 @@ public class ActionsGlobalSearchManager extends AbstractGlobalSearchManager {
 		mainFrameActions.add(createDocument((ResourceAction) RapidMinerGUI.getMainFrame().STOP_ACTION));
 		mainFrameActions.add(createDocument((ResourceAction) RapidMinerGUI.getMainFrame().VALIDATE_ACTION));
 		mainFrameActions.add(createDocument((ResourceAction) RapidMinerGUI.getMainFrame().AUTO_WIRE));
-		mainFrameActions.add(createDocument(RapidMinerGUI.getMainFrame().PROPAGATE_REAL_METADATA_ACTION));
 		mainFrameActions.add(createDocument((ResourceAction) RapidMinerGUI.getMainFrame().NEW_PERSPECTIVE_ACTION));
 		mainFrameActions.add(createDocument((ResourceAction) RapidMinerGUI.getMainFrame().MANAGE_CONFIGURABLES_ACTION));
 		mainFrameActions.add(createDocument((ResourceAction) RapidMinerGUI.getMainFrame().EXPORT_ACTION));
@@ -332,7 +331,7 @@ public class ActionsGlobalSearchManager extends AbstractGlobalSearchManager {
 	private Document createDocumentFromPerspective(final Perspective perspective) {
 		WorkspaceAction action = RapidMinerGUI.getMainFrame().getPerspectiveController().createPerspectiveAction(perspective);
 		// make label a bit more descriptive
-		String name = perspective.getName().replaceAll("_", " ");
+		String name = action.getValue(ResourceAction.NAME) != null ? String.valueOf(action.getValue(ResourceAction.NAME)) : perspective.getName().replaceAll("_", " ");
 		action.putValue(ResourceAction.NAME, I18N.getMessage(I18N.getGUIBundle(), "gui.action.global_search.action.perspective.name", SwingTools.capitalizeString(name)));
 		return createDocument(action);
 	}

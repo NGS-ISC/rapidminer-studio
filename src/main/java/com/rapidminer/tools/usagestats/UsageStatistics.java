@@ -1,21 +1,21 @@
 /**
  * Copyright (C) 2001-2018 by RapidMiner and the contributors
- * 
+ *
  * Complete list of developers available at our web site:
- * 
+ *
  * http://rapidminer.com
- * 
+ *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU Affero General Public License as published by the Free Software Foundation, either version 3
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License along with this program.
  * If not, see http://www.gnu.org/licenses/.
-*/
+ */
 package com.rapidminer.tools.usagestats;
 
 import java.io.File;
@@ -45,6 +45,8 @@ import com.rapidminer.RapidMinerVersion;
 import com.rapidminer.core.license.ProductConstraintManager;
 import com.rapidminer.io.process.XMLTools;
 import com.rapidminer.license.License;
+import com.rapidminer.parameter.ParameterTypeDateFormat;
+import com.rapidminer.settings.Telemetry;
 import com.rapidminer.tools.FileSystemService;
 import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
@@ -68,7 +70,7 @@ public class UsageStatistics {
 	// ThreadLocal because DateFormat is NOT threadsafe and creating a new DateFormat is
 	// EXTREMELY expensive
 	private static final ThreadLocal<DateFormat> DATE_FORMAT = ThreadLocal.withInitial(() -> {
-		return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"); // this is a legacy wrong format to parse old dates
+		return new SimpleDateFormat(ParameterTypeDateFormat.DATE_TIME_FORMAT_YYYY_MM_DD_HH_MM_SS); // this is a legacy wrong format to parse old dates
 	});
 
 	/** URL to send the statistics values to. */
@@ -108,6 +110,11 @@ public class UsageStatistics {
 
 	/** Loads the statistics from the user file. */
 	private void load() {
+		if (Telemetry.USAGESTATS.isDenied()) {
+			LogService.getRoot().log(Level.CONFIG,
+					"com.rapidminer.gui.telemetry.accessing_online_services_disallowed");
+			return;
+		}
 		if (!RapidMiner.getExecutionMode().canAccessFilesystem()) {
 			LogService.getRoot().log(Level.CONFIG,
 					"com.rapidminer.gui.tools.usagestats.UsageStatistics.accessing_file_system_error_bypassing_loading");
@@ -158,7 +165,7 @@ public class UsageStatistics {
 	 * @return
 	 */
 	private Date parseDate(String date) {
-		if(date != null && !date.trim().isEmpty()) {
+		if (date != null && !date.trim().isEmpty()) {
 			try {
 				return Date.from(ZonedDateTime.parse(date).toInstant());
 			} catch (DateTimeParseException e) {
@@ -259,21 +266,29 @@ public class UsageStatistics {
 	 * 	Saves the statistics to a user file.
 	 */
 	public void save() {
-		if (RapidMiner.getExecutionMode().canAccessFilesystem()) {
-			File file = FileSystemService.getUserConfigFile("usagestats.xml");
-			try {
-				LogService.getRoot().log(Level.CONFIG,
-						"com.rapidminer.gui.tools.usagestats.UsageStatistics.saving_operator_usage");
-				XMLTools.stream(getXML(ActionStatisticsCollector.getInstance().getActionStatisticsSnapshot(false)), file, StandardCharsets.UTF_8);
-			} catch (Exception e) {
-				LogService.getRoot().log(Level.WARNING, I18N.getMessage(LogService.getRoot().getResourceBundle(),
-						"com.rapidminer.gui.tools.usagestats.UsageStatistics.saving_operator_usage_error", e), e);
-			}
-		} else {
+		if (Telemetry.USAGESTATS.isDenied()) {
+			LogService.getRoot().config(
+					"com.rapidminer.gui.telemetry.accessing_online_services_disallowed");
+			return;
+		}
+
+		if (!RapidMiner.getExecutionMode().canAccessFilesystem()) {
 			LogService.getRoot().config(
 					"com.rapidminer.gui.tools.usagestats.UsageStatistics.accessing_file_system_error_bypassing_save");
+			return;
+		}
+
+		File file = FileSystemService.getUserConfigFile("usagestats.xml");
+		try {
+			LogService.getRoot().log(Level.CONFIG,
+					"com.rapidminer.gui.tools.usagestats.UsageStatistics.saving_operator_usage");
+			XMLTools.stream(getXML(ActionStatisticsCollector.getInstance().getActionStatisticsSnapshot(false)), file, StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			LogService.getRoot().log(Level.WARNING, I18N.getMessage(LogService.getRoot().getResourceBundle(),
+					"com.rapidminer.gui.tools.usagestats.UsageStatistics.saving_operator_usage_error", e), e);
 		}
 	}
+
 
 	private DateFormat getDateFormat() {
 		return DATE_FORMAT.get();
@@ -287,6 +302,9 @@ public class UsageStatistics {
 	 * @throws Exception
 	 */
 	void transferUsageStats(Reason reason, ActionStatisticsCollector.ActionStatisticsSnapshot snapshot, ProgressListener progressListener) throws XMLException, IOException {
+		if (Telemetry.USAGESTATS.isDenied()) {
+			return;
+		}
 		progressListener.setCompleted(10);
 		String xml = XMLTools.toString(getXML(reason, snapshot));
 		progressListener.setCompleted(20);

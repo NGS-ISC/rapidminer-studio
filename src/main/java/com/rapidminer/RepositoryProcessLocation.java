@@ -31,6 +31,7 @@ import com.rapidminer.repository.RepositoryLocation;
 import com.rapidminer.repository.internal.remote.RemoteContentManager;
 import com.rapidminer.repository.internal.remote.RemoteProcessEntry;
 import com.rapidminer.repository.internal.remote.RemoteRepository;
+import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
 import com.rapidminer.tools.PasswordInputCanceledException;
 import com.rapidminer.tools.ProgressListener;
@@ -48,8 +49,8 @@ public class RepositoryProcessLocation implements ProcessLocation {
 	/** A simple {@link UserData} object to pass {@link Boolean} values */
 	public static class SimpleBooleanUserData implements UserData<Object> {
 
-		private boolean value;
 
+		private boolean value;
 		public SimpleBooleanUserData(boolean value) {
 			this.value = value;
 		}
@@ -63,7 +64,10 @@ public class RepositoryProcessLocation implements ProcessLocation {
 			return value;
 		}
 
+
 	}
+
+	private static final String GENERIC_PROCESS_ICON = I18N.getGUILabel("getting_started.open_recent.icon");
 
 	private final RepositoryLocation repositoryLocation;
 
@@ -128,6 +132,7 @@ public class RepositoryProcessLocation implements ProcessLocation {
 					boolean isReadOnly = repositoryLocation.getRepository().isReadOnly();
 					if (isReadOnly) {
 						SwingTools.showSimpleErrorMessage("save_to_read_only_repo", "", repositoryLocation.toString());
+						return;
 					} else {
 						UserData<Object> updateRevisionOnSave = process.getRootOperator()
 								.getUserData(UPDATE_REVISION_ON_SAVE_KEY);
@@ -193,5 +198,15 @@ public class RepositoryProcessLocation implements ProcessLocation {
 	@Override
 	public String getShortName() {
 		return repositoryLocation.getName();
+	}
+
+	@Override
+	public String getIconName() {
+		try {
+			return getRepositoryLocation().getRepository().getIconName();
+		} catch (Exception e) {
+			// can happen if a repository was removed, do not log anything in those cases
+			return GENERIC_PROCESS_ICON;
+		}
 	}
 }
