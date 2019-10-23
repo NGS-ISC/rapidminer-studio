@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -29,8 +29,6 @@ import com.rapidminer.tools.expression.ExpressionEvaluator;
 import com.rapidminer.tools.expression.ExpressionException;
 import com.rapidminer.tools.expression.ExpressionParser;
 import com.rapidminer.tools.expression.ExpressionParsingException;
-import com.rapidminer.tools.expression.internal.antlr.FunctionExpressionLexer;
-import com.rapidminer.tools.expression.internal.antlr.FunctionExpressionParser;
 
 
 /**

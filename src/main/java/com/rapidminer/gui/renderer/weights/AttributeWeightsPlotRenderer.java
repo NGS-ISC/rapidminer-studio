@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -32,7 +32,9 @@ import java.util.LinkedHashMap;
  * A renderer for the plot view of attribute weights.
  * 
  * @author Ingo Mierswa
+ * @deprecated since 9.2.1
  */
+@Deprecated
 public class AttributeWeightsPlotRenderer extends AbstractDataTablePlotterRenderer {
 
 	@Override

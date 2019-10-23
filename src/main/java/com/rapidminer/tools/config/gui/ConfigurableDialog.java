@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -59,7 +58,6 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.xml.ws.WebServiceException;
@@ -69,6 +67,10 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 import org.jdesktop.swingx.painter.MattePainter;
 
 import com.rapidminer.Process;
+import com.rapidminer.connection.adapter.ConnectionAdapter;
+import com.rapidminer.connection.adapter.ConnectionAdapterHandler;
+import com.rapidminer.connection.gui.ConnectionCreationDialog;
+import com.rapidminer.connection.gui.components.DeprecationWarning;
 import com.rapidminer.gui.ApplicationFrame;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.tools.ExtendedJScrollPane;
@@ -85,10 +87,12 @@ import com.rapidminer.repository.Repository;
 import com.rapidminer.repository.RepositoryException;
 import com.rapidminer.repository.RepositoryManager;
 import com.rapidminer.repository.internal.remote.RemoteRepository;
+import com.rapidminer.repository.local.LocalRepository;
 import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
 import com.rapidminer.tools.config.AbstractConfigurable;
 import com.rapidminer.tools.config.Configurable;
+import com.rapidminer.tools.config.ConfigurationException;
 import com.rapidminer.tools.config.ConfigurationManager;
 import com.rapidminer.tools.config.actions.ActionResult;
 import com.rapidminer.tools.config.actions.ActionResult.Result;
@@ -206,6 +210,16 @@ public class ConfigurableDialog extends ButtonDialog {
 
 	/** the button which can be clicked to perform the test action for a configurable */
 	private JButton testButton;
+
+	/**
+	 * The button that triggers the conversion to a new
+	 * {@link com.rapidminer.connection.ConnectionInformation ConnectionInformation} if possible
+	 *
+	 * @see Configurable#supportsNewConnectionManagement()
+	 * @see Configurable#convert()
+	 * @since 9.3
+	 */
+	private JButton convertButton;
 
 	/** the outer panel of the parameters part */
 	private JPanel outerPanel;
@@ -690,6 +704,7 @@ public class ConfigurableDialog extends ButtonDialog {
 		realOuterPanel.add(pagePanel, BorderLayout.CENTER);
 
 		layoutDefault(outerLayer, makeSaveButton(), makeCancel());
+		new DeprecationWarning("manage_configurables").addToDialog(this);
 		setDefaultSize(ButtonDialog.HUGE);
 		setLocationRelativeTo(ApplicationFrame.getApplicationFrame());
 		setModal(true);
@@ -837,22 +852,6 @@ public class ConfigurableDialog extends ButtonDialog {
 
 		configContainer = new JXTaskPaneContainer();
 		configContainer.setBackgroundPainter(new MattePainter(Color.white));
-
-		/* background color */
-		UIManager.put("TaskPane.background", LIGHTER_GRAY);
-		/* title hover color */
-		UIManager.put("TaskPane.titleOver", SwingTools.RAPIDMINER_ORANGE);
-		UIManager.put("TaskPane.specialTitleOver", SwingTools.RAPIDMINER_ORANGE);
-		/* border color */
-		UIManager.put("TaskPane.borderColor", this.getBackground());
-		/* foreground */
-		UIManager.put("TaskPane.foreground", Color.black);
-		UIManager.put("TaskPane.titleForeground", Color.black);
-		UIManager.put("TaskPane.specialTitleForeground", Color.black);
-		/* title background */
-		UIManager.put("TaskPane.specialTitleBackground", this.getBackground());
-		UIManager.put("TaskPane.titleBackgroundGradientStart", this.getBackground());
-		UIManager.put("TaskPane.titleBackgroundGradientEnd", this.getBackground());
 
 		// add local task pane
 		localTaskPane = new JXTaskPane();
@@ -1265,21 +1264,61 @@ public class ConfigurableDialog extends ButtonDialog {
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.NONE;
 
-		configActionsButton = new JButton(new ResourceActionAdapter(false, "configurable_dialog.show_actions") {
+		convertButton = new JButton(new ResourceAction(false, "configurable_dialog.convert_configurable") {
+
+			@Override
+			protected void loggedActionPerformed(ActionEvent e) {
+				// skip if we started this without configurable or is unconvertable
+				Configurable selectedConfig = getSelectedValue();
+				if (selectedConfig == null || !selectedConfig.supportsNewConnectionManagement()) {
+					return;
+				}
+				ConnectionAdapterHandler<ConnectionAdapter> handler = ConnectionAdapterHandler.getHandler(selectedConfig.getTypeId());
+				if (handler == null) {
+					return;
+				}
+				// create copy and set current values
+				Configurable configurable;
+				try {
+					configurable = handler.create(selectedConfig.getName(), selectedConfig.getParameters());
+				} catch (ConfigurationException ce) {
+					SwingTools.showSimpleErrorMessage(ConfigurableDialog.this,
+							"configuration.dialog.general", ce, ce.getMessage());
+					return;
+				}
+				localController.saveConfigurable(configurable, configParamPanel.getParameters());
+				// prevent multiple invocations
+				setEnabled(false);
+				Repository repository = selectedConfig.getSource();
+				ConfigurableDialog parent = ConfigurableDialog.this;
+				ConnectionCreationDialog conversionDialog = new ConnectionCreationDialog(parent, repository);
+				String type = handler.getType();
+				conversionDialog.preFill(type, configurable.getName());
+				conversionDialog.setConverter(configurable::convert);
+				conversionDialog.setVisible(true);
+				setEnabled(true);
+			}
+		});
+		convertButton.setEnabled(false);
+		actionPanel.add(convertButton, gbc);
+
+		gbc.gridx++;
+		configActionsButton = new JButton(new ResourceAction(false, "configurable_dialog.show_actions") {
 
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void loggedActionPerformed(ActionEvent e) {
 				// skip if we started this without configurable
-				if (getSelectedValue() == null) {
+				Configurable selectedValue = getSelectedValue();
+				if (selectedValue == null) {
 					return;
 				}
 
 				Configurable configValue = previousConfigurable;
 				if (AbstractConfigurable.class.isAssignableFrom(configValue.getClass())) {
 					AbstractConfigurable configurable = (AbstractConfigurable) configValue;
-					if (configurable.getActions() != null && configurable.getActions().size() > 0) {
+					if (configurable.getActions() != null && !configurable.getActions().isEmpty()) {
 						JPopupMenu actionMenu = new ScrollableJPopupMenu();
 						// create one menu item for each action defined by the configurable
 						for (final ConfigurableAction action : configurable.getActions()) {
@@ -1287,25 +1326,21 @@ public class ConfigurableDialog extends ButtonDialog {
 							actionItem.setIcon(SwingTools.createIcon("24/" + action.getIconName()));
 							actionItem.setText(action.getName());
 							actionItem.setToolTipText(action.getTooltip());
-							actionItem.addActionListener(new ActionListener() {
+							actionItem.addActionListener(event -> {
+								// reset last results
+								testLabel.setIcon(null);
 
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									// reset last results
-									testLabel.setIcon(null);
-
-									// store fresh changes
-									previousConfigurable = getSelectedValue();
-									if (previousConfigurable.getSource() == null) {
-										localController.saveConfigurable(previousConfigurable,
-												configParamPanel.getParameters());
-										localController.executeConfigurableAction(action);
-									} else {
-										remoteControllers.get(previousConfigurable.getSource().getName())
-												.saveConfigurable(previousConfigurable, configParamPanel.getParameters());
-										remoteControllers.get(previousConfigurable.getSource().getName())
-												.executeConfigurableAction(action);
-									}
+								// store fresh changes
+								previousConfigurable = selectedValue;
+								if (previousConfigurable.getSource() == null) {
+									localController.saveConfigurable(previousConfigurable,
+											configParamPanel.getParameters());
+									localController.executeConfigurableAction(action);
+								} else {
+									remoteControllers.get(previousConfigurable.getSource().getName())
+											.saveConfigurable(previousConfigurable, configParamPanel.getParameters());
+									remoteControllers.get(previousConfigurable.getSource().getName())
+											.executeConfigurableAction(action);
 								}
 							});
 
@@ -1323,14 +1358,15 @@ public class ConfigurableDialog extends ButtonDialog {
 
 		gbc.gridx += 1;
 		gbc.weightx = 0.0;
-		testButton = new JButton(new ResourceActionAdapter(false, "configurable_dialog.test_configurable") {
+		testButton = new JButton(new ResourceAction(false, "configurable_dialog.test_configurable") {
 
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void loggedActionPerformed(ActionEvent e) {
 				// skip if we started this without configurable
-				if (getSelectedValue() == null) {
+				Configurable selectedValue = getSelectedValue();
+				if (selectedValue == null) {
 					return;
 				}
 
@@ -1341,7 +1377,7 @@ public class ConfigurableDialog extends ButtonDialog {
 				testLabel.setIcon(null);
 
 				// store fresh changes
-				previousConfigurable = getSelectedValue();
+				previousConfigurable = selectedValue;
 				if (previousConfigurable.getSource() == null) {
 					localController.saveConfigurable(previousConfigurable, configParamPanel.getParameters());
 				} else {
@@ -1698,11 +1734,13 @@ public class ConfigurableDialog extends ButtonDialog {
 			nameLabel.setIcon(SwingTools.createIcon("24/"
 					+ ConfigurationManager.getInstance().getAbstractConfigurator(configurable.getTypeId()).getIconName()));
 
-			if (configurable != null && AbstractConfigurable.class.isAssignableFrom(configurable.getClass())) {
+			if (AbstractConfigurable.class.isAssignableFrom(configurable.getClass())) {
 				AbstractConfigurable abstractConfig = (AbstractConfigurable) configurable;
 				configActionsButton.setEnabled(abstractConfig.getActions() != null);
 				testButton.setEnabled(abstractConfig.getTestAction() != null);
 			}
+			convertButton.setEnabled(configurable.supportsNewConnectionManagement()
+					&& ConnectionAdapterHandler.getHandler(configurable.getTypeId()) != null);
 		}
 
 		updateRefreshButton();

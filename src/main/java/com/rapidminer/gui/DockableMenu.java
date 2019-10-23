@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -37,6 +37,7 @@ import com.rapidminer.gui.processeditor.results.ResultTab;
 import com.rapidminer.gui.tools.ResourceDockKey;
 import com.rapidminer.gui.tools.ResourceMenu;
 import com.rapidminer.gui.tools.ScrollableJPopupMenu;
+import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
 import com.rapidminer.tools.SystemInfoUtilities;
 import com.rapidminer.tools.SystemInfoUtilities.OperatingSystem;
@@ -188,6 +189,7 @@ public class DockableMenu extends ResourceMenu {
 			if ((PerspectiveModel.RESULT.equals(perspectiveName) && ResultDisplay.RESULT_DOCK_KEY.equals(keyName))
 					|| (PerspectiveModel.DESIGN.equals(perspectiveName) && ProcessPanel.PROCESS_PANEL_DOCK_KEY.equals(keyName))) {
 				item.setEnabled(false);
+				item.setToolTipText(I18N.getGUIMessage("gui.label.dockable.unclosable.tip"));
 			}
 			add(item);
 			ensurePopupHeight();

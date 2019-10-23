@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -40,7 +40,7 @@ public class ResourceProcessEntry extends ResourceDataEntry implements ProcessEn
 
 	@Override
 	public String retrieveXML() throws RepositoryException {
-		try (InputStream in = getResourceStream(".rmp");
+		try (InputStream in = getResourceStream(RMP_SUFFIX);
 			 InputStreamReader isr = new InputStreamReader(in)) {
 			return Tools.readTextFile(isr);
 		} catch (IOException e) {

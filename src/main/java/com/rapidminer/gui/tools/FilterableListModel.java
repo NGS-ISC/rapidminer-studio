@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -18,12 +18,15 @@
 */
 package com.rapidminer.gui.tools;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
-
+import java.util.List;
 import javax.swing.AbstractListModel;
+
+import com.rapidminer.external.alphanum.AlphanumComparator;
+import com.rapidminer.external.alphanum.AlphanumComparator.AlphanumCaseSensitivity;
 
 
 /**
@@ -35,28 +38,59 @@ import javax.swing.AbstractListModel;
  */
 public class FilterableListModel<E> extends AbstractListModel<E> implements FilterListener {
 
-	public abstract static class FilterCondition {
+	public interface FilterCondition {
 
-		public abstract boolean matches(Object o);
+		boolean matches(Object o);
+
 	}
+
+	/** @since 9.2.1 */
+	public static final AlphanumComparator STRING_COMPARATOR = new AlphanumComparator(AlphanumCaseSensitivity.INSENSITIVE);
 
 	private static final long serialVersionUID = 552254394780900171L;
 
-	private LinkedList<E> list;
+	private List<E> list;
 
-	private LinkedList<E> filteredList;
+	private List<E> filteredList;
 
 	private Comparator<E> comparator;
 
 	private String filterValue;
 
-	private LinkedList<FilterCondition> conditions = new LinkedList<FilterCondition>();
+	private List<FilterCondition> conditions = new LinkedList<>();
 
 	public FilterableListModel() {
-		list = new LinkedList<>();
-		filteredList = new LinkedList<>();
-		comparator = (e1, e2) -> e1.toString().compareTo(e2.toString());
+		this(true);
+	}
 
+	/**
+	 * Can sort if desired.
+	 *
+	 * @param sort
+	 * 		if {@code true}, will sort alpha-numerically; if {@code false} will not sort at all
+	 * @since 9.2.0
+	 */
+	public FilterableListModel(boolean sort) {
+		this(new ArrayList<>(), sort);
+
+	}
+
+	/**
+	 * Can sort if desired and starts out with the specified elements.
+	 *
+	 * @param elements
+	 * 		the elements present in the model; assumed to be already sorted if {@code sorted} is {@code true}
+	 * @param sort
+	 * 		if {@code true}, will sort alpha-numerically; if {@code false} will not sort at all
+	 * @since 9.2.1
+	 */
+	@SuppressWarnings("unchecked")
+	public FilterableListModel(List<E> elements, boolean sort) {
+		list = new ArrayList<>(elements);
+		filteredList = new ArrayList<>(elements);
+		if (sort) {
+			comparator = Comparator.comparing(Object::toString, STRING_COMPARATOR);
+		}
 	}
 
 	@Override
@@ -70,10 +104,8 @@ public class FilterableListModel<E> extends AbstractListModel<E> implements Filt
 			}
 		} else {
 			for (E e : list) {
-				if (e.toString().toLowerCase().contains(value.toLowerCase())) {
-					if (!filteredByCondition(e)) {
-						filteredList.add(e);
-					}
+				if (e.toString().toLowerCase().contains(value.toLowerCase()) && !filteredByCondition(e)) {
+					filteredList.add(e);
 				}
 			}
 		}
@@ -83,7 +115,9 @@ public class FilterableListModel<E> extends AbstractListModel<E> implements Filt
 
 	public void addElement(E e) {
 		list.add(e);
-		Collections.sort(list, comparator);
+		if (comparator != null) {
+			list.sort(comparator);
+		}
 		if (filterValue == null) {
 			filteredList.add(e);
 		} else {
@@ -91,13 +125,17 @@ public class FilterableListModel<E> extends AbstractListModel<E> implements Filt
 				filteredList.add(e);
 			}
 		}
-		Collections.sort(filteredList, comparator);
+		if (comparator != null) {
+			filteredList.sort(comparator);
+		}
 		fireContentsChanged(this, 0, filteredList.size() - 1);
 	}
 
 	public void removeElement(Object o) {
 		list.remove(o);
-		Collections.sort(list, comparator);
+		if (comparator != null) {
+			list.sort(comparator);
+		}
 		if (filteredList.contains(o)) {
 			filteredList.remove(o);
 		}
@@ -170,10 +208,8 @@ public class FilterableListModel<E> extends AbstractListModel<E> implements Filt
 			}
 		} else {
 			for (E e : list) {
-				if (e.toString().contains(filterValue)) {
-					if (!filteredByCondition(e)) {
-						filteredList.add(e);
-					}
+				if (e.toString().contains(filterValue) && !filteredByCondition(e)) {
+					filteredList.add(e);
 				}
 			}
 		}

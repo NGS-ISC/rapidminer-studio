@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -18,6 +18,7 @@
 */
 package com.rapidminer.studio.io.gui.internal.steps.configuration;
 
+import java.text.DateFormat;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 
@@ -30,6 +31,7 @@ import com.rapidminer.gui.tools.SwingTools;
 import com.rapidminer.operator.nio.model.AbstractDataResultSetReader;
 import com.rapidminer.studio.io.gui.internal.steps.AbstractWizardStep;
 import com.rapidminer.tools.LogService;
+import com.rapidminer.tools.usagestats.ActionStatisticsCollector;
 
 
 /**
@@ -100,14 +102,22 @@ public final class ConfigureDataStep extends AbstractWizardStep {
 
 		// update data source meta data with configured view meta data
 		final DataSource dataSource = wizard.getDataSource(DataSource.class);
+		DateFormat originalFormat;
+		DateFormat chosenFormat;
 		try {
+			originalFormat = dataSource.getMetadata().getDateFormat();
 			dataSource.getMetadata().configure(view.getMetaData());
+			chosenFormat = dataSource.getMetadata().getDateFormat();
 		} catch (DataSetException e) {
 			SwingTools.showSimpleErrorMessage(wizard.getDialog(),
 					"io.dataimport.step.data_column_configuration.error_configuring_metadata", e.getMessage());
 			throw new InvalidConfigurationException();
 		}
 
+		// Log guessed and chosen format
+		if (direction.equals(WizardDirection.NEXT) && !originalFormat.equals(chosenFormat)) {
+			ActionStatisticsCollector.getInstance().logGuessedDateFormat(view.getGuessedDateFormat(), chosenFormat);
+		}
 
 		// we are in the last step of configuring an operator
 		if (direction.equals(WizardDirection.NEXT) && reader != null) {

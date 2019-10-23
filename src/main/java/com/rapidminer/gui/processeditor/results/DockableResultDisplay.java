@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -356,7 +356,7 @@ public class DockableResultDisplay extends JPanel implements ResultDisplay {
 			}
 		}
 		// fix for "delete old results" dialog after breakpoint resume
-		if ((!toClose.isEmpty() || !dataTables.isEmpty()) && closeResultsPerRun) {
+		if ((!toClose.isEmpty() || !dataTables.isEmpty()) && closeResultsPerRun != null && closeResultsPerRun) {
 			DockableResultDisplay.this.dataTables.clear();
 			// updateDataTables();
 			for (Dockable dockable : toClose) {
@@ -374,9 +374,20 @@ public class DockableResultDisplay extends JPanel implements ResultDisplay {
 
 	@Override
 	public void clearAll() {
+		clearAllExcept();
+	}
+
+	@Override
+	public void clearAllExcept(String... key) {
+		if (key == null) {
+			return;
+		}
+
 		for (DockableState state : RapidMinerGUI.getMainFrame().getDockingDesktop().getContext().getDockables()) {
-			if (state.getDockable().getDockKey().getKey().startsWith(ResultTab.DOCKKEY_PREFIX)
-					|| state.getDockable().getDockKey().getKey().startsWith(ProcessLogTab.DOCKKEY_PREFIX)) {
+			List<String> exemptionKeys = Arrays.asList(key);
+			String dockKeyKey = state.getDockable().getDockKey().getKey();
+			if ((dockKeyKey.startsWith(ResultTab.DOCKKEY_PREFIX) || dockKeyKey.startsWith(ProcessLogTab.DOCKKEY_PREFIX)) && !exemptionKeys.contains(dockKeyKey)) {
+				// skipped if dock key is in exemption list
 				RapidMinerGUI.getMainFrame().getPerspectiveController().removeFromAllPerspectives(state.getDockable());
 			}
 		}

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -38,6 +38,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import com.rapidminer.RapidMiner;
 import com.rapidminer.search.event.GlobalSearchManagerListener;
 import com.rapidminer.search.event.GlobalSearchRegistryEvent;
 import com.rapidminer.tools.FileSystemService;
@@ -53,7 +54,6 @@ import com.rapidminer.tools.LogService;
 public enum GlobalSearchIndexer {
 
 	INSTANCE;
-
 
 	private Path indexDirectoryPath;
 
@@ -72,6 +72,8 @@ public enum GlobalSearchIndexer {
 		public void documentsAdded(final String categoryId, final Collection<Document> addedDocuments) {
 			GlobalSearchCategory category = GlobalSearchRegistry.INSTANCE.getSearchCategoryById(categoryId);
 			if (category != null) {
+				setAdditionalFields(addedDocuments, category);
+
 				pool.submit(() -> addDocuments(category, addedDocuments));
 			}
 		}
@@ -80,6 +82,8 @@ public enum GlobalSearchIndexer {
 		public void documentsUpdated(final String categoryId, final Collection<Document> updatedDocuments) {
 			GlobalSearchCategory category = GlobalSearchRegistry.INSTANCE.getSearchCategoryById(categoryId);
 			if (category != null) {
+				setAdditionalFields(updatedDocuments, category);
+
 				pool.submit(() -> updateDocuments(category, updatedDocuments));
 			}
 		}
@@ -91,6 +95,26 @@ public enum GlobalSearchIndexer {
 				pool.submit(() -> removeDocuments(category, removedDocuments));
 			}
 		}
+
+		/**
+		 * Sets the category and unique ID fields.
+		 *
+		 * @param documents
+		 * 		the documents for which to add the fields
+		 * @param category
+		 * 		the category for which the documents are
+		 */
+		private void setAdditionalFields(Collection<Document> documents, GlobalSearchCategory category) {
+			for (Document doc : documents) {
+				// make sure doc has necessary fields
+				if (!isDocValid(category.getCategoryId(), doc)) {
+					continue;
+				}
+				// store category id to make searching only for specific categories possible
+				doc.add(GlobalSearchUtilities.INSTANCE.createFieldForIdentifiers(GlobalSearchUtilities.FIELD_CATEGORY, category.getCategoryId()));
+				doc.add(GlobalSearchUtilities.INSTANCE.createFieldForIdentifiers(GlobalSearchHandler.FIELD_INTERNAL_UNIQUE_ID, createInternalId(category.getCategoryId(), doc)));
+			}
+		}
 	};
 
 
@@ -100,8 +124,9 @@ public enum GlobalSearchIndexer {
 	 */
 	GlobalSearchIndexer() {
 		try {
-			indexDirectoryPath = FileSystemService.getUserRapidMinerDir().toPath().resolve(FileSystemService.RAPIDMINER_INTERNAL_CACHE_SEARCH_FULL);
-
+			indexDirectoryPath = FileSystemService.getUserRapidMinerDir().toPath().resolve(FileSystemService.RAPIDMINER_INTERNAL_CACHE_SEARCH_INSTANCE_FULL);
+			RapidMiner.addShutdownHook(this::shutdown);
+			Files.createDirectory(indexDirectoryPath);
 			// set up of Lucene is done in initialize()
 		} catch (Exception e) {
 			setupError = true;
@@ -185,16 +210,6 @@ public enum GlobalSearchIndexer {
 	 * 		the documents to add to the index
 	 */
 	private void addDocuments(final GlobalSearchCategory category, final Collection<Document> documents) {
-		for (Document doc : documents) {
-			// make sure doc has necessary fields
-			if (!isDocValid(category.getCategoryId(), doc)) {
-				continue;
-			}
-			// store category id to make searching only for specific categories possible
-			doc.add(GlobalSearchUtilities.INSTANCE.createFieldForIdentifiers(GlobalSearchUtilities.FIELD_CATEGORY, category.getCategoryId()));
-			doc.add(GlobalSearchUtilities.INSTANCE.createFieldForIdentifiers(GlobalSearchHandler.FIELD_INTERNAL_UNIQUE_ID, createInternalId(category.getCategoryId(), doc)));
-		}
-
 		try {
 			indexWriter.addDocuments(documents);
 		} catch (Exception e) {
@@ -220,10 +235,6 @@ public enum GlobalSearchIndexer {
 			if (!isDocValid(category.getCategoryId(), doc)) {
 				continue;
 			}
-
-			// store category id to make searching only for specific categories possible
-			doc.add(GlobalSearchUtilities.INSTANCE.createFieldForIdentifiers(GlobalSearchUtilities.FIELD_CATEGORY, category.getCategoryId()));
-			doc.add(GlobalSearchUtilities.INSTANCE.createFieldForIdentifiers(GlobalSearchHandler.FIELD_INTERNAL_UNIQUE_ID, createInternalId(category.getCategoryId(), doc)));
 
 			IndexableField field = doc.getField(GlobalSearchHandler.FIELD_INTERNAL_UNIQUE_ID);
 			Term termToUpdate = new Term(field.name(), field.stringValue());
@@ -349,6 +360,19 @@ public enum GlobalSearchIndexer {
 	 */
 	protected IndexReader createIndexReader() throws IOException {
 		return DirectoryReader.open(indexWriter, true, false);
+	}
+
+	/**
+	 * Closes the {@link #indexWriter} and deletes the {@link #indexDirectoryPath}
+	 */
+	private void shutdown() {
+		try (IndexWriter writer = indexWriter) {
+			// null safe auto close
+		} catch (Exception e) {
+			LogService.getRoot().log(Level.SEVERE, "com.rapidminer.global_search.searchindexer.shutdown_failed", e);
+		} finally {
+			FileUtils.deleteQuietly(indexDirectoryPath.toFile());
+		}
 	}
 
 }

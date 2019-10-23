@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -101,7 +101,10 @@ public abstract class PreprocessingOperator extends AbstractDataProcessing {
 			if (replacement != null) {
 				if (replacement.size() == 1) {
 					AttributeMetaData replacementAttribute = replacement.iterator().next();
-					replacementAttribute.setRole(exampleSetMetaData.getAttributeByName(amd.getName()).getRole());
+					if(replacementAttribute.getName().equals(amd.getName())){
+						// In this case, the variable most likely remained the same. Therefore, we preserve its role.
+						replacementAttribute.setRole(exampleSetMetaData.getAttributeByName(amd.getName()).getRole());
+					}
 				}
 				exampleSetMetaData.removeAttribute(amd);
 				exampleSetMetaData.addAllAttributes(replacement);

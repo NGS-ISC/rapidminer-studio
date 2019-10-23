@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -78,7 +78,7 @@ public interface GlobalSearchableGUIProvider {
 	 * <li>Finally, it should try not exceed the width of the {@link GlobalSearchPanel}, otherwise it will simply be cut off</li>
 	 * </ul>
 	 * <p>
-	 * <strong>Attention: This method must not block! If you need more time to compute something, then usage of a {@link javax.swing.SwingWorker} is encouraged.
+	 * <strong>Attention: This method must not block! If you need more time to compute something, then usage of a {@link com.rapidminer.gui.tools.MultiSwingWorker} is encouraged.
 	 * In that case, this method should return with a placeholder UI first and then update it once the computation is done.</strong>
 	 * </p>
 	 *

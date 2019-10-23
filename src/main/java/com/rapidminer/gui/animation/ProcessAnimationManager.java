@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -96,17 +96,12 @@ public enum ProcessAnimationManager {
 	 * Creates an {@link Animation} that shows the {@link OperatorProgress} of the operator.
 	 */
 	private Animation createAnimationForOperator(final Operator operator) {
-		return new ProgressAnimation(new ProgressProvider() {
-
-			@Override
-			public int getProgress() {
-				OperatorProgress progress = operator.getProgress();
-				if (progress.isIndeterminate()) {
-					return 0;
-				}
-				return progress.getProgress();
+		return new ProgressAnimation(() -> {
+			OperatorProgress progress = operator.getProgress();
+			if (progress.isIndeterminate()) {
+				return 0;
 			}
-
+			return progress.getProgress();
 		});
 	}
 

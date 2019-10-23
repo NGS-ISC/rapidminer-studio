@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -26,7 +26,6 @@ import com.rapidminer.gui.wizards.ConfigurationListener;
 import com.rapidminer.parameter.ParameterType;
 import com.rapidminer.studio.io.data.internal.file.csv.CSVDataSourceFactory;
 import com.rapidminer.studio.io.gui.internal.DataImportWizardBuilder;
-import com.rapidminer.studio.io.gui.internal.DataImportWizardUtils;
 
 
 /**

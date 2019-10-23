@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -80,11 +80,13 @@ public final class ProcessBackgroundImageDecorator {
 
 				// center image now if desired
 				if (x == -1) {
-					double processWidth = rendererModel.getProcessWidth(process);
+					double zoomFactor = rendererModel.getZoomFactor();
+					double processWidth = zoomFactor > 1.0 ? rendererModel.getProcessWidth(process) / zoomFactor : rendererModel.getProcessWidth(process);
 					x = (int) ((processWidth - w) / 2);
 				}
 				if (y == -1) {
-					double processHeight = rendererModel.getProcessHeight(process);
+					double zoomFactor = rendererModel.getZoomFactor();
+					double processHeight = zoomFactor > 1.0 ? rendererModel.getProcessHeight(process) / zoomFactor : rendererModel.getProcessHeight(process);
 					y = (int) ((processHeight - h) / 2);
 				}
 

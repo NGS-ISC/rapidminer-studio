@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -170,12 +170,7 @@ public abstract class ResourceAction extends ConditionalAction {
 		String tip = getMessageOrNull(i18nKey + ".tip");
 		if (tip != null) {
 			if (accStroke != null) {
-				StringBuilder tipBuilder = new StringBuilder();
-				tipBuilder.append(tip);
-				tipBuilder.append(" (");
-				tipBuilder.append(SwingTools.formatKeyStroke(accStroke));
-				tipBuilder.append(")");
-				tip = tipBuilder.toString();
+				tip += " (" + SwingTools.formatKeyStroke(accStroke) + ")";
 			}
 			putValue(SHORT_DESCRIPTION,
 					i18nArgs == null || i18nArgs.length == 0 ? tip : MessageFormat.format(tip, i18nArgs));

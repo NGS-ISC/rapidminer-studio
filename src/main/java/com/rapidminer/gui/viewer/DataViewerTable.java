@@ -1,21 +1,21 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
- * 
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
+ *
  * Complete list of developers available at our web site:
- * 
+ *
  * http://rapidminer.com
- * 
+ *
  * This program is free software: you can redistribute it and/or modify it under the terms of the
  * GNU Affero General Public License as published by the Free Software Foundation, either version 3
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License along with this program.
  * If not, see http://www.gnu.org/licenses/.
-*/
+ */
 package com.rapidminer.gui.viewer;
 
 import java.awt.Color;
@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.swing.table.JTableHeader;
 
 import com.rapidminer.example.Attribute;
@@ -40,6 +39,7 @@ import com.rapidminer.gui.tools.AttributeGuiTools;
 import com.rapidminer.gui.tools.CellColorProvider;
 import com.rapidminer.gui.tools.ExtendedJTable;
 import com.rapidminer.gui.tools.ProgressThread;
+import com.rapidminer.gui.tools.SwingTools;
 import com.rapidminer.gui.viewer.metadata.model.AbstractAttributeStatisticsModel;
 import com.rapidminer.gui.viewer.metadata.model.DateTimeAttributeStatisticsModel;
 import com.rapidminer.gui.viewer.metadata.model.NominalAttributeStatisticsModel;
@@ -58,8 +58,14 @@ import com.rapidminer.tools.Tools;
 public class DataViewerTable extends ExtendedJTable {
 
 	private static final int MAXIMAL_CONTENT_LENGTH = 200;
+	
+	protected static final int MAX_ROW_HEIGHT = 30;
+	protected static final int MIN_ROW_HEIGHT = 25;
 
 	private static final long serialVersionUID = 5535239693801265693L;
+
+	/** Maximal length for displaying nominal values so that the html parsing does not take forever. */
+	private static final int MAX_VALUE_LENGTH = 350;
 
 	private int[] dateColumns;
 
@@ -80,7 +86,6 @@ public class DataViewerTable extends ExtendedJTable {
 		setAutoResizeMode(AUTO_RESIZE_OFF);
 		setFixFirstColumnForRearranging(true);
 		installToolTip();
-		setRowHeight(getRowHeight() + 5);
 
 		// handles the highlighting of the currently hovered row
 		setRowHighlighting(true);
@@ -154,6 +159,9 @@ public class DataViewerTable extends ExtendedJTable {
 		setCutOnLineBreak(true);
 		setMaximalTextLength(MAXIMAL_CONTENT_LENGTH);
 
+		final int size = exampleSet.size();
+		setRowHeight(calcRowHeight(MAX_ROW_HEIGHT, MIN_ROW_HEIGHT, size));
+
 		ProgressThread createStatsThread = new ProgressThread("update_result_statistics") {
 
 			@Override
@@ -186,7 +194,18 @@ public class DataViewerTable extends ExtendedJTable {
 
 	}
 
-	/** This method ensures that the correct tool tip for the current column is delivered. */
+	private static int calcRowHeight(int maxRowHeight, int minRowHeight, int count) {
+		if (count == 0) {
+			return maxRowHeight;
+		}
+		final int f = Integer.MAX_VALUE / count;
+		final int m = Math.max(minRowHeight, f);
+		return Math.min(maxRowHeight, m);
+	}
+
+	/**
+	 * This method ensures that the correct tool tip for the current column is delivered.
+	 */
 	@Override
 	protected JTableHeader createDefaultTableHeader() {
 		JTableHeader header = new JTableHeader(columnModel) {
@@ -265,9 +284,9 @@ public class DataViewerTable extends ExtendedJTable {
 			} else if (statsModel instanceof NominalAttributeStatisticsModel) {
 				NominalAttributeStatisticsModel nomStatsModel = (NominalAttributeStatisticsModel) statsModel;
 				toolTipText += I18N.getMessage(I18N.getGUIBundle(), I18NStatsKey + "least.label") + ": "
-						+ nomStatsModel.getLeast() + "<br>";
+						+ SwingTools.getShortenedDisplayName(nomStatsModel.getLeast(), MAX_VALUE_LENGTH) + "<br>";
 				toolTipText += I18N.getMessage(I18N.getGUIBundle(), I18NStatsKey + "most.label") + ": "
-						+ nomStatsModel.getMost() + "<br>";
+						+ SwingTools.getShortenedDisplayName(nomStatsModel.getMost(), MAX_VALUE_LENGTH) + "<br>";
 			} else if (statsModel instanceof DateTimeAttributeStatisticsModel) {
 				DateTimeAttributeStatisticsModel dateStatsModel = (DateTimeAttributeStatisticsModel) statsModel;
 				toolTipText += I18N.getMessage(I18N.getGUIBundle(), I18NStatsKey + "duration.label") + ": "

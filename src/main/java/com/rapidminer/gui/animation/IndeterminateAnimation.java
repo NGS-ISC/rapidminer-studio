@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -21,7 +21,6 @@ package com.rapidminer.gui.animation;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.geom.AffineTransform;
 
 
 /**
@@ -71,25 +70,21 @@ public class IndeterminateAnimation implements Animation {
 
 	@Override
 	public void draw(Graphics2D graphics) {
-		// store color and transformation
-		final AffineTransform transform = graphics.getTransform();
-		final Color color = graphics.getColor();
+		Graphics2D g2 = (Graphics2D) graphics.create();
 
 		// go to start position
 		long now = System.currentTimeMillis();
 		int position = (int) ((now - start) % MS_PER_TURN) / DIVISOR;
-		graphics.rotate(Math.PI * 2 / NUMBER_OF_CIRCLES * position - Math.PI / 2);
+		g2.rotate(Math.PI * 2 / NUMBER_OF_CIRCLES * position - Math.PI / 2);
 
 		// draw the circles
 		for (Color spinnerColor : SPINNER_COLORS) {
-			graphics.setColor(spinnerColor);
-			graphics.fillOval(RADIUS_FROM_ORIGIN, 0, RADIUS_SMALL_CIRCLES, RADIUS_SMALL_CIRCLES);
-			graphics.rotate(-Math.PI * 2 / NUMBER_OF_CIRCLES);
+			g2.setColor(spinnerColor);
+			g2.fillOval(RADIUS_FROM_ORIGIN, 0, RADIUS_SMALL_CIRCLES, RADIUS_SMALL_CIRCLES);
+			g2.rotate(-Math.PI * 2 / NUMBER_OF_CIRCLES);
 		}
 
-		// reset color and transformation
-		graphics.setTransform(transform);
-		graphics.setColor(color);
+		g2.dispose();
 	}
 
 	@Override

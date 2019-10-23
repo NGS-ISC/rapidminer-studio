@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -70,7 +70,7 @@ public class WindowsRegistryParameterProvider implements ParameterProvider {
 			);
 			LogService.getRoot().fine(() -> String.format("Successfully enforced %d settings from the Windows registry.", values.size()));
 			return values;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			LogService.getRoot().log(Level.WARNING, "Failed to access the Windows registry.", e);
 			return null;
 		}

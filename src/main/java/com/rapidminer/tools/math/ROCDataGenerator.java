@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -31,6 +31,7 @@ import com.rapidminer.example.AttributeTypeException;
 import com.rapidminer.example.Example;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.example.Statistics;
+import com.rapidminer.gui.ApplicationFrame;
 import com.rapidminer.gui.plotter.ScatterPlotter;
 import com.rapidminer.gui.plotter.SimplePlotterDialog;
 import com.rapidminer.gui.viewer.ROCChartPlotter;
@@ -76,11 +77,28 @@ public class ROCDataGenerator implements Serializable {
 	}
 
 	/**
-	 * Creates a list of ROC data points from the given example set. The example set must have a
-	 * binary label attribute and confidence values for both values, i.e. a model must have been
-	 * applied on the data.
+	 * Equivalent to calling {@link #createROCData(ExampleSet, boolean, ROCBias, String)} with {@code positiveClassName = null}.
 	 */
 	public ROCData createROCData(ExampleSet exampleSet, boolean useExampleWeights, ROCBias method) {
+		return createROCData(exampleSet, useExampleWeights, method, null);
+	}
+
+	/**
+	 * Creates a list of ROC data points from the given example set. The example set must have a binary label attribute
+	 * and confidence values for both values, i.e. a model must have been applied on the data.
+	 *
+	 * @param exampleSet
+	 * 		An example set with a binary label and corresponding confidence values.
+	 * @param useExampleWeights
+	 * 		If {@code true}, the weight attribute from the specified example set will used for the calculations.
+	 * @param method
+	 * 		See {@link ROCBias}.
+	 * @param positiveClassName
+	 * 		If non-{@code null}, this will be used as the positive class. Otherwise the method will fall back to using the
+	 * 		labels mapping to decide which is the positive class.
+	 * @return The generated {@link ROCData}.
+	 */
+	public ROCData createROCData(ExampleSet exampleSet, boolean useExampleWeights, ROCBias method, String positiveClassName) {
 		Attribute label = exampleSet.getAttributes().getLabel();
 		exampleSet.recalculateAttributeStatistics(label);
 		Attribute predictedLabel = exampleSet.getAttributes().getPredictedLabel();
@@ -92,8 +110,12 @@ public class ROCDataGenerator implements Serializable {
 			weightAttr = exampleSet.getAttributes().getWeight();
 		}
 		Attribute labelAttr = exampleSet.getAttributes().getLabel();
-		String positiveClassName = null;
-		int positiveIndex = label.getMapping().getPositiveIndex();
+
+		int positiveIndex = positiveClassName != null ? label.getMapping().getIndex(positiveClassName) :
+				label.getMapping().getPositiveIndex();
+		int negativeIndex = positiveIndex == label.getMapping().getPositiveIndex() ?
+				label.getMapping().getNegativeIndex() : label.getMapping().getPositiveIndex();
+
 		if (label.isNominal() && (label.getMapping().size() == 2)) {
 			positiveClassName = labelAttr.getMapping().mapIndex(positiveIndex);
 		} else if (label.isNominal() && (label.getMapping().size() == 1)) {
@@ -102,6 +124,7 @@ public class ROCDataGenerator implements Serializable {
 			throw new AttributeTypeException(
 					"Cannot calculate ROC data for non-classification labels or for labels with more than 2 classes.");
 		}
+
 		int index = 0;
 		Iterator<Example> reader = exampleSet.iterator();
 		while (reader.hasNext()) {
@@ -116,14 +139,37 @@ public class ROCDataGenerator implements Serializable {
 			}
 			calArray[index++] = wcl;
 		}
-		Arrays.sort(calArray, new WeightedConfidenceAndLabel.WCALComparator(method));
+		Arrays.sort(calArray, new WeightedConfidenceAndLabel.WCALComparator(method) {
+			/**
+			 * Compares two {@link WeightedConfidenceAndLabel}s based on their confidence using
+			 * {@link Double#compare(double, double)}. If the confidence is equal, the labels are compared
+			 * according to the chosen {@link ROCBias}.
+			 */
+			@Override
+			public int compare(WeightedConfidenceAndLabel o1, WeightedConfidenceAndLabel o2) {
+				int compi = (-1) * Double.compare(o1.getConfidence(), o2.getConfidence());
+				if (compi == 0) {
+					switch (method) {
+						case OPTIMISTIC:
+							return positiveIndex == 1 ? -Double.compare(o1.getLabel(), o2.getLabel()) : Double.compare(o1.getLabel(), o2.getLabel());
+						case PESSIMISTIC:
+							return positiveIndex == 1 ? Double.compare(o1.getLabel(), o2.getLabel()) : -Double.compare(o1.getLabel(), o2.getLabel());
+						case NEUTRAL:
+						default:
+							return Double.compare(o1.getLabel(), o2.getLabel());
+					}
+				} else {
+					return compi;
+				}
+			}
+		});
 
 		// The slope is defined by the ratio of positive examples and the
 		// different misclassification costs.
 		// The formula for the slope is (#pos / #neg) / (costs_neg / costs_pos).
 		double ratio = exampleSet.getStatistics(label, Statistics.COUNT, positiveClassName)
 				/ exampleSet.getStatistics(label, Statistics.COUNT,
-				label.getMapping().mapIndex(label.getMapping().getNegativeIndex()));
+				label.getMapping().mapIndex(negativeIndex));
 		slope = misclassificationCostsNegative / misclassificationCostsPositive;
 		slope = ratio / slope;
 
@@ -140,7 +186,6 @@ public class ROCDataGenerator implements Serializable {
 
 		ROCData rocData = new ROCData();
 		ROCPoint last = new ROCPoint(0.0d, 0.0d, 1.0d);
-		// rocData.addPoint(last); // add first point in ROC curve
 
 		// Iterate through the example set sorted by predictions.
 		// In each iteration the example with next highest confidence of being
@@ -151,8 +196,7 @@ public class ROCDataGenerator implements Serializable {
 			WeightedConfidenceAndLabel wcl = calArray[i];
 			double currentConfidence = wcl.getConfidence();
 
-			boolean mustStartNewPoint = false;
-			mustStartNewPoint |= (currentConfidence != oldConfidence);
+			boolean mustStartNewPoint = (currentConfidence != oldConfidence);
 			if (method != ROCBias.NEUTRAL) {
 				mustStartNewPoint |= (oldLabel != wcl.getLabel());
 			}
@@ -175,11 +219,6 @@ public class ROCDataGenerator implements Serializable {
 					bestThreshold = wcl.getConfidence();
 				}
 			}
-			/*
-			 * double currentConfidence = wcl.getConfidence(); if (currentConfidence !=
-			 * oldConfidence) { rocData.addPoint(last); oldConfidence = currentConfidence; } last =
-			 * new ROCPoint(fp, tp, currentConfidence);
-			 */
 
 			totalWeight += weight;
 			last = new ROCPoint(totalWeight - truePositiveWeight, truePositiveWeight, currentConfidence);
@@ -192,16 +231,6 @@ public class ROCDataGenerator implements Serializable {
 			bestThreshold = Double.NEGATIVE_INFINITY;
 			bestIsometricsTpValue = c;
 		}
-
-		// rocData.addPoint(new ROCPoint(sum - tp, tp, 0.0d)); // add last point in ROC curve
-		// add last point in ROC curve
-		// if (rocData.getNumberOfPoints() == 1) {
-		// rocData.addPoint(new ROCPoint(totalWeight - truePositiveWeight, truePositiveWeight,
-		// oldConfidence));
-		// } else {
-		// rocData.addPoint(new ROCPoint(totalWeight - truePositiveWeight, truePositiveWeight,
-		// 0.0d));
-		// }
 
 		// scaling for plotting
 		rocData.setTotalPositives(truePositiveWeight);
@@ -278,7 +307,7 @@ public class ROCDataGenerator implements Serializable {
 		dialog.setTitle("ROC Plot");
 		dialog.add(plotter);
 		dialog.setSize(500, 500);
-		dialog.setLocationRelativeTo(null);
+		dialog.setLocationRelativeTo(ApplicationFrame.getApplicationFrame());
 		dialog.setVisible(true);
 	}
 
@@ -308,17 +337,12 @@ public class ROCDataGenerator implements Serializable {
 				tpDivP = point.getTruePositives() / rocData.getTotalPositives();
 			}
 
-			/*
-			 * if (last != null) { aucSum += ((tpDivP - last[1]) * (fpDivN - last[0]) / 2.0d) +
-			 * (last[1] * (fpDivN - last[0])); }
-			 */
 			if (last != null) {
 
 				double width = fpDivN - last[0];
 				double leftHeight = last[1];
 				double rightHeight = tpDivP;
 				aucSum += leftHeight * width + (rightHeight - leftHeight) * width / 2;
-				// aucSum += leftHeight * width;
 			}
 			last = new double[]{fpDivN, tpDivP};
 		}

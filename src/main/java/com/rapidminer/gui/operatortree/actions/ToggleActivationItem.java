@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -63,12 +63,13 @@ public class ToggleActivationItem extends ToggleAction {
 			op.setEnabled(targetState);
 		}
 		if (!targetState) {
-			if(!"false".equals(ParameterService.getParameterValue(RapidMinerGUI.PROPERTY_DISCONNECT_ON_DISABLE))) {
+			final String disableBehavior = ParameterService.getParameterValue(RapidMinerGUI.PROPERTY_DISABLE_OPERATOR_CONNECTION_BEHAVIOR);
+			if ("bridged".equals(disableBehavior)) {
 				for (Operator op : actions.getSelectedOperators()) {
 					ActionUtil.doPassthroughPorts(op);
 				}
-			} else {
-				for(Operator op : actions.getSelectedOperators()) {
+			} else if ("removed".equals(disableBehavior)) {
+				for (Operator op : actions.getSelectedOperators()) {
 					op.getInputPorts().disconnectAll();
 					op.getOutputPorts().disconnectAll();
 				}

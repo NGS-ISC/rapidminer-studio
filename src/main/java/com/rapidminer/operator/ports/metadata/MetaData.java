@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -166,7 +166,7 @@ public class MetaData implements Serializable {
 	}
 
 	public String getDescription() {
-		String name = RendererService.getName(dataClass);
+		String name = getTitleForDescription();
 		if (name == null) {
 			name = dataClass.getSimpleName();
 		}
@@ -183,6 +183,17 @@ public class MetaData implements Serializable {
 			desc.append("</ul>");
 		}
 		return desc.toString();
+	}
+
+	/**
+	 * Returns the title that is used in the {@link #getDescription()} method
+	 * <p>The default implementation checks {@link RendererService#getName}</p>
+	 * <p>If this method returns {@code null}, the {@link Class#getSimpleName()} of the data class is used.</p>
+	 *
+	 * @return the description title, might contain html
+	 */
+	protected String getTitleForDescription() {
+		return RendererService.getName(dataClass);
 	}
 
 	/**
@@ -240,5 +251,23 @@ public class MetaData implements Serializable {
 
 	public void setAnnotations(Annotations annotations) {
 		this.annotations = annotations;
+	}
+
+	/**
+	 * Shrinks the values of the meta data, if possible. For now, this is only done for number of nominal values in
+	 * {@link ExampleSetMetaData}.
+	 *
+	 * @param metaData
+	 * 		the meta data to try to shrink
+	 * @since 9.3.2
+	 */
+	public static void shrinkValues(MetaData metaData) {
+		if (metaData instanceof ExampleSetMetaData) {
+			for (AttributeMetaData amd : ((ExampleSetMetaData) metaData).getAllAttributes()) {
+				if (amd.isNominal()) {
+					amd.shrinkValueSet();
+				}
+			}
+		}
 	}
 }

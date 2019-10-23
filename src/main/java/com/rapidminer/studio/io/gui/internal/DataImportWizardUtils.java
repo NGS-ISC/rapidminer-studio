@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -156,7 +156,7 @@ public final class DataImportWizardUtils {
 				// Switch to result
 				try {
 					Entry entry = entryLocation.locateEntry();
-					if (entry != null && entry instanceof IOObjectEntry) {
+					if (entry instanceof IOObjectEntry) {
 						OpenAction.showAsResult((IOObjectEntry) entry);
 					}
 				} catch (RepositoryException e) {

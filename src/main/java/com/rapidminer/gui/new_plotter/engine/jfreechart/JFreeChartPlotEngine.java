@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -37,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -116,6 +115,7 @@ import com.rapidminer.gui.new_plotter.listener.events.ValueSourceChangeEvent;
 import com.rapidminer.gui.new_plotter.listener.events.ValueSourceChangeEvent.ValueSourceChangeType;
 import com.rapidminer.gui.plotter.CoordinateTransformation;
 import com.rapidminer.gui.plotter.NullCoordinateTransformation;
+import com.rapidminer.gui.tools.MultiSwingWorker;
 import com.rapidminer.gui.tools.SwingTools;
 import com.rapidminer.tools.FontTools;
 import com.rapidminer.tools.I18N;
@@ -163,7 +163,9 @@ import com.rapidminer.tools.I18N;
  *
  *
  * @author Marius Helf, Nils Woehler
+ * @deprecated since 9.2.0
  */
+@Deprecated
 public class JFreeChartPlotEngine
 		implements PlotEngine, PlotConfigurationListener, PlotConfigurationProcessingListener, LegendItemSource {
 
@@ -298,7 +300,7 @@ public class JFreeChartPlotEngine
 
 	/**
 	 * Trigger an update of the {@link JFreeChart} that is stored in the {@link ChartPanel}. The
-	 * update is performed by using a {@link SwingWorker} thread. First the new Chart is created and
+	 * update is performed by using a {@link MultiSwingWorker} thread. First the new Chart is created and
 	 * afterwards the new chart is stored in the {@link ChartPanel}.
 	 *
 	 * @param informPlotConfigWhenDone
@@ -307,7 +309,7 @@ public class JFreeChartPlotEngine
 	private synchronized void updateChartPanelChart(final boolean informPlotConfigWhenDone) {
 		updatingChart.getAndSet(true);
 
-		SwingWorker<JFreeChart, Void> updateChartWorker = new SwingWorker<JFreeChart, Void>() {
+		MultiSwingWorker<JFreeChart, Void> updateChartWorker = new MultiSwingWorker<JFreeChart, Void>() {
 
 			@Override
 			public JFreeChart doInBackground() throws Exception {
@@ -366,7 +368,7 @@ public class JFreeChartPlotEngine
 
 		};
 
-		updateChartWorker.execute();
+		updateChartWorker.start();
 	}
 
 	/**

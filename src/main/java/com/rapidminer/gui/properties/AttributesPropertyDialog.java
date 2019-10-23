@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -18,29 +18,38 @@
 */
 package com.rapidminer.gui.properties;
 
-import com.rapidminer.gui.tools.ExtendedJScrollPane;
-import com.rapidminer.gui.tools.FilterTextField;
-import com.rapidminer.gui.tools.FilterableListModel;
-import com.rapidminer.gui.tools.ResourceAction;
-import com.rapidminer.parameter.ParameterTypeAttributes;
-import com.rapidminer.tools.I18N;
-
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
-
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.swing.Action;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+import com.rapidminer.gui.tools.AttributeGuiTools;
+import com.rapidminer.gui.tools.ExtendedJScrollPane;
+import com.rapidminer.gui.tools.FilterTextField;
+import com.rapidminer.gui.tools.FilterableListModel;
+import com.rapidminer.gui.tools.ResourceAction;
+import com.rapidminer.parameter.ParameterTypeAttributes;
+import com.rapidminer.tools.I18N;
+import com.rapidminer.tools.Ontology;
+import com.rapidminer.tools.container.Pair;
 
 
 /**
@@ -52,9 +61,11 @@ public class AttributesPropertyDialog extends PropertyDialog {
 
 	private static final long serialVersionUID = 5396725165122306231L;
 
-	private final ArrayList<String> items;
+	private final List<String> items;
 
-	private final ArrayList<String> selectedItems;
+	private final List<String> selectedItems;
+
+	private final Map<String, Integer> valueTypeMap;
 
 	private final FilterTextField itemSearchField;
 
@@ -74,12 +85,11 @@ public class AttributesPropertyDialog extends PropertyDialog {
 
 		@Override
 		public void loggedActionPerformed(ActionEvent e) {
-			int[] indices = itemList.getSelectedIndices();
+			List<String> selectedValues = itemList.getSelectedValuesList();
 			itemList.setSelectedIndices(new int[] {});
-			for (int i = indices.length - 1; i >= 0; i--) {
-				String item = itemListModel.getElementAt(indices[i]).toString();
+			for (String item : selectedValues) {
 				selectedItemListModel.addElement(item);
-				itemListModel.removeElementAt(indices[i]);
+				itemListModel.removeElement(item);
 				selectedItems.add(item);
 				items.remove(item);
 			}
@@ -95,7 +105,7 @@ public class AttributesPropertyDialog extends PropertyDialog {
 			int[] indices = selectedItemList.getSelectedIndices();
 			selectedItemList.setSelectedIndices(new int[] {});
 			for (int i = indices.length - 1; i >= 0; i--) {
-				String item = selectedItemListModel.getElementAt(indices[i]).toString();
+				String item = selectedItemListModel.getElementAt(indices[i]);
 				itemListModel.addElement(item);
 				selectedItemListModel.removeElementAt(indices[i]);
 				items.add(item);
@@ -105,29 +115,41 @@ public class AttributesPropertyDialog extends PropertyDialog {
 	};
 
 	public AttributesPropertyDialog(final ParameterTypeAttributes type, Collection<String> preselectedItems) {
+		this(type, preselectedItems, true);
+	}
+
+	/**
+	 * Creates a dialog instance.
+	 *
+	 * @param type
+	 * 		the parameter type attribute instance
+	 * @param preselectedItems
+	 * 		the preselected attribute names
+	 * @param sortAttributes
+	 * 		if {@code true}, attributes will be sorted alpha-numerically; if {@code false} attributes will not be sorted at
+	 * 		all. This is only relevant for the right (selected attributes) side, the left side (available attributes) will
+	 * 		always be sorted because it's hugely inconvenient if it isn't
+	 * @since 9.2.0
+	 */
+	public AttributesPropertyDialog(final ParameterTypeAttributes type, Collection<String> preselectedItems, boolean sortAttributes) {
 		super(type, "attributes");
 		JPanel panel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 
-		items = new ArrayList<>();
-		selectedItems = new ArrayList<>();
-
-		itemListModel = new FilterableListModel<>();
-		selectedItemListModel = new FilterableListModel<>();
-		for (String item : type.getAttributeNames()) {
-			if (!preselectedItems.contains(item)) {
-				items.add(item);
-				itemListModel.addElement(item);
-			} else {
-				selectedItems.add(item);
-				selectedItemListModel.addElement(item);
-			}
+		List<Pair<String, Integer>> attributeNamesAndTypes = type.getAttributeNamesAndTypes(false);
+		items = attributeNamesAndTypes.stream().map(Pair::getFirst).filter(att -> !preselectedItems.contains(att)).collect(Collectors.toList());
+		valueTypeMap = attributeNamesAndTypes.stream().collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
+		selectedItems = new ArrayList<>(preselectedItems);
+		if (sortAttributes) {
+			items.sort(FilterableListModel.STRING_COMPARATOR);
+			selectedItems.sort(FilterableListModel.STRING_COMPARATOR);
 		}
-		for (String item : preselectedItems) {
-			if (!type.getAttributeNames().contains(item)) {
-				selectedItems.add(item);
-				selectedItemListModel.addElement(item);
-			}
+
+		itemListModel = new FilterableListModel<>(items, false);
+		selectedItemListModel = new FilterableListModel<>(selectedItems, false);
+		if (sortAttributes) {
+			itemListModel.setComparator(FilterableListModel.STRING_COMPARATOR);
+			selectedItemListModel.setComparator(FilterableListModel.STRING_COMPARATOR);
 		}
 
 		itemSearchField = new FilterTextField();
@@ -156,7 +178,8 @@ public class AttributesPropertyDialog extends PropertyDialog {
 		itemSearchFieldPanel.add(itemSearchFieldClearButton, c);
 
 		itemList = new JList<>(itemListModel);
-		itemList.addMouseListener(new MouseListener() {
+		itemList.setCellRenderer(createAttributeTypeListRenderer());
+		itemList.addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -164,18 +187,6 @@ public class AttributesPropertyDialog extends PropertyDialog {
 					selectAttributesAction.actionPerformed(null);
 				}
 			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {}
-
-			@Override
-			public void mouseExited(MouseEvent e) {}
-
-			@Override
-			public void mousePressed(MouseEvent e) {}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {}
 		});
 		JScrollPane itemListPane = new ExtendedJScrollPane(itemList);
 		itemListPane.setBorder(createBorder());
@@ -248,7 +259,8 @@ public class AttributesPropertyDialog extends PropertyDialog {
 		selectedItemSearchFieldPanel.add(selectedItemSearchFieldClearButton, c);
 
 		selectedItemList = new JList<>(selectedItemListModel);
-		selectedItemList.addMouseListener(new MouseListener() {
+		selectedItemList.setCellRenderer(createAttributeTypeListRenderer());
+		selectedItemList.addMouseListener(new MouseAdapter() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -256,18 +268,6 @@ public class AttributesPropertyDialog extends PropertyDialog {
 					deselectAttributesAction.actionPerformed(null);
 				}
 			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {}
-
-			@Override
-			public void mouseExited(MouseEvent e) {}
-
-			@Override
-			public void mousePressed(MouseEvent e) {}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {}
 		});
 		JScrollPane selectedItemListPane = new ExtendedJScrollPane(selectedItemList);
 		selectedItemListPane.setBorder(createBorder());
@@ -323,5 +323,34 @@ public class AttributesPropertyDialog extends PropertyDialog {
 
 	public Collection<String> getSelectedAttributeNames() {
 		return selectedItems;
+	}
+
+	/**
+	 * Create a list cell renderer for lists that show attributes and their value types.
+	 *
+	 * @return the renderer, never {@code null}
+	 */
+	private DefaultListCellRenderer createAttributeTypeListRenderer() {
+		return new DefaultListCellRenderer() {
+
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				String stringValue = (String) value;
+				Integer type = valueTypeMap.get(stringValue);
+				if (type != null) {
+					Icon icon;
+					if (Ontology.ATTRIBUTE_VALUE_TYPE.isA(type, Ontology.NUMERICAL)) {
+						icon = AttributeGuiTools.NUMERICAL_COLUMN_ICON;
+					} else if (Ontology.ATTRIBUTE_VALUE_TYPE.isA(type, Ontology.NOMINAL)) {
+						icon = AttributeGuiTools.NOMINAL_COLUMN_ICON;
+					} else {
+						icon = AttributeGuiTools.DATE_COLUMN_ICON;
+					}
+					label.setIcon(icon);
+				}
+				return label;
+			}
+		};
 	}
 }
