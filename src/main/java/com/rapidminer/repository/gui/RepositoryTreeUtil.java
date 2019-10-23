@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -93,8 +93,9 @@ public class RepositoryTreeUtil {
 			TreePath path = tree.getPathForRow(i);
 			boolean isExpanded = tree.isExpanded(path);
 			boolean isSelected = tree.isPathSelected(path);
-			if (isExpanded ||isSelected) {
-				Entry entry = (Entry) path.getLastPathComponent();
+			Object entryObject = path.getLastPathComponent();
+			if ((isExpanded || isSelected) && entryObject instanceof Entry) {
+				Entry entry = (Entry) entryObject;
 				String absoluteLocation = entry.getLocation().getAbsoluteLocation();
 				if (isExpanded) {
 					expandedNodes.add(absoluteLocation);

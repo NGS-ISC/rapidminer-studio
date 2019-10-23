@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
+import com.rapidminer.RapidMiner;
 import com.rapidminer.gui.ApplicationFrame;
 import com.rapidminer.gui.tools.dialogs.ButtonDialog;
 
@@ -49,13 +50,15 @@ public class ProgressThreadDialog extends ButtonDialog {
 
 	/** Create dialog in EDT */
 	static {
-		SwingTools.invokeLater(new Runnable() {
+		if (!RapidMiner.getExecutionMode().isHeadless()) {
+			SwingTools.invokeLater(new Runnable() {
 
-			@Override
-			public void run() {
-				INSTANCE = new ProgressThreadDialog();
-			}
-		});
+				@Override
+				public void run() {
+					INSTANCE = new ProgressThreadDialog();
+				}
+			});
+		}
 	}
 
 	/** mapping between ProgressThread and the UI panel for it */
@@ -90,7 +93,7 @@ public class ProgressThreadDialog extends ButtonDialog {
 
 			@Override
 			public void progressThreadFinished(ProgressThread pg) {
-				updatePanelInEDT();
+				updatePanelAndRemoveInEDT(pg);
 				updateUI();
 
 				MAPPING_PG_TO_UI.remove(pg);
@@ -98,7 +101,7 @@ public class ProgressThreadDialog extends ButtonDialog {
 
 			@Override
 			public void progressThreadCancelled(ProgressThread pg) {
-				updatePanelInEDT();
+				updatePanelAndRemoveInEDT(pg);
 				updateUI();
 
 				MAPPING_PG_TO_UI.remove(pg);
@@ -109,6 +112,15 @@ public class ProgressThreadDialog extends ButtonDialog {
 			 */
 			private void updatePanelInEDT() {
 				SwingUtilities.invokeLater(() -> updateThreadPanel(false));
+			}
+
+			private void updatePanelAndRemoveInEDT(ProgressThread pg) {
+				SwingUtilities.invokeLater(() -> {
+					updateThreadPanel(false);
+					// remove pg here again, otherwise it can happen that it is first removed by progressThreadFinished
+					// and then added again by updateThreadPanel, leading to a memory leak
+					MAPPING_PG_TO_UI.remove(pg);
+				});
 			}
 
 		});
@@ -192,7 +204,7 @@ public class ProgressThreadDialog extends ButtonDialog {
 		if (ProgressThread.isEmpty()) {
 			// close dialog if not opened by user
 			if (!openedByUser) {
-				SwingUtilities.invokeLater(ProgressThreadDialog.this::dispose);
+				SwingTools.invokeLater(ProgressThreadDialog.this::dispose);
 			}
 
 			// hide status bar
@@ -203,7 +215,7 @@ public class ProgressThreadDialog extends ButtonDialog {
 			if (!ProgressThread.isForegroundRunning()) {
 				// close dialog if not opened by user
 				if (!openedByUser) {
-					SwingUtilities.invokeLater(ProgressThreadDialog.this::dispose);
+					SwingTools.invokeLater(ProgressThreadDialog.this::dispose);
 				}
 			}
 
@@ -282,7 +294,7 @@ public class ProgressThreadDialog extends ButtonDialog {
 	}
 
 	/**
-	 * Singleton access to the {@link ProgressThreadDialog}.
+	 * Singleton access to the {@link ProgressThreadDialog} or {@code null} if running in headless mode
 	 */
 	public static ProgressThreadDialog getInstance() {
 		return INSTANCE;

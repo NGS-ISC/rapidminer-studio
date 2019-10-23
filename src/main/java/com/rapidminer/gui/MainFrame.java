@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -21,10 +21,9 @@ package com.rapidminer.gui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -39,6 +38,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -50,13 +50,13 @@ import com.rapidminer.Process;
 import com.rapidminer.ProcessLocation;
 import com.rapidminer.ProcessStorageListener;
 import com.rapidminer.RapidMiner;
-import com.rapidminer.RapidMiner.ExitMode;
 import com.rapidminer.core.io.data.source.DataSourceFactoryRegistry;
 import com.rapidminer.core.license.ProductConstraintManager;
 import com.rapidminer.gui.actions.AboutAction;
 import com.rapidminer.gui.actions.Actions;
 import com.rapidminer.gui.actions.AutoWireAction;
 import com.rapidminer.gui.actions.BrowseAction;
+import com.rapidminer.gui.actions.CreateConnectionAction;
 import com.rapidminer.gui.actions.ExitAction;
 import com.rapidminer.gui.actions.ExportProcessAction;
 import com.rapidminer.gui.actions.ImportDataAction;
@@ -275,6 +275,15 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 
 	private static final long serialVersionUID = 1L;
 
+	/** The property name for the max row check scale modifier for HTML5 visualizations */
+	public static final String PROPERTY_RAPIDMINER_GUI_VISUALIZATIONS_MAX_ROWS_MODIFIER = "rapidminer.gui.visualizations.max_row_modifier";
+
+	/** The property name whether legacy simple charts should still be hidden in the results */
+	public static final String PROPERTY_RAPIDMINER_GUI_PLOTTER_SHOW_LEGACY_SIMPLE_CHARTS = "rapidminer.gui.plotter.legacy.simple_charts.show";
+
+	/** The property name whether legacy simple charts should still be shown in the results */
+	public static final String PROPERTY_RAPIDMINER_GUI_PLOTTER_SHOW_LEGACY_ADVANCED_CHARTS = "rapidminer.gui.plotter.legacy.advanced_charts.show";
+
 	/** The property name for &quot;The pixel size of each plot in matrix plots.&quot; */
 	public static final String PROPERTY_RAPIDMINER_GUI_PLOTTER_MATRIXPLOT_SIZE = "rapidminer.gui.plotter.matrixplot.size";
 
@@ -389,6 +398,8 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 	public final transient Action VALIDATE_ACTION = new ValidateProcessAction();
 	public final transient ToggleAction VALIDATE_AUTOMATICALLY_ACTION = new ValidateAutomaticallyAction();
 
+	public final transient Action CREATE_CONNECTION = new CreateConnectionAction();
+
 	private transient JButton runRemoteToolbarButton;
 
 	public final transient Action NEW_PERSPECTIVE_ACTION = new NewPerspectiveAction();
@@ -399,10 +410,10 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 	public final transient Action MANAGE_CONFIGURABLES_ACTION = new ManageConfigurablesAction();
 
 	public final transient Action TUTORIAL_ACTION = new TutorialAction();
-	public final transient Action BROWSE_VIDEOS_ACTION = new BrowseAction("toolbar_resources.help_videos", URI.create("http://redirects.rapidminer.com/app/studio/8.1/getting-started-video/main_tool_bar"));
-	public final transient Action BROWSE_COMMUNITY_ACTION = new BrowseAction("toolbar_resources.help_forum", URI.create("http://redirects.rapidminer.com/app/studio/7.2/forum/main_tool_bar"));
-	public final transient Action BROWSE_DOCUMENTATION_ACTION = new BrowseAction("toolbar_resources.documentation", URI.create("http://redirects.rapidminer.com/app/studio/7.2/documentation/main_tool_bar"));
-	public final transient Action BROWSE_SUPPORT_ACTION = new BrowseAction("toolbar_resources.support", URI.create("http://redirects.rapidminer.com/app/studio/7.2/support/main_tool_bar"));
+	public final transient Action BROWSE_VIDEOS_ACTION = new BrowseAction("toolbar_resources.help_videos", URI.create("https://redirects.rapidminer.com/app/studio/8.1/getting-started-video/main_tool_bar"));
+	public final transient Action BROWSE_COMMUNITY_ACTION = new BrowseAction("toolbar_resources.help_forum", URI.create("https://redirects.rapidminer.com/app/studio/7.2/forum/main_tool_bar"));
+	public final transient Action BROWSE_DOCUMENTATION_ACTION = new BrowseAction("toolbar_resources.documentation", URI.create("https://redirects.rapidminer.com/app/studio/7.2/documentation/main_tool_bar"));
+	public final transient Action BROWSE_SUPPORT_ACTION = new BrowseAction("toolbar_resources.support", URI.create("https://redirects.rapidminer.com/app/studio/7.2/support/main_tool_bar"));
 	public final transient Action ABOUT_ACTION = new AboutAction();
 
 	// --------------------------------------------------------------------------------
@@ -472,6 +483,8 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 
 	private final JMenu connectionsMenu;
 
+	private final JMenu legacyConnectionsMenu;
+
 	private final JMenu viewMenu;
 
 	private final JMenu helpMenu;
@@ -524,22 +537,17 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 		// check all ConditionalActions on perspective switch
 		getActions().enableActions();
 
-		// toggle result display and process panels properties depending on shwon perspective
-		boolean isDesign = PerspectiveModel.DESIGN.equals(perspective.getName());
-		boolean isResult = PerspectiveModel.RESULT.equals(perspective.getName());
-		processPanel.getDockKey().setCloseEnabled(!isDesign);
-		processPanel.getDockKey().setAutoHideEnabled(!isDesign);
-		resultDisplay.getDockKey().setCloseEnabled(!isResult);
-		resultDisplay.getDockKey().setAutoHideEnabled(!isResult);
+		SwingTools.invokeLater(() -> {
 
-		// try to request focus for the process renderer so actions are enabled after
-		// perspective switch and ProcessRenderer is visible
-		if (getProcessPanel().getProcessRenderer().isShowing()) {
-			getProcessPanel().getProcessRenderer().requestFocusInWindow();
-		}
+			// try to request focus for the process renderer so actions are enabled after
+			// perspective switch and ProcessRenderer is visible
+			if (getProcessPanel().getProcessRenderer().isShowing()) {
+				getProcessPanel().getProcessRenderer().requestFocusInWindow();
+			}
+		});
 	};
 
-	private long lastUpdate = 0;
+	private volatile long lastUpdate = 0;
 	private final Timer updateTimer = new Timer(500, e -> updateProcessNow()) {
 
 		private static final long serialVersionUID = 1L;
@@ -685,6 +693,8 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 		toolBarContainer.add(dockingDesktop, BorderLayout.CENTER);
 
 		systemMonitor.startMonitorThread();
+		processPanel.getDockKey().setCloseEnabled(false);
+		resultDisplay.getDockKey().setCloseEnabled(false);
 		resultDisplay.init(this);
 
 		// menu bar
@@ -798,7 +808,12 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 		// connections menu
 		connectionsMenu = new ResourceMenu("connections");
 		connectionsMenu.setMargin(menuBarInsets);
+		connectionsMenu.add(CREATE_CONNECTION);
+		connectionsMenu.addSeparator();
 		menuBar.add(connectionsMenu);
+
+		// legacy connections menu
+		legacyConnectionsMenu = new ResourceMenu("legacy_connections");
 
 		// help menu
 		helpMenu = new ResourceMenu("help");
@@ -860,9 +875,17 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 
 		// Configurators (if they exist)
 		if (!ConfigurationManager.getInstance().isEmpty()) {
-			connectionsMenu.addSeparator();
-			connectionsMenu.add(MANAGE_CONFIGURABLES_ACTION);
+			legacyConnectionsMenu.add(MANAGE_CONFIGURABLES_ACTION);
 		}
+
+		// Add legacy menu (if not empty)
+		if (legacyConnectionsMenu.getMenuComponentCount() > 0) {
+			connectionsMenu.addSeparator();
+			connectionsMenu.add(legacyConnectionsMenu);
+		}
+
+		// remove duplicated separators
+		removeDuplicatedSeparators(connectionsMenu);
 
 		// add export and exit as last file menu actions
 		fileMenu.addSeparator();
@@ -1233,8 +1256,20 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 				// location string exceeding arbitrary number will be cut into repository name +
 				// /.../ + process name
 				if (locString.length() > MAX_LOCATION_TITLE_LENGTH) {
-					locString = RepositoryLocation.REPOSITORY_PREFIX + process.getRepositoryLocation().getRepositoryName()
-							+ RepositoryLocation.SEPARATOR + "..." + RepositoryLocation.SEPARATOR + loc.getShortName();
+					if (process.getRepositoryLocation() != null) {
+						locString = RepositoryLocation.REPOSITORY_PREFIX + process.getRepositoryLocation().getRepositoryName()
+								+ RepositoryLocation.SEPARATOR + "..." + RepositoryLocation.SEPARATOR + loc.getShortName();
+					} else {
+						// build a string like /home/jdoe/.../processes/process.rmp
+						int maxPartLength = MAX_LOCATION_TITLE_LENGTH / 2;
+						// determine length of the first part
+						int firstPartEnd = locString.lastIndexOf(File.separator, maxPartLength);
+						// + 1 to include the separator char
+						firstPartEnd = firstPartEnd == -1 ? maxPartLength : firstPartEnd + 1;
+						int secondPartStart = locString.indexOf(File.separator, locString.length() - maxPartLength);
+						secondPartStart = secondPartStart == -1 ? locString.length() - maxPartLength : secondPartStart;
+						locString = new StringBuilder().append(locString, 0, firstPartEnd).append("...").append(locString, secondPartStart, locString.length()).toString();
+					}
 				}
 			} else {
 				locString = "<new process";
@@ -1610,6 +1645,14 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 	}
 
 	/**
+	 * This returns the legacy connections menu to change menu entries
+	 * @since 9.3
+	 */
+	public JMenu getLegacyConnectionsMenu() {
+		return legacyConnectionsMenu;
+	}
+
+	/**
 	 * This returns the settings menu to change menu entries.
 	 *
 	 * @deprecated the tools menu was split into multiple menus. Use {@link #getConnectionsMenu()}
@@ -1767,5 +1810,24 @@ public class MainFrame extends ApplicationFrame implements WindowListener {
 
 		// no showstopper
 		return false;
+	}
+
+	/**
+	 * Removes duplicated separators from a JMenu
+	 *
+	 * @param menu the menu
+	 */
+	private static void removeDuplicatedSeparators(JMenu menu) {
+		int separatorCount = 0;
+		for (Component component : menu.getMenuComponents()) {
+			if (component instanceof JPopupMenu.Separator) {
+				separatorCount++;
+			} else {
+				separatorCount = 0;
+			}
+			if (separatorCount > 1) {
+				menu.remove(component);
+			}
+		}
 	}
 }

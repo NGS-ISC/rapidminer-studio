@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -20,6 +20,7 @@ package com.rapidminer.gui.look;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -117,7 +118,7 @@ public class RapidLookAndFeel extends BasicLookAndFeel {
 		// enables AntiAliasing if AntiAliasing is enabled in the OS
 		// EXCEPT for key "Menu.opaque" which will glitch out JMenues
 		UIDefaults lookAndFeelDefaults = UIManager.getLookAndFeelDefaults();
-		Hashtable<Object, Object> copy = new Hashtable<>(lookAndFeelDefaults);
+		Hashtable<Object, Object> copy = new Hashtable<>(lookAndFeelDefaults != null ? lookAndFeelDefaults : Collections.emptyMap());
 		for (Object key : copy.keySet()) {
 			if (!String.valueOf(key).equals("Menu.opaque")) {
 				table.put(key, lookAndFeelDefaults.get(key));
@@ -491,6 +492,17 @@ public class RapidLookAndFeel extends BasicLookAndFeel {
 						"startEditing" }),
 				// TableHeader
 				"TableHeader.font", fontDialog12Bold, "TableHeader.background", Colors.PANEL_BACKGROUND,
+				// JXTaskPane
+				"TaskPane.background", Colors.WINDOW_BACKGROUND,
+				"TaskPane.specialTitleBackground", Colors.PANEL_BACKGROUND,
+				"TaskPane.titleBackgroundGradientStart", Colors.PANEL_BACKGROUND,
+				"TaskPane.titleBackgroundGradientEnd", Colors.PANEL_BACKGROUND,
+				"TaskPane.borderColor", Colors.PANEL_BACKGROUND,
+				"TaskPane.titleOver", Colors.RAPIDMINER_ORANGE,
+				"TaskPane.specialTitleOver", Colors.RAPIDMINER_ORANGE,
+				"TaskPane.foreground", Colors.BLACK,
+				"TaskPane.titleForeground", Colors.BLACK,
+				"TaskPane.specialTitleForeground", Colors.BLACK,
 				// TextField
 				"TextField.margin", textFieldMargin, "TextField.font", fontDialog12, "TextField.caretForeground", caretColor,
 				"TextField.focusInputMap", fieldInputMap, "TextField.background", Colors.WHITE, "FormattedTextField.margin",
@@ -584,7 +596,9 @@ public class RapidLookAndFeel extends BasicLookAndFeel {
 		Object[] uiDefaults = { "SpinnerUI", "com.rapidminer.gui.look.ui.SpinnerUI", "FileChooserUI",
 				"com.rapidminer.gui.look.fc.FileChooserUI", "ToolBarUI", "com.rapidminer.gui.look.ui.ToolBarUI",
 				"DesktopIconUI", "com.rapidminer.gui.look.ui.DesktopIconUI", "SliderUI",
-				"com.rapidminer.gui.look.ui.SliderUI", "CheckBoxUI", "com.rapidminer.gui.look.ui.CheckBoxUI", "ComboBoxUI",
+				"com.rapidminer.gui.look.ui.SliderUI", "LinearGradientColorSliderUI", "com.rapidminer.gui.tools.color.LinearGradientColorSliderUI",
+				"DistinctColorSliderUI", "com.rapidminer.gui.tools.color.DistinctColorSliderUI",
+				"CheckBoxUI", "com.rapidminer.gui.look.ui.CheckBoxUI", "ComboBoxUI",
 				"com.rapidminer.gui.look.ui.ComboBoxUI", "RadioButtonUI", "com.rapidminer.gui.look.ui.RadioButtonUI",
 				"TextFieldUI", "com.rapidminer.gui.look.ui.TextFieldUI", "FormattedTextFieldUI",
 				"com.rapidminer.gui.look.ui.FormattedTextFieldUI", "PasswordFieldUI",

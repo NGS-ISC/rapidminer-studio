@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -108,7 +108,7 @@ public final class ProcessDrawUtils {
 	 * 		the extension for the registered group color
 	 */
 	public static void registerAdditionalGroupColors(final String groupProperties, final String pluginName,
-			final ClassLoader classLoader, final Plugin provider) {
+													 final ClassLoader classLoader, final Plugin provider) {
 		SwingTools.registerAdditionalGroupColors(groupProperties, pluginName, classLoader, provider);
 	}
 
@@ -125,7 +125,7 @@ public final class ProcessDrawUtils {
 	 * 		the extension to registered IOObjects for
 	 */
 	public static void registerAdditionalObjectColors(final String groupProperties, final String pluginName,
-			final ClassLoader classLoader, final Plugin provider) {
+													  final ClassLoader classLoader, final Plugin provider) {
 		try {
 			IO_CLASS_TO_COLOR_MAP.parseProperties(groupProperties, "io.", ".color", classLoader, provider);
 		} catch (IOException e) {
@@ -180,7 +180,7 @@ public final class ProcessDrawUtils {
 			return Color.LIGHT_GRAY;
 		}
 
-		IOObject data = port.getAnyDataOrNull();
+		IOObject data = port.getRawData();
 		MetaData md = null;
 		try {
 			md = port.getMetaData(MetaData.class);

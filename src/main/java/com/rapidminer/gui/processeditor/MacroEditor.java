@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -180,8 +180,13 @@ public class MacroEditor extends JPanel {
 	}
 
 	private void addMacro() {
+		int previousMacroCount = context.getMacros().size();
 		context.addMacro(new Pair<>("", ""));
-		macroModel.fireAdd();
+
+		// if an empty macro already existed, nothing will change, so we don't want to fire an update here
+		if (context.getMacros().size() > previousMacroCount) {
+			macroModel.fireAdd();
+		}
 	}
 
 	private void removeMacros() {

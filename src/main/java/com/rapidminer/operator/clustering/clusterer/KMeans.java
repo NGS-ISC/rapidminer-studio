@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -125,7 +125,7 @@ public class KMeans extends RMAbstractClusterer {
 			// init centroids by assigning one single, unique example!
 			int i = 0;
 			if (kpp) {
-				KMeanspp kmpp = new KMeanspp(getOperatorDescription(), k, exampleSet, measure, generator);
+				KMeanspp kmpp = new KMeanspp(this, k, exampleSet, measure, generator);
 				int[] hilf = kmpp.getStart();
 				int i1 = 0;
 

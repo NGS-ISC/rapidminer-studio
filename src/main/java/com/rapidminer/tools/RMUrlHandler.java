@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -35,14 +35,16 @@ import javax.swing.event.HyperlinkListener;
 import com.rapidminer.RapidMiner;
 import com.rapidminer.RepositoryProcessLocation;
 import com.rapidminer.gui.MainFrame;
+import com.rapidminer.gui.OperatorDocumentationBrowser;
 import com.rapidminer.gui.Perspective;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.actions.OpenAction;
 import com.rapidminer.gui.dialog.BrowserUnavailableDialogFactory;
 import com.rapidminer.gui.security.PasswordManager;
+import com.rapidminer.gui.tools.DockingTools;
 import com.rapidminer.gui.tools.dialogs.ButtonDialog;
-import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.OperatorCreationException;
+import com.rapidminer.repository.ConnectionEntry;
 import com.rapidminer.repository.Entry;
 import com.rapidminer.repository.IOObjectEntry;
 import com.rapidminer.repository.MalformedRepositoryLocationException;
@@ -112,6 +114,7 @@ public class RMUrlHandler {
 	private static final String SCHEMA_RAPIDMINER = "rapidminer";
 	private static final String RAPIDMINER_SCHEMA_EXTENSION = "extension";
 	private static final String RAPIDMINER_SCHEMA_REPOSITORY = "repository";
+	private static final String RAPIDMINER_SCHEMA_OPERATOR_TUTORIAL_PROCESS = "operator_tutorial_process";
 	private static final String INTERNAL_SCHEMA_OPDOC = "opdoc/";
 	private static final String INTERNAL_SCHEMA_OPERATOR = "operator/";
 	private static final String SCHEMA_HTTP = "http://";
@@ -329,10 +332,9 @@ public class RMUrlHandler {
 		if (suffix.startsWith(INTERNAL_SCHEMA_OPDOC)) {
 			// operator doc display change
 			String opName = suffix.substring(INTERNAL_SCHEMA_OPDOC.length());
-			Operator op;
 			try {
-				op = OperatorService.createOperator(opName);
-				RapidMinerGUI.getMainFrame().getOperatorDocViewer().setDisplayedOperator(op);
+				RapidMinerGUI.getMainFrame().getOperatorDocViewer().setDisplayedOperator(OperatorService.createOperator(opName));
+				DockingTools.openDockable(OperatorDocumentationBrowser.OPERATOR_HELP_DOCK_KEY);
 			} catch (OperatorCreationException e) {
 				LogService.getRoot().log(Level.WARNING, I18N.getMessage(LogService.getRoot().getResourceBundle(),
 						"com.rapidminer.tools.RMUrlHandler.creating_operator_error", opName), e);
@@ -418,6 +420,8 @@ public class RMUrlHandler {
 						if (RapidMinerGUI.getMainFrame().close()) {
 							OpenAction.open(new RepositoryProcessLocation(location), true);
 						}
+					} else if (entry instanceof ConnectionEntry) {
+						OpenAction.showConnectionInformationDialog((ConnectionEntry) entry);
 					} else if (entry instanceof IOObjectEntry) {
 						OpenAction.showAsResult((IOObjectEntry) entry);
 					} else {
@@ -427,6 +431,17 @@ public class RMUrlHandler {
 				} catch (RepositoryException | MalformedRepositoryLocationException e) {
 					LogService.getRoot().log(Level.WARNING, "com.rapidminer.gui.RapidMinerGUI.rapidminer_url_repo_broken_location",
 							new Object[] { locString });
+				}
+				break;
+			case RAPIDMINER_SCHEMA_OPERATOR_TUTORIAL_PROCESS:
+				try {
+					int lastColumnPos = components[1].lastIndexOf(':');
+					String operatorKey = components[1].substring(0, lastColumnPos);
+					int tutorialPos = Integer.parseInt(components[1].substring(lastColumnPos + 1));
+					OperatorDocumentationBrowser.openTutorialProcess(operatorKey, tutorialPos);
+				} catch (Exception e) {
+					LogService.getRoot().log(Level.WARNING, "com.rapidminer.gui.RapidMinerGUI.unknown_rapidminer_url",
+							new Object[]{urlStr});
 				}
 				break;
 			default:

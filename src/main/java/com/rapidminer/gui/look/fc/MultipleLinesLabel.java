@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -63,7 +63,7 @@ public class MultipleLinesLabel extends JComponent implements SwingConstants {
 
 	private FontMetrics fontMetrics;
 
-	private Vector<String> vector;
+	private Vector<String> vector = new Vector<>();
 
 	private boolean needUpdate = true;
 

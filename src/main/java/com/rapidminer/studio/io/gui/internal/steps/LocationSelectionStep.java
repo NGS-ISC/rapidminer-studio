@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -97,7 +97,7 @@ public final class LocationSelectionStep extends AbstractWizardStep {
 		final DataSource dataSource = wizard.getDataSource(DataSource.class);
 
 		// update view content
-		viewWrapper.removeAll();
+		SwingTools.invokeAndWait(() -> viewWrapper.removeAll());
 		if (dataSource != null) {
 
 			SwingTools.invokeAndWait(() -> {

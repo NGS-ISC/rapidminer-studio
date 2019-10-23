@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -1042,7 +1042,10 @@ public class FileList extends JPanel implements PropertyChangeListener {
 		updateTablePanelSize();
 
 		for (Item item : selectedFilesVector) {
-			this.tablePanel.updateSelectionInterval(this.visibleItemsList.indexOf(item), true);
+			int index = this.visibleItemsList.indexOf(item);
+			if (index >= 0) {
+				this.tablePanel.updateSelectionInterval(index, true);
+			}
 		}
 	}
 

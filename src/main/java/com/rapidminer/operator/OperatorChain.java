@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -35,6 +35,7 @@ import com.rapidminer.operator.ports.impl.OutputPortsImpl;
 import com.rapidminer.operator.ports.metadata.MDTransformer;
 import com.rapidminer.operator.ports.metadata.Precondition;
 import com.rapidminer.tools.DelegatingObserver;
+import com.rapidminer.tools.ListenerTools;
 import com.rapidminer.tools.Observer;
 import com.rapidminer.tools.Tools;
 import com.rapidminer.tools.patterns.Visitor;
@@ -396,19 +397,13 @@ public abstract class OperatorChain extends Operator {
 	/** Invokes the super method and the method for all children. */
 	@Override
 	public void processStarts() throws OperatorException {
-		super.processStarts();
-		for (ExecutionUnit unit : subprocesses) {
-			unit.processStarts();
-		}
+		ListenerTools.informAllAndThrow(x -> super.processStarts(), Arrays.asList(subprocesses), ExecutionUnit::processStarts);
 	}
 
 	/** Invokes the super method and the method for all children. */
 	@Override
 	public void processFinished() throws OperatorException {
-		super.processFinished();
-		for (ExecutionUnit unit : subprocesses) {
-			unit.processFinished();
-		}
+		ListenerTools.informAllAndThrow(x -> super.processFinished(), Arrays.asList(subprocesses), ExecutionUnit::processFinished);
 	}
 
 	// -------------------- implemented abstract methods
@@ -579,12 +574,19 @@ public abstract class OperatorChain extends Operator {
 
 	@Override
 	public void notifyRenaming(String oldName, String newName) {
-		for (ExecutionUnit subprocess : subprocesses) {
-			for (Operator child : subprocess.getOperators()) {
-				child.notifyRenaming(oldName, newName);
-			}
-		}
-		getParameters().notifyRenaming(oldName, newName);
+		Arrays.stream(subprocesses).forEach(unit -> unit.getOperators().forEach(op -> op.notifyRenaming(oldName, newName)));
+		super.notifyRenaming(oldName, newName);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * Also all inner operators will be notified.
+	 */
+	@Override
+	public void notifyReplacing(String oldName, Operator oldOp, String newName, Operator newOp) {
+		Arrays.stream(subprocesses).forEach(unit -> unit.getOperators().forEach(op -> op.notifyReplacing(oldName, oldOp, newName, newOp)));
+		super.notifyReplacing(oldName, oldOp, newName, newOp);
 	}
 
 	@Override

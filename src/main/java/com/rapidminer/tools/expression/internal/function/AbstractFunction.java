@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -111,11 +111,15 @@ public abstract class AbstractFunction implements Function {
 	 * @return {@code true} if the result of this function is constant
 	 */
 	protected boolean isResultConstant(ExpressionEvaluator... inputEvaluators) {
-		boolean isConstant = isConstantOnConstantInput();
-		for (ExpressionEvaluator input : inputEvaluators) {
-			isConstant = isConstant && input.isConstant();
+		if (!isConstantOnConstantInput()) {
+			return false;
 		}
-		return isConstant;
+		for (ExpressionEvaluator inputEvaluator : inputEvaluators) {
+			if (!inputEvaluator.isConstant()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

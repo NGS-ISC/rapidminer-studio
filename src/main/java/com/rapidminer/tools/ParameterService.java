@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -204,12 +204,7 @@ public class ParameterService {
 		}
 		parameter.setValue(value);
 
-		try {
-			informListenerOfChange(key, value);
-		} catch (Throwable e) {
-			LogService.getRoot().log(Level.WARNING, I18N.getMessage(LogService.getRoot().getResourceBundle(),
-					"com.rapidminer.tools.ParameterService.listener_error", e));
-		}
+		informListenerOfChange(key, value);
 	}
 
 	/**
@@ -409,12 +404,13 @@ public class ParameterService {
 		for (Entry<String, Parameter> entry : PARAMETER_MAP.entrySet()) {
 			Parameter parameter = entry.getValue();
 			String value = parameter.getValue();
+			String key = entry.getKey();
 			// don't store enforced parameters
-			if (isValueEnforced(entry.getKey())) {
-				value = ENFORCED_PARAMETER.getOriginalValue(entry.getKey());
+			if (isValueEnforced(key)) {
+				value = ENFORCED_PARAMETER.getOriginalValue(key);
 			}
 			if (value != null) {
-				properties.put(entry.getKey(), value);
+				properties.put(key, value);
 			}
 		}
 		BufferedOutputStream out = null;
@@ -447,17 +443,7 @@ public class ParameterService {
 	 * without loosing the data.
 	 */
 	public static void registerParameter(ParameterType type) {
-		// if it is protected, don't allow an overwrite
-		if (RapidMiner.isParameterProtected(type.getKey())) {
-			return;
-		}
-		Parameter parameter = PARAMETER_MAP.get(type.getKey());
-		if (parameter == null) {
-			parameter = new Parameter(type);
-			PARAMETER_MAP.put(type.getKey(), parameter);
-		} else {
-			parameter.setType(type);
-		}
+		registerParameter(type,null, new ParameterScope());
 	}
 
 	/**
@@ -479,24 +465,34 @@ public class ParameterService {
 		}
 		Parameter parameter = PARAMETER_MAP.get(type.getKey());
 		if (parameter == null) {
-			parameter = new Parameter(type, group);
+			parameter = group == null ? new Parameter(type) : new Parameter(type, group);
 			PARAMETER_MAP.put(type.getKey(), parameter);
 		} else {
 			parameter.setType(type);
-			parameter.setGroup(group);
+			if (group != null) {
+				parameter.setGroup(group);
+			}
 		}
 		parameter.setScope(scope);
 	}
 
 	private static void informListenerOfChange(String key, String value) {
 		for (ParameterChangeListener listener : PARAMETER_LISTENERS) {
-			listener.informParameterChanged(key, value);
+			try {
+				listener.informParameterChanged(key, value);
+			} catch (Throwable e) {
+				LogService.getRoot().log(Level.WARNING, "com.rapidminer.tools.ParameterService.listener_error", e);
+			}
 		}
 	}
 
 	private static void informListenerOfSave() {
 		for (ParameterChangeListener listener : PARAMETER_LISTENERS) {
-			listener.informParameterSaved();
+			try {
+				listener.informParameterSaved();
+			} catch (Throwable e) {
+				LogService.getRoot().log(Level.WARNING, "com.rapidminer.tools.ParameterService.listener_error", e);
+			}
 		}
 	}
 

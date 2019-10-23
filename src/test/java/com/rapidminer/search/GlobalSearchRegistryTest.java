@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -53,6 +53,8 @@ public class GlobalSearchRegistryTest {
 		GlobalSearchManager searchManagerMock = Mockito.mock(GlobalSearchManager.class);
 		Mockito.when(searchManagerMock.getSearchCategoryId()).thenReturn(ACATEGORY);
 		Mockito.when(searchManagerMock.getSearchManagerEventHandler()).thenReturn(Mockito.mock(GlobalSearchManagerEventHandler.class));
+		GlobalSearchCategory category = new GlobalSearchCategory(searchManagerMock);
+		Mockito.when(searchManagerMock.getSearchCategory()).thenReturn(category);
 		GlobalSearchable globalSearchable = createGlobalSearchable(searchManagerMock);
 		GlobalSearchRegistry.INSTANCE.registerSearchCategory(globalSearchable);
 
@@ -99,6 +101,8 @@ public class GlobalSearchRegistryTest {
 			GlobalSearchManager searchManagerMock = Mockito.mock(GlobalSearchManager.class);
 			Mockito.when(searchManagerMock.getSearchCategoryId()).thenReturn(NONEXISTENTCAT);
 			Mockito.when(searchManagerMock.getAdditionalDefaultSearchFields()).thenReturn(null);
+			GlobalSearchCategory category = new GlobalSearchCategory(searchManagerMock);
+			Mockito.when(searchManagerMock.getSearchCategory()).thenReturn(category);
 			GlobalSearchable searchable = createGlobalSearchable(searchManagerMock);
 
 			GlobalSearchRegistry.INSTANCE.registerSearchCategory(searchable);

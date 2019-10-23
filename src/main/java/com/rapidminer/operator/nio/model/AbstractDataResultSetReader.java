@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -36,7 +36,6 @@ import com.rapidminer.operator.IOObject;
 import com.rapidminer.operator.OperatorDescription;
 import com.rapidminer.operator.OperatorException;
 import com.rapidminer.operator.OperatorVersion;
-import com.rapidminer.operator.io.AbstractDataReader.AttributeColumn;
 import com.rapidminer.operator.io.AbstractExampleSource;
 import com.rapidminer.operator.nio.file.FileInputPortHandler;
 import com.rapidminer.operator.nio.file.FileObject;
@@ -200,6 +199,12 @@ public abstract class AbstractDataResultSetReader extends AbstractExampleSource 
 		}
 	}
 
+	/** @return {@code true} */
+	@Override
+	protected boolean isMetaDataCacheable() {
+		return true;
+	}
+
 	/**
 	 * Must be implemented by subclasses to return the DataResultSet.
 	 */
@@ -315,7 +320,7 @@ public abstract class AbstractDataResultSetReader extends AbstractExampleSource 
 						new ParameterTypeCategory(PARAMETER_COLUMN_VALUE_TYPE, "Indicates the value type of an attribute",
 								Ontology.VALUE_TYPE_NAMES, Ontology.NOMINAL), //
 						new ParameterTypeStringCategory(PARAMETER_COLUMN_ROLE, "Indicates the role of an attribute",
-								Attributes.KNOWN_ATTRIBUTE_TYPES, AttributeColumn.REGULAR)),
+								Attributes.KNOWN_ATTRIBUTE_TYPES, Attributes.KNOWN_ATTRIBUTE_TYPES[0])),
 				true);
 
 		type.registerDependencyCondition(dependsOnGuessValue);
@@ -336,6 +341,16 @@ public abstract class AbstractDataResultSetReader extends AbstractExampleSource 
 	 */
 	public boolean shouldTrimAttributeNames() {
 		return getCompatibilityLevel().isAbove(DataResultSetTranslator.BEFORE_ATTRIBUTE_TRIMMING);
+	}
+
+	/**
+	 * Whether values should be trimmed for guessing
+	 *
+	 * @return if this operator requires trimming for guessing
+	 * @since 9.2.0
+	 */
+	public boolean trimForGuessing() {
+		return false;
 	}
 
 	@Override

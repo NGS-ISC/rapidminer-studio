@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -30,6 +30,7 @@ import java.io.OutputStream;
 public interface BlobEntry extends DataEntry {
 
 	String TYPE_NAME = "blob";
+	String BLOB_SUFFIX = ".blob";
 
 	@Override
 	default String getType() {

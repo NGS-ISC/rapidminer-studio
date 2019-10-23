@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -33,8 +33,6 @@ import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import org.jdesktop.swingx.prompt.PromptSupport;
 
 import com.rapidminer.gui.MainFrame;
 import com.rapidminer.gui.look.Colors;
@@ -189,8 +187,7 @@ public class FeedbackForm extends JPanel {
 				enableSubmit(!freeTextArea.getText().trim().isEmpty() || state != FeedbackState.NONE);
 			}
 		});
-		PromptSupport.setFontStyle(Font.ITALIC, freeTextArea);
-		PromptSupport.setPrompt(I18N.getGUILabel("feedback_form.freetext.prompt"), freeTextArea);
+		SwingTools.setPrompt(I18N.getGUILabel("feedback_form.freetext.prompt"), freeTextArea);
 		gbc.gridx = 0;
 		gbc.gridy += 1;
 		gbc.weightx = 1.0f;

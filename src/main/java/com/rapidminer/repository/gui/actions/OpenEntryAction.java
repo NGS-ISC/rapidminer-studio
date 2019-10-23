@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -19,6 +19,7 @@
 package com.rapidminer.repository.gui.actions;
 
 import com.rapidminer.gui.tools.SwingTools;
+import com.rapidminer.repository.ConnectionEntry;
 import com.rapidminer.repository.DataEntry;
 import com.rapidminer.repository.IOObjectEntry;
 import com.rapidminer.repository.ProcessEntry;
@@ -40,7 +41,9 @@ public class OpenEntryAction extends AbstractRepositoryAction<DataEntry> {
 
 	@Override
 	public void actionPerformed(DataEntry data) {
-		if (data instanceof IOObjectEntry) {
+		if (data instanceof ConnectionEntry){
+			com.rapidminer.gui.actions.OpenAction.showConnectionInformationDialog((ConnectionEntry) data);
+		} else if (data instanceof IOObjectEntry) {
 			com.rapidminer.gui.actions.OpenAction.showAsResult((IOObjectEntry) data);
 		} else if (data instanceof ProcessEntry) {
 			RepositoryTree.openProcess((ProcessEntry) data);

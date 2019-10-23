@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -27,11 +27,18 @@ package com.rapidminer.gui.tools;
  */
 public enum IconSize {
 
-	SMALL(16), LARGE(24), HUGE(48);
+	/** 16 pixel icons */
+	SMALL(16),
+
+	/** 24 pixel icons */
+	LARGE(24),
+
+	/** 48 pixel icons */
+	HUGE(48);
 
 	private int size;
 
-	private IconSize(int size) {
+	IconSize(int size) {
 		this.size = size;
 	}
 

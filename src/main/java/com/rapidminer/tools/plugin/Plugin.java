@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -145,11 +145,11 @@ public class Plugin {
 	/** @since 9.0.0 */
 	public static final String WHITELIST_SHIPPED = "shipped";
 	/** @since 9.0.0 */
-	private static final String PACKAGED_IDS = "advanced_file_connectors,concurrency,jdbc_connectors,legacy,productivity,professional,remote_repository";
+	private static final String PACKAGED_IDS = "advanced_file_connectors,concurrency,jdbc_connectors,legacy,productivity,professional,remote_repository,blending,utility,browser,html5_charts";
 	/** @since 9.0.0 */
 	private static final Set<String> PACKAGED_EXTENSIONS;
 	/** @since 9.0.0 */
-	private static final String SHIPPED_IDS = "model_simulator,process_scheduling,social_media,cloud_connectivity,h2o,dataeditor,cloud_execution,operator_recommender,time_series";
+	private static final String SHIPPED_IDS = "model_simulator,process_scheduling,social_media,cloud_connectivity,h2o,dataeditor,model_deployment_management,operator_recommender,time_series";
 	/** @since 9.0.0 */
 	private static final Set<String> SHIPPED_EXTENSIONS;
 	private static final String PACKAGEID_RAPIDMINER = "rapidminer-studio-6";
@@ -1325,6 +1325,39 @@ public class Plugin {
 
 	public static void initPluginTests() {
 		callPluginInitMethods("initPluginTests", new Class[] {}, new Object[] {}, false);
+	}
+
+	/**
+	 * Finds the given object's {@link Plugin} if possible. Returns {@code null} for objects whose classes were
+	 * not loaded through a {@link PluginClassLoader}.
+	 *
+	 * @param o
+	 * 		the object to check
+	 * @return the plugin associated with the given object or {@code null} if it was not loaded through a plugin
+	 * @since 9.3
+	 */
+	public static Plugin getPluginForObject(Object o) {
+		if (o == null) {
+			return null;
+		}
+		return getPluginForClass(o.getClass());
+	}
+
+	/**
+	 * Finds the given class' {@link Plugin} if possible. Returns {@code null} for classes that were
+	 * not loaded through a {@link PluginClassLoader}.
+	 *
+	 * @param c
+	 * 		the class to check
+	 * @return the plugin associated with the given object or {@code null} if it was not loaded through a plugin
+	 * @since 9.3
+	 */
+	public static Plugin getPluginForClass(Class<?> c) {
+		ClassLoader cl = c.getClassLoader();
+		if (cl instanceof PluginClassLoader) {
+			return getPluginByExtensionId(((PluginClassLoader) cl).getPluginKey());
+		}
+		return null;
 	}
 
 	private static void callPluginInitMethods(String methodName, Class<?>[] arguments, Object[] argumentValues,

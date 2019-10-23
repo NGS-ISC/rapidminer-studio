@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -60,5 +60,13 @@ public class FixedWidthLabel extends JLabel {
 
 	public void updateLabel() {
 		super.setText("<html><body><div style=\"width:" + width + "pt\">" + rootlessHTML + "</div></body></html>");
+	}
+
+	/**
+	 * @return the rootless HTML content w/o the formatting code. Can be {@code null}
+	 * @since 9.3.0
+	 */
+	public String getPlaintext() {
+		return rootlessHTML;
 	}
 }

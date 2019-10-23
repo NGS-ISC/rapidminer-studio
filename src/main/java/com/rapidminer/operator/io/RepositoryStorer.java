@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -20,6 +20,7 @@ package com.rapidminer.operator.io;
 
 import java.util.List;
 
+import com.rapidminer.connection.ConnectionInformationContainerIOObject;
 import com.rapidminer.operator.IOObject;
 import com.rapidminer.operator.OperatorDescription;
 import com.rapidminer.operator.OperatorException;
@@ -29,6 +30,7 @@ import com.rapidminer.parameter.ParameterTypeRepositoryLocation;
 import com.rapidminer.repository.RepositoryException;
 import com.rapidminer.repository.RepositoryLocation;
 import com.rapidminer.repository.RepositoryManager;
+import com.rapidminer.tools.usagestats.ActionStatisticsCollector;
 
 
 /**
@@ -49,9 +51,20 @@ public class RepositoryStorer extends AbstractWriter<IOObject> {
 	public IOObject write(IOObject ioobject) throws OperatorException {
 		try {
 			RepositoryLocation location = getParameterAsRepositoryLocation(PARAMETER_REPOSITORY_ENTRY);
+			logConnection(ioobject);
 			return RepositoryManager.getInstance(null).store(ioobject, location, this);
 		} catch (RepositoryException e) {
 			throw new UserError(this, e, 315, getParameterAsString(PARAMETER_REPOSITORY_ENTRY), e.getMessage());
+		}
+	}
+
+	/**
+	 * Logs if the object is a connection.
+	 */
+	private void logConnection(IOObject ioObject) {
+		if (ioObject instanceof ConnectionInformationContainerIOObject) {
+			ActionStatisticsCollector.INSTANCE.logNewConnection(this,
+					((ConnectionInformationContainerIOObject) ioObject).getConnectionInformation());
 		}
 	}
 

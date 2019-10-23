@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -19,6 +19,7 @@
 package com.rapidminer.tools;
 
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 
 /**
@@ -28,6 +29,16 @@ import java.util.Map;
  */
 public interface MailSender {
 
-	public void sendEmail(String address, String subject, String content, Map<String, String> headers) throws Exception;
+	/** Sends an email with the specified mail parameters and retrieving sender information from {@link ParameterService} */
+	void sendEmail(String address, String subject, String content, Map<String, String> headers) throws Exception;
+
+	/**
+	 * Sends an email with the specified mail parameters and retrieving sender information from the properties.
+	 *
+	 * @since 9.4.1
+	 */
+	default void sendEmail(String address, String subject, String content, Map<String, String> headers, UnaryOperator<String> properties) throws Exception {
+		sendEmail(address, subject, content, headers);
+	}
 
 }

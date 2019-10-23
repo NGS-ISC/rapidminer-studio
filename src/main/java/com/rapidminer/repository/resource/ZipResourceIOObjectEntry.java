@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -53,10 +53,4 @@ public class ZipResourceIOObjectEntry extends ResourceIOObjectEntry {
 	protected InputStream getResourceStream(String suffix) throws RepositoryException {
 		return zipStream.getStream(getName(), getResource(), suffix);
 	}
-
-	@Override
-	public boolean willBlock() {
-		return metaData == null;
-	}
-
 }

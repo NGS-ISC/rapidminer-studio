@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -24,6 +24,7 @@ import java.util.Map;
 
 import com.rapidminer.parameter.ParameterHandler;
 import com.rapidminer.parameter.ParameterType;
+import com.rapidminer.parameter.SimpleListBasedParameterHandler;
 import com.rapidminer.parameter.conditions.ParameterCondition;
 import com.rapidminer.tools.I18N;
 
@@ -117,7 +118,7 @@ public abstract class AbstractConfigurator<T extends Configurable> {
 
 		String configurableName = configurable.getName();
 		if (!parameterHandlers.containsKey(configurableName)) {
-			parameterHandlers.put(configurableName, new ConfiguratorParameterHandler() {
+			parameterHandlers.put(configurableName, new SimpleListBasedParameterHandler() {
 
 				@Override
 				public List<ParameterType> getParameterTypes() {
@@ -160,6 +161,7 @@ public abstract class AbstractConfigurator<T extends Configurable> {
 		}
 		parameterHandlers.put(configurable.getName(), parameterHandlers.remove(oldConfigurableName));
 	}
+
 
 	@Override
 	public String toString() {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -48,11 +48,23 @@ public class RepositoryActionConditionImplStandardNoRepository extends Repositor
 	/**
 	 * Creates a new RepositoryActionCondition which can be used to check if the selected
 	 * {@link Entry}s meet the given conditions.
-	 * 
-	 * @param requiredSelectionTypeList
+	 *
+	 * @param requiredSelectionTypes
 	 *            a list with {@link Entry} types. Each selected {@link Entry} must be of one of the
 	 *            types on the list or the condition is not met.
-	 * @param requiredSelectionRepositoryTypeList
+	 */
+	public RepositoryActionConditionImplStandardNoRepository(Class<?>[] requiredSelectionTypes) {
+		this(requiredSelectionTypes, new Class<?>[0]);
+	}
+
+	/**
+	 * Creates a new RepositoryActionCondition which can be used to check if the selected
+	 * {@link Entry}s meet the given conditions.
+	 * 
+	 * @param requiredSelectionTypes
+	 *            a list with {@link Entry} types. Each selected {@link Entry} must be of one of the
+	 *            types on the list or the condition is not met.
+	 * @param requiredSelectionRepositoryTypes
 	 *            a list with {@link Repository} types. Each selected {@link Entry} must be of the
 	 *            types on the list or the condition is not met.
 	 */

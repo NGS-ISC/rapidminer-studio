@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -22,8 +22,8 @@ import java.io.ObjectStreamException;
 import java.util.List;
 import java.util.Objects;
 
-import com.rapidminer.belt.BeltConverter;
-import com.rapidminer.belt.Table;
+import com.rapidminer.belt.table.BeltConverter;
+import com.rapidminer.belt.table.Table;
 import com.rapidminer.belt.util.ColumnRole;
 import com.rapidminer.operator.ResultObjectAdapter;
 import com.rapidminer.tools.Tools;
@@ -72,14 +72,17 @@ public final class IOTable extends ResultObjectAdapter {
 	public String toString() {
 		StringBuilder str = new StringBuilder(this.getClass().getSimpleName() + ":" + Tools.getLineSeparator());
 		str.append(table.height()).append(" examples,").append(Tools.getLineSeparator());
-		str.append(table.width()).append(" attributes,").append(Tools.getLineSeparator());
 
-		List<String> withRoles = table.withMetaData(ColumnRole.class);
+		List<String> withRoles = table.select().withMetaData(ColumnRole.class).labels();
+		str.append(table.width() - withRoles.size()).append(" regular attributes,").append(Tools.getLineSeparator());
+
 		boolean first = true;
 		for (String label : withRoles) {
 			if (first) {
 				str.append("special attributes = {").append(Tools.getLineSeparator());
 				first = false;
+			} else {
+				str.append(',');
 			}
 			str.append("    ").append(BeltConverter.convertRole(table, label)).append(" = ").append(label)
 					.append(Tools.getLineSeparator());

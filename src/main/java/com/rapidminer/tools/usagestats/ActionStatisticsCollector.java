@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -24,6 +24,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
@@ -38,6 +40,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.JToggleButton;
@@ -49,6 +52,9 @@ import org.w3c.dom.NodeList;
 import com.rapidminer.Process;
 import com.rapidminer.ProcessListener;
 import com.rapidminer.RapidMiner;
+import com.rapidminer.connection.ConnectionInformation;
+import com.rapidminer.connection.configuration.ConnectionConfiguration;
+import com.rapidminer.connection.valueprovider.ValueProvider;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.tools.ResourceAction;
@@ -101,6 +107,7 @@ public enum ActionStatisticsCollector {
 	public static final String TYPE_ERROR = "error";
 	public static final String TYPE_IMPORT = "import";
 	public static final String TYPE_DIALOG = "dialog";
+	public static final String TYPE_INJECT_VALUE_PROVIDER_DIALOG = "inject_vp_dialog";
 	public static final String TYPE_CONSTRAINT = "constraint";
 	public static final String TYPE_LICENSE_LEVEL = "license-level";
 	public static final String TYPE_PROGRESS_THREAD = "progress-thread";
@@ -222,6 +229,7 @@ public enum ActionStatisticsCollector {
 	public static final String ARG_FAILED = "failed";
 	public static final String ARG_STARTED = "started";
 	public static final String ARG_STOPPED = "stopped";
+	public static final String ARG_SPACER = "|";
 	public static final String VALUE_CTA_LIMIT = "limit";
 	public static final String ARG_CTA_LIMIT_DELETED_EVENTS = "deleted_events";
 	public static final String ARG_CTA_LIMIT_DECREASED_TIMEFRAME = "decreased_timeframe";
@@ -255,6 +263,35 @@ public enum ActionStatisticsCollector {
 
 	/** remote_repository | status | uuid (since 8.2.1) */
 	public static final String TYPE_REMOTE_REPOSITORY = "remote_repository";
+	/** remote_repository_saml | status | uuid (since 9.3) */
+	public static final String TYPE_REMOTE_REPOSITORY_SAML = "remote_repository_saml";
+
+	/** new_import | guessed_date_wrong | guessed|choosen (since 9.1) */
+	public static final String VALUE_GUESSED_DATE_FORMAT_RIGHT = "guessed_date_format_right";
+	public static final String VALUE_GUESSED_DATE_FORMAT_WRONG = "guessed_date_format_wrong";
+	public static final String ARG_GUESSED_DATE_SEPARATOR  = "|";
+
+	/** es_view_filter | filter_selected | condition (since 9.1) */
+	public static final String TYPE_EXAMPLESET_VIEW_FILTER = "es_view_filter";
+	public static final String VALUE_FILTER_SELECTED = "filter_selected";
+
+	/** html5_visualization (since 9.2) */
+	public static final String TYPE_HTML5_VISUALIZATION = "html5_visualization";
+	public static final String TYPE_HTML5_VISUALIZATION_BROWSER = "html5_visualization_browser";
+	public static final String VALUE_BROWSER_SETUP_TEST_STARTED = "browser_setup_test_started";
+	public static final String VALUE_BROWSER_SETUP_TEST_FINISHED = "browser_setup_test_finished";
+	public static final String ARG_BROWSER_TEST_BASIC = "basic";
+	public static final String ARG_BROWSER_TEST_EXTENDED = "extended";
+	public static final String VALUE_CHART_CREATION = "chart_creation";
+	public static final String VALUE_CHART_EXPORT = "chart_export";
+	public static final String TYPE_HTML5_VISUALIZATION_CONFIG_UI = "html5_visualization_config_ui";
+	public static final String VALUE_CONFIG_GROUP_EXPANDED = "config_group_expanded";
+
+	/** connections (since 9.3) */
+	public static final String TYPE_CONNECTION = "connection";
+	public static final String TYPE_CONNECTION_TEST = "connection_test";
+	public static final String TYPE_OLD_CONNECTION = "old_connection";
+	public static final String TYPE_CONNECTION_INJECTION = "connection_injection";
 
 	public static final String VALUE_CREATED = "created";
 	public static final String VALUE_CONNECTED = "connected";
@@ -338,6 +375,169 @@ public enum ActionStatisticsCollector {
 		arg.append(myChosenItem);
 		log(TYPE_GLOBAL_SEARCH, VALUE_ACTION, arg.toString());
 	}
+
+	/**
+	 * Logs the guessed and chosen format
+	 *
+	 * @param guessed The guessed date format pattern
+	 * @param chosenFormat The chosen date format
+	 * @since 9.1
+	 */
+	public void logGuessedDateFormat(String guessed, DateFormat chosenFormat) {
+		guessed = guessed != null ? guessed : "";
+		String chosen = (chosenFormat instanceof SimpleDateFormat) ? ((SimpleDateFormat) chosenFormat).toPattern() : "";
+		String value = guessed.equals(chosen) ? VALUE_GUESSED_DATE_FORMAT_RIGHT : VALUE_GUESSED_DATE_FORMAT_WRONG;
+		String argument = guessed.equals(chosen) ? chosen : guessed + ARG_GUESSED_DATE_SEPARATOR + chosen;
+		log(TYPE_NEW_IMPORT, value, argument);
+	}
+
+	/**
+	 * Logs the successful creation of a HTML5 visualization.
+	 *
+	 * @param plotTypes
+	 * 		the list of plot types that were used in the visualization, can be empty but never {@code null}
+	 * @since 9.2.0
+	 */
+	public void logHTML5VisualizationSuccess(List<String> plotTypes) {
+		StringBuilder arg = new StringBuilder();
+		arg.append(ARG_SUCCESS).append(ARG_SPACER);
+		arg.append(String.join(",", plotTypes));
+		log(TYPE_HTML5_VISUALIZATION, VALUE_CHART_CREATION, arg.toString());
+	}
+
+	/**
+	 * Logs the successful creation of a HTML5 visualization.
+	 *
+	 * @param plotTypes
+	 * 		the list of plot types that were used in the visualization, can be empty but never {@code null}
+	 * @param fileExtension
+	 * 		the file extension (e.g. "pdf", "png", etc)
+	 * @since 9.2.0
+	 */
+	public void logHTML5VisualizationExport(List<String> plotTypes, String fileExtension) {
+		StringBuilder arg = new StringBuilder();
+		arg.append(fileExtension).append(ARG_SPACER);
+		arg.append(String.join(",", plotTypes));
+		log(TYPE_HTML5_VISUALIZATION, VALUE_CHART_EXPORT, arg.toString());
+	}
+
+	/**
+	 * Called when an HTML5 visualization could not be created due to misconfiguration by the user.
+	 *
+	 * @param plotTypes
+	 * 		the list of plot types that were used in the visualization, can be empty but never {@code null}
+	 * @param e
+	 * 		the chart configuration/generation exception
+	 * @since 9.2.0
+	 */
+	public void logHTML5VisualizationFailure(List<String> plotTypes, Exception e) {
+		StringBuilder arg = new StringBuilder();
+		arg.append(ARG_FAILED).append(ARG_SPACER);
+		arg.append(String.join(",", plotTypes)).append(ARG_SPACER);
+		arg.append(e.getMessage());
+		log(TYPE_HTML5_VISUALIZATION, VALUE_CHART_CREATION, arg.toString());
+	}
+
+	/**
+	 * Called when an HTML5 visualization could not be created due to an unexpected exception.
+	 *
+	 * @param plotTypes
+	 * 		the list of plot types that were used in the visualization, can be empty but never {@code null}
+	 * @param t
+	 * 		the unexpected throwable
+	 * @since 9.2.0
+	 */
+	public void logHTML5VisualizationException(List<String> plotTypes, Throwable t) {
+		StringBuilder exception = new StringBuilder();
+		exception.append("ex").append(ARG_SPACER);
+		exception.append(t.getClass()).append(ARG_SPACER);
+		exception.append(getThrowableStackTraceAsString(t));
+
+		StringBuilder arg = new StringBuilder();
+		arg.append(String.join(",", plotTypes)).append(ARG_SPACER);
+		arg.append(exception.toString());
+		log(TYPE_HTML5_VISUALIZATION, VALUE_EXCEPTION, arg.toString());
+	}
+
+	/**
+	 * Called when an HTML5 visualization could not be displayed in the browser due to an unexpected exception.
+	 *
+	 * @param t
+	 * 		the unexpected throwable
+	 * @since 9.2.0
+	 */
+	public void logHTML5VisualizationBrowserException(Throwable t) {
+		StringBuilder exception = new StringBuilder();
+		exception.append("ex").append(ARG_SPACER);
+		exception.append(t.getClass()).append(ARG_SPACER);
+		exception.append(t.getMessage()).append(ARG_SPACER);
+		exception.append(getThrowableStackTraceAsString(t));
+
+		StringBuilder arg = new StringBuilder();
+		arg.append(exception.toString());
+		log(TYPE_HTML5_VISUALIZATION_BROWSER, VALUE_EXCEPTION, arg.toString());
+	}
+
+	/**
+	 * Called when the setup test of the HTML5 browser is started. Note that this will be logged all the time, but the
+	 * finish (either success or failure) will only be logged when the JVM does not crash during the test.
+	 *
+	 * @param type
+	 * 		the type (basic vs extended)
+	 * @since 9.2.0
+	 */
+	public void logHTML5VisualizationBrowserSetupTestStarted(String type) {
+		log(TYPE_HTML5_VISUALIZATION_BROWSER, VALUE_BROWSER_SETUP_TEST_STARTED, type);
+	}
+
+	/**
+	 * Called when the setup test of the HTML5 browser is done, both in case of success and failure. Note that the start
+	 * will be logged all the time, but this (no matter if success or failure) will only be logged when the JVM does not
+	 * crash during the test.
+	 *
+	 * @param type
+	 * 		the type (basic vs extended)
+	 * @param success
+	 * 		{@code true} if the browser setup test was successful; {@code false} otherwise
+	 * @since 9.2.0
+	 */
+	public void logHTML5VisualizationBrowserSetupTestFinished(String type, boolean success) {
+		StringBuilder arg = new StringBuilder();
+		arg.append(success ? ARG_SUCCESS : ARG_FAILED).append(ARG_SPACER);
+		arg.append(type);
+		log(TYPE_HTML5_VISUALIZATION_BROWSER, VALUE_BROWSER_SETUP_TEST_FINISHED, arg.toString());
+	}
+
+	/**
+	 * Logs the usage of a connection in an operator.
+	 *
+	 * @param operator
+	 * 		the operator where the connection is used
+	 * @param connection
+	 * 		the connection used in the operator
+	 * @since 9.3.0
+	 */
+	public void logNewConnection(Operator operator, ConnectionInformation connection) {
+		log(ActionStatisticsCollector.TYPE_OPERATOR, operator.getOperatorDescription().getKey(),
+				TYPE_CONNECTION + ARG_SPACER + connection.getConfiguration().getType() + ARG_SPACER
+						+ getConnectionInjections(connection.getConfiguration()));
+	}
+
+	/**
+	 * Logs the usage of an old connection (configurable or database connection configuration) in an operator.
+	 *
+	 * @param operator
+	 * 		the operator where the old connection is used
+	 * @param oldConnectionType
+	 * 		the type of the old connection
+	 * @since 9.3.0
+	 */
+	public void logOldConnection(Operator operator, String oldConnectionType) {
+		log(ActionStatisticsCollector.TYPE_OPERATOR, operator.getOperatorDescription().getKey(),
+				TYPE_OLD_CONNECTION + ARG_SPACER + oldConnectionType);
+	}
+
+
 
 	/**
 	 * A Key defines an identifier that is used to store some collected usage data associated with it. It has 3 levels,
@@ -728,7 +928,43 @@ public enum ActionStatisticsCollector {
 	 * @return
 	 */
 	public static String getExceptionStackTraceAsString(Exception e) {
-		return Stream.of(e.getStackTrace()).limit(40).map(StackTraceElement::toString).collect(Collectors.joining(","));
+		return getThrowableStackTraceAsString(e);
+	}
+
+	/**
+	 * Transforms an exception stacktrace into a String
+	 *
+	 * @param t
+	 * 		the throwable, must not be {@code null}
+	 * @return the stacktrace, never {@code null}
+	 * @since 9.2.0
+	 */
+	public static String getThrowableStackTraceAsString(Throwable t) {
+		if (t == null) {
+			throw new IllegalArgumentException("t must not be null!");
+		}
+
+		return Stream.of(t.getStackTrace()).limit(40).map(StackTraceElement::toString).collect(Collectors.joining(","
+		));
+	}
+
+	/**
+	 * Creates a string from the injections for the given connection configuration as the comma-separated injection
+	 * sources followed by {@code |} followed by the comma-separated injection parameter names.
+	 *
+	 * @param configuration
+	 * 		the configuration of a connection
+	 * @return the injections of the form {@code source1,source2|param1,param2,param3}
+	 */
+	public static String getConnectionInjections(ConnectionConfiguration configuration) {
+		String injectionSources = configuration.getValueProviders().stream()
+				.map(ValueProvider::getType)
+				.collect(Collectors.joining(","	));
+		String injectedParameters =	configuration.getKeyMap().entrySet().stream()
+				.filter(e -> e.getValue().isInjected())
+				.map(Entry::getKey)
+				.collect(Collectors.joining(","));
+		return injectionSources + ARG_SPACER + injectedParameters;
 	}
 
 	/** Listener that logs input and output volume at operator ports. */

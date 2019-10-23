@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -168,14 +168,8 @@ public class TutorialSelector extends AbstractObservable<Tutorial> {
 					if (getSelectedTutorial() != null) {
 						// the user has opened a tutorial, ensure that the tutorial browser is
 						// displayed
-						SwingTools.invokeLater(new Runnable() {
-
-							@Override
-							public void run() {
-								DockingTools.openDockable(TutorialBrowser.TUTORIAL_BROWSER_DOCK_KEY, null,
-										TutorialBrowser.POSITION);
-							}
-						});
+						SwingTools.invokeLater(() -> DockingTools.openDockable(TutorialBrowser.TUTORIAL_BROWSER_DOCK_KEY, null,
+								TutorialBrowser.POSITION));
 					} else {
 						// no tutorial selected, ensure that no tutorial browser is displayed
 						closeAllTutorialBrowsers();
@@ -250,10 +244,12 @@ public class TutorialSelector extends AbstractObservable<Tutorial> {
 	 */
 	private void closeAllTutorialBrowsers() {
 		DockableState state = DockingTools.getDockableState(TutorialBrowser.TUTORIAL_BROWSER_DOCK_KEY);
-		if (state != null) {
-			Dockable browser = state.getDockable();
-			mainFrame.getDockingDesktop().close(browser);
-			mainFrame.getPerspectiveController().removeFromInvisiblePerspectives(browser);
+		if (state != null && !state.isClosed()) {
+			SwingTools.invokeLater(() -> {
+				Dockable browser = state.getDockable();
+				mainFrame.getDockingDesktop().close(browser);
+				mainFrame.getPerspectiveController().removeFromInvisiblePerspectives(browser);
+			});
 		}
 	}
 }

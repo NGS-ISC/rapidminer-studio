@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -480,6 +480,10 @@ public class GlobalSearchDialog extends JDialog {
 	 * @return {@code true} if the UI was successfully added; {@code false} otherwise
 	 */
 	private boolean addGUIForCategory(final GlobalSearchCategory category) {
+		// Check if category is visible
+		if (!category.isVisible()) {
+			return false;
+		}
 		String categoryId = category.getCategoryId();
 		try {
 			GlobalSearchCategoryPanel catPanel = new GlobalSearchCategoryPanel(category, controller);

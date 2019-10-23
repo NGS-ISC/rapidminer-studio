@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -18,11 +18,14 @@
 */
 package com.rapidminer.parameter;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import com.rapidminer.external.alphanum.AlphanumComparator;
 import com.rapidminer.io.process.XMLTools;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.MetaDataChangeListener;
@@ -32,6 +35,7 @@ import com.rapidminer.operator.ports.metadata.MetaData;
 import com.rapidminer.operator.ports.metadata.ModelMetaData;
 import com.rapidminer.tools.Ontology;
 import com.rapidminer.tools.XMLException;
+import com.rapidminer.tools.container.Pair;
 
 
 /**
@@ -130,12 +134,6 @@ public class ParameterTypeAttribute extends ParameterTypeString {
 		this(key, description, new InputPortMetaDataProvider(inPort), optional, valueTypes);
 	}
 
-	/**
-	 * @deprecated use
-	 *             {@link ParameterTypeAttribute#ParameterTypeAttribute(String, String, InputPort, boolean, boolean, int...)}
-	 *             instead
-	 */
-	@Deprecated
 	public ParameterTypeAttribute(final String key, String description, MetaDataProvider metaDataProvider, boolean optional,
 			int... valueTypes) {
 		super(key, description, optional);
@@ -144,47 +142,66 @@ public class ParameterTypeAttribute extends ParameterTypeString {
 	}
 
 	public Vector<String> getAttributeNames() {
-		Vector<String> names = new Vector<>();
-		Vector<String> regularNames = new Vector<>();
+		return getAttributeNamesAndTypes(true).stream().map(Pair::getFirst).collect(Collectors.toCollection(Vector::new));
+	}
 
+	/**
+	 * Returns the attribute names and their value types, can sort if desired.
+	 *
+	 * @param sortAttributes
+	 * 		if {@code true}, will sort alpha-numerically; if {@code false} will not sort at all
+	 * @return the vector of pairs between the attribute names and their value type
+	 * @since 9.2.0
+	 */
+	public List<Pair<String, Integer>> getAttributeNamesAndTypes(boolean sortAttributes) {
+		List<Pair<String, Integer>> names = new ArrayList<>();
+		List<Pair<String, Integer>> regularNames = new ArrayList<>();
 		MetaData metaData = getMetaData();
-		if (metaData != null) {
-			if (metaData instanceof ExampleSetMetaData) {
-				ExampleSetMetaData emd = (ExampleSetMetaData) metaData;
-				for (AttributeMetaData amd : emd.getAllAttributes()) {
-					if (!isFilteredOut(amd) && isOfAllowedType(amd.getValueType())) {
-						if (amd.isSpecial()) {
-							names.add(amd.getName());
-						} else {
-							regularNames.add(amd.getName());
-						}
-					}
-
-				}
-			} else if (metaData instanceof ModelMetaData) {
-				ModelMetaData mmd = (ModelMetaData) metaData;
-				ExampleSetMetaData emd = mmd.getTrainingSetMetaData();
-				if (emd != null) {
-					for (AttributeMetaData amd : emd.getAllAttributes()) {
-						if (!isFilteredOut(amd) && isOfAllowedType(amd.getValueType())) {
-							if (amd.isSpecial()) {
-								names.add(amd.getName());
-							} else {
-								regularNames.add(amd.getName());
-							}
-						}
-					}
+		if (metaData == null) {
+			return names;
+		}
+		ExampleSetMetaData emd = null;
+		if (metaData instanceof ExampleSetMetaData) {
+			emd = (ExampleSetMetaData) metaData;
+		} else if (metaData instanceof ModelMetaData) {
+			ModelMetaData mmd = (ModelMetaData) metaData;
+			emd = mmd.getTrainingSetMetaData();
+		}
+		if (emd == null) {
+			return names;
+		}
+		for (AttributeMetaData amd : emd.getAllAttributes()) {
+			if (!isFilteredOut(amd) && isOfAllowedType(amd.getValueType())) {
+				Pair<String, Integer> nameAndType = new Pair<>(amd.getName(), amd.getValueType());
+				if (amd.isSpecial()) {
+					names.add(nameAndType);
+				} else {
+					regularNames.add(nameAndType);
 				}
 			}
 		}
-		Collections.sort(names);
-		Collections.sort(regularNames);
+
+		if (sortAttributes && (!names.isEmpty() || !regularNames.isEmpty())) {
+			AlphanumComparator alphanumComparator = new AlphanumComparator(AlphanumComparator.AlphanumCaseSensitivity.INSENSITIVE);
+			names.sort((o1, o2) -> alphanumComparator.compare(o1.getFirst(), o2.getFirst()));
+			regularNames.sort((o1, o2) -> alphanumComparator.compare(o1.getFirst(), o2.getFirst()));
+		}
+
 		names.addAll(regularNames);
 
 		return names;
 	}
 
-	private boolean isOfAllowedType(int valueType) {
+	/**
+	 * Checks if the given value type is allowed for this parameter type, aka the type is identical or a subtype of an
+	 * allowed type.
+	 *
+	 * @param valueType
+	 * 		the value type that should be checked
+	 * @return {@code true} if the given value type is allowed for this parameter type; {@code false} otherwise
+	 * @since 9.2.0
+	 */
+	public boolean isOfAllowedType(int valueType) {
 		boolean isAllowed = false;
 		for (int type : allowedValueTypes) {
 			isAllowed |= Ontology.ATTRIBUTE_VALUE_TYPE.isA(valueType, type);
@@ -203,7 +220,7 @@ public class ParameterTypeAttribute extends ParameterTypeString {
 	 */
 	protected boolean isFilteredOut(AttributeMetaData amd) {
 		return false;
-	};
+	}
 
 	// public InputPort getInputPort() {
 	// return inPort;

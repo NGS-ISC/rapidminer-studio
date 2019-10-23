@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -78,7 +78,7 @@ public class EULADialog extends ButtonDialog implements AdjustmentListener, Chan
 	/**
 	 * Should be adjusted whenever the EULA is updated.
 	 */
-	private static final String ACCEPT_PROPERTY = "rapidminer.eula.v6.accepted";
+	private static final String ACCEPT_PROPERTY = "rapidminer.eula.v7.accepted";
 
 	private final JButton acceptButton;
 	private final JCheckBox acceptCheckBox;

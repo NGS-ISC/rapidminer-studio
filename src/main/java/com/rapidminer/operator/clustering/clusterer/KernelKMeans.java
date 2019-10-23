@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -251,7 +251,7 @@ public class KernelKMeans extends RMAbstractClusterer {
 		types.add(new ParameterTypeBoolean(PARAMETER_USE_WEIGHTS, "Indicates if the weight attribute should be used.", false,
 				false));
 		types.add(new ParameterTypeInt(PARAMETER_K, "The number of clusters which should be detected.", 2, Integer.MAX_VALUE,
-				2, false));
+				5, false));
 		types.add(new ParameterTypeInt(PARAMETER_MAX_OPTIMIZATION_STEPS,
 				"The maximal number of iterations performed for one run of k-Means.", 1, Integer.MAX_VALUE, 100, false));
 

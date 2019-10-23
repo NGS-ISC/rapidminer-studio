@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -184,47 +184,11 @@ public class SimpleExpressionEvaluator implements ExpressionEvaluator {
 	}
 
 	private static DoubleCallable makeConstantCallable(final double doubleValue) {
-		return new DoubleCallable() {
-
-			@Override
-			public double call() {
-				return doubleValue;
-			}
-
-		};
+		return () -> doubleValue;
 	}
 
-	private static Callable<Boolean> makeConstantCallable(final Boolean booleanValue) {
-		return new Callable<Boolean>() {
-
-			@Override
-			public Boolean call() {
-				return booleanValue;
-			}
-
-		};
-	}
-
-	private static Callable<String> makeConstantCallable(final String stringValue) {
-		return new Callable<String>() {
-
-			@Override
-			public String call() {
-				return stringValue;
-			}
-
-		};
-	}
-
-	private static Callable<Date> makeConstantCallable(final Date dateValue) {
-		return new Callable<Date>() {
-
-			@Override
-			public Date call() {
-				return dateValue;
-			}
-
-		};
+	private static <V> Callable<V> makeConstantCallable(V value) {
+		return () -> value;
 	}
 
 	@Override

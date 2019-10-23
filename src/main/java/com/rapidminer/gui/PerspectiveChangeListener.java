@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -26,7 +26,16 @@ package com.rapidminer.gui;
  */
 public interface PerspectiveChangeListener {
 
-	/** will be called if the current perspective changes */
+	/**
+	 * Will be called if the current perspective changes.
+	 * <p>
+	 *  This method is <b>not</b> called on the EDT.
+	 *  Use {@link com.rapidminer.gui.tools.SwingTools#invokeLater(Runnable) SwingTools.invokeLater} for any GUI manipulation.
+	 * </p>
+	 *
+	 * @param perspective
+	 * 		The new perspective
+	 */
 	public void perspectiveChangedTo(Perspective perspective);
 
 }

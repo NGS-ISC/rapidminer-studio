@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -22,7 +22,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
+import javax.swing.JFrame;
+import javax.swing.JPopupMenu;
+import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -62,6 +67,7 @@ import com.rapidminer.gui.dialog.EULADialog;
 import com.rapidminer.gui.docking.RapidDockableContainerFactory;
 import com.rapidminer.gui.internal.GUIStartupListener;
 import com.rapidminer.gui.license.LicenseTools;
+import com.rapidminer.gui.look.HeavyweightOSXPopupFactory;
 import com.rapidminer.gui.look.RapidLookAndFeel;
 import com.rapidminer.gui.look.fc.BookmarkIO;
 import com.rapidminer.gui.look.ui.RapidDockingUISettings;
@@ -84,6 +90,7 @@ import com.rapidminer.license.LicenseManagerRegistry;
 import com.rapidminer.parameter.ParameterTypeBoolean;
 import com.rapidminer.parameter.ParameterTypeCategory;
 import com.rapidminer.parameter.ParameterTypeColor;
+import com.rapidminer.parameter.ParameterTypeDouble;
 import com.rapidminer.parameter.ParameterTypeInt;
 import com.rapidminer.repository.MalformedRepositoryLocationException;
 import com.rapidminer.repository.RepositoryLocation;
@@ -145,6 +152,13 @@ public class RapidMinerGUI extends RapidMiner {
 	public static final String PROPERTY_RAPIDMINER_GUI_MAX_SORTABLE_ROWS = "rapidminer.gui.max_sortable_rows";
 	public static final String PROPERTY_RAPIDMINER_GUI_MAX_DISPLAYED_VALUES = "rapidminer.gui.max_displayed_values";
 	public static final String PROPERTY_RAPIDMINER_GUI_SNAP_TO_GRID = "rapidminer.gui.snap_to_grid";
+
+	/**
+	 * Instead of possibly overlapping operators the connected operators to the right should be moved when moving an operator.
+	 * @since 9.2
+ 	 */
+	public static final String PROPERTY_RAPIDMINER_GUI_MOVE_CONNECTED_OPERATORS = "rapidminer.gui.move_connected_operators";
+
 	/**
 	 * The property name for &quot;Maximum number of states in the undo list.&quot;
 	 *
@@ -161,7 +175,6 @@ public class RapidMinerGUI extends RapidMiner {
 	public static final String PROPERTY_OPEN_IN_FILEBROWSER = "rapidminer.gui.entry_open_in_filebrowser";
 	public static final String PROPERTY_CLOSE_ALL_RESULTS_NOW = "rapidminer.gui.close_all_results_without_confirmation";
 	public static final String PROPERTY_FETCH_DATA_BASE_TABLES_NAMES = "rapidminer.gui.fetch_data_base_table_names";
-	public static final String PROPERTY_DISCONNECT_ON_DISABLE = "rapidminer.gui.disconnect_on_disable";
 	/** determines if a warning notification bubble is shown when no result ports are connected */
 	public static final String PROPERTY_SHOW_NO_RESULT_WARNING = "rapidminer.gui.no_result_port_connected";
 	public static final String PROPERTY_FONT_CONFIG = "rapidminer.gui.font_config";
@@ -185,6 +198,15 @@ public class RapidMinerGUI extends RapidMiner {
 	public static final String PROPERTY_RAPIDMINER_DISALLOW_REMEMBER_PASSWORD = "rapidminer.disallow.remember.password";
 	public static final String PROPERTY_RAPIDMINER_DISALLOW_STUDIO_UPDATE = "rapidminer.disallow.studio.update";
 
+	// different behavior for disconnecting deleted and disabled operators
+	public static final String PROPERTY_DISABLE_OPERATOR_CONNECTION_BEHAVIOR = "rapidminer.gui.disable_op_conn_behavior";
+	public static final String[] PROPERTY_DISABLE_OPERATOR_CONNECTION_BEHAVIOR_VALUES = { "removed", "bridged", "kept" };
+	public static final String PROPERTY_DELETE_OPERATOR_CONNECTION_BEHAVIOR = "rapidminer.gui.delete_op_conn_behavior";
+	public static final String[] PROPERTY_DELETE_OPERATOR_CONNECTION_BEHAVIOR_VALUES = { "removed", "bridged" };
+	public static final int PROPERTY_DISABLE_OPERATOR_CONNECTION_BEHAVIOR_DEFAULT_VALUE = 1;
+	public static final int PROPERTY_DELETE_OPERATOR_CONNECTION_BEHAVIOR_DEFAULT_VALUE = 1;
+
+
 	static {
 
 		// GUI Parameters
@@ -196,6 +218,7 @@ public class RapidMinerGUI extends RapidMiner {
 		RapidMiner.registerParameter(new ParameterTypeInt(PROPERTY_RAPIDMINER_GUI_MAX_DISPLAYED_VALUES, "", 1,
 				Integer.MAX_VALUE, MetaDataViewerTableModel.DEFAULT_MAX_DISPLAYED_VALUES));
 		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_RAPIDMINER_GUI_SNAP_TO_GRID, "", true));
+		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_RAPIDMINER_GUI_MOVE_CONNECTED_OPERATORS, "", true));
 		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_AUTOWIRE_INPUT, "", false));
 		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_AUTOWIRE_OUTPUT, "", false));
 		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_RESOLVE_RELATIVE_REPOSITORY_LOCATIONS, "", true));
@@ -208,7 +231,10 @@ public class RapidMinerGUI extends RapidMiner {
 		RapidMiner.registerParameter(new ParameterTypeCategory(PROPERTY_CLOSE_ALL_RESULTS_NOW, "",
 				DecisionRememberingConfirmDialog.PROPERTY_VALUES, DecisionRememberingConfirmDialog.ASK));
 		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_FETCH_DATA_BASE_TABLES_NAMES, "", true));
-		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_DISCONNECT_ON_DISABLE, "", true));
+
+		RapidMiner.registerParameter(new ParameterTypeCategory(PROPERTY_DISABLE_OPERATOR_CONNECTION_BEHAVIOR, "", PROPERTY_DISABLE_OPERATOR_CONNECTION_BEHAVIOR_VALUES, PROPERTY_DISABLE_OPERATOR_CONNECTION_BEHAVIOR_DEFAULT_VALUE));
+		RapidMiner.registerParameter(new ParameterTypeCategory(PROPERTY_DELETE_OPERATOR_CONNECTION_BEHAVIOR, "", PROPERTY_DELETE_OPERATOR_CONNECTION_BEHAVIOR_VALUES, PROPERTY_DELETE_OPERATOR_CONNECTION_BEHAVIOR_DEFAULT_VALUE));
+
 		RapidMiner.registerParameter(new ParameterTypeBoolean(PROPERTY_SHOW_NO_RESULT_WARNING, "", true));
 		RapidMiner.registerParameter(new ParameterTypeCategory(RapidMinerGUI.PROPERTY_FONT_CONFIG, "",
 				FontTools.getAvailableFonts(), FontTools.OPTION_INDEX_STANDARD_FONTS));
@@ -219,6 +245,9 @@ public class RapidMinerGUI extends RapidMiner {
 
 		// GUI Parameters MainFrame
 
+		RapidMiner.registerParameter(new ParameterTypeDouble(MainFrame.PROPERTY_RAPIDMINER_GUI_VISUALIZATIONS_MAX_ROWS_MODIFIER, "", 0.1, 10.0, 1.0));
+		RapidMiner.registerParameter(new ParameterTypeBoolean(MainFrame.PROPERTY_RAPIDMINER_GUI_PLOTTER_SHOW_LEGACY_SIMPLE_CHARTS, "", false));
+		RapidMiner.registerParameter(new ParameterTypeBoolean(MainFrame.PROPERTY_RAPIDMINER_GUI_PLOTTER_SHOW_LEGACY_ADVANCED_CHARTS, "", false));
 		RapidMiner.registerParameter(new ParameterTypeInt(MainFrame.PROPERTY_RAPIDMINER_GUI_PLOTTER_MATRIXPLOT_SIZE, "", 1,
 				Integer.MAX_VALUE, 200));
 		RapidMiner.registerParameter(new ParameterTypeInt(MainFrame.PROPERTY_RAPIDMINER_GUI_PLOTTER_ROWS_MAXIMUM, "", 1,
@@ -352,7 +381,6 @@ public class RapidMinerGUI extends RapidMiner {
 		// As side effect this also initialized the ConstraintManager
 		// with the default product and constraints
 		RapidMiner.init();
-
 
 		// store (possibly new) active license (necessary, since no
 		// ACTIVE_LICENSE_CHANGED event is fired on startup)
@@ -498,9 +526,7 @@ public class RapidMinerGUI extends RapidMiner {
 		CallToActionScheduler.INSTANCE.init();
 
 		// After all is done, clean up memory for the best possible starting conditions
-		if (Boolean.parseBoolean(ParameterService.getParameterValue(RapidMiner.PROPERTY_RAPIDMINER_UPDATE_BETA_FEATURES))) {
-			System.gc();
-		}
+		System.gc();
 	}
 
 	private void setupToolTipManager() {
@@ -509,6 +535,8 @@ public class RapidMinerGUI extends RapidMiner {
 		manager.setDismissDelay(25000); // original: 4000
 		manager.setInitialDelay(1125);   // original: 750
 		manager.setReshowDelay(50);    // original: 500
+		// heavyweight popups are necessary because of native Chromium window by our browser extension (JxBrowser)
+		manager.setLightWeightPopupEnabled(false);
 	}
 
 	/**
@@ -531,6 +559,11 @@ public class RapidMinerGUI extends RapidMiner {
 				Map<String, Object> macUIDefaults = new HashMap<>();
 				macUIDefaults.put("MenuBarUI", UIManager.get("MenuBarUI"));
 				UIManager.setLookAndFeel(new RapidLookAndFeel(macUIDefaults));
+
+				// tooltips are painted behind heavyweight windows (e.g. the native Chromium browser window) on OS X
+				// despite the call above of ToolTipManager#setLightWeightPopupEnabled(false);
+				// so we force a heavyweight popup factory for OS X
+				PopupFactory.setSharedInstance(new HeavyweightOSXPopupFactory());
 			} else {
 				UIManager.setLookAndFeel(new RapidLookAndFeel());
 			}
@@ -538,6 +571,9 @@ public class RapidMinerGUI extends RapidMiner {
 			LogService.getRoot().log(Level.WARNING, I18N.getMessage(LogService.getRoot().getResourceBundle(),
 					"com.rapidminer.gui.RapidMinerGUI.setting_up_modern_look_and_feel_error"), e);
 		}
+
+		// needed because of native browser window which otherwise renders above all popup menus
+		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 	}
 
 	public static void setMainFrame(final MainFrame mf) {
@@ -720,10 +756,9 @@ public class RapidMinerGUI extends RapidMiner {
 				}
 			}
 			try {
-				mainFrame.setLocation(Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_X)),
-						Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_Y)));
-				mainFrame.setSize(new Dimension(Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_WIDTH)),
-						Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_HEIGHT))));
+				int x = Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_X));
+				int y = Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_Y));
+				mainFrame.setLocation(x, y);
 				int extendedState;
 				if (properties.getProperty(PROPERTY_GEOMETRY_EXTENDED_STATE) == null) {
 					extendedState = Frame.NORMAL;
@@ -731,6 +766,25 @@ public class RapidMinerGUI extends RapidMiner {
 					extendedState = Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_EXTENDED_STATE));
 				}
 				mainFrame.setExtendedState(extendedState);
+				if ((extendedState & JFrame.MAXIMIZED_BOTH) != JFrame.MAXIMIZED_BOTH) {
+					int width = Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_WIDTH));
+					int height = Integer.parseInt(properties.getProperty(PROPERTY_GEOMETRY_HEIGHT));
+					if (SystemInfoUtilities.getOperatingSystem() == OperatingSystem.OSX) {
+						// OS X likes to set up size 0px * 0px if height exceeds available height, so make sure it does not
+						GraphicsConfiguration graphicsConfig = mainFrame.getGraphicsConfiguration();
+						if (graphicsConfig != null) {
+							Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(graphicsConfig);
+							int xInsets = insets.left + insets.right;
+							// random further -15px because a precise calculation does still produce above 0px error
+							int yInsets = insets.top + insets.bottom + 15;
+							int availableWidth = graphicsConfig.getDevice().getDisplayMode().getWidth() - xInsets;
+							int availableHeight = graphicsConfig.getDevice().getDisplayMode().getHeight() - yInsets;
+							width = Math.min(width, availableWidth - x);
+							height = Math.min(height, availableHeight - y);
+						}
+					}
+					mainFrame.setSize(new Dimension(width, height));
+				}
 				mainFrame.getPropertyPanel()
 						.setExpertMode(Boolean.valueOf(properties.getProperty(PROPERTY_EXPERT_MODE)).booleanValue());
 

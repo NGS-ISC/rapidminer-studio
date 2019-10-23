@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.rapidminer.parameter.ParameterHandler;
 import com.rapidminer.parameter.ParameterType;
+import com.rapidminer.parameter.SimpleListBasedParameterHandler;
 
 
 /**
@@ -52,7 +53,7 @@ public abstract class Configurator<T extends Configurable> extends AbstractConfi
 	 *
 	 * This class can be used to convert and check parameters.
 	 */
-	private class DefaultParameterHandler extends ConfiguratorParameterHandler {
+	private class DefaultParameterHandler extends SimpleListBasedParameterHandler {
 
 		@Override
 		public List<ParameterType> getParameterTypes() {

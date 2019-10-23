@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -30,6 +30,8 @@ import com.rapidminer.tools.ProgressListener;
 public interface IOObjectEntry extends DataEntry {
 
 	String TYPE_NAME = "data";
+	String MD_SUFFIX = ".md";
+	String IOO_SUFFIX = ".ioo";
 
 	@Override
 	default String getType() {

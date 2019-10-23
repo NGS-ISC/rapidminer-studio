@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -38,7 +38,7 @@ public class SimpleProcessSetupError implements ProcessSetupError {
 	private final Severity severity;
 
 	public SimpleProcessSetupError(Severity severity, PortOwner owner, String i18nKey, Object... i18nArgs) {
-		this(severity, owner, Collections.<QuickFix> emptyList(), false, i18nKey, i18nArgs);
+		this(severity, owner, Collections.emptyList(), false, i18nKey, i18nArgs);
 	}
 
 	public SimpleProcessSetupError(Severity severity, PortOwner owner, List<? extends QuickFix> fixes, String i18nKey,

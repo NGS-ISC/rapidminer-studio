@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -37,8 +37,9 @@ import com.rapidminer.tools.PasswordInputCanceledException;
  *
  * @author Nils Woehler
  * @since 6.5.0
- *
+ * @deprecated Use new REST APIs of the Execution Backend instead.
  */
+@Deprecated
 public interface RemoteScheduler {
 
 	/**

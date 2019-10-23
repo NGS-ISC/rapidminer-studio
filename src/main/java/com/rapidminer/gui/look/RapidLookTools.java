@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -93,6 +93,13 @@ public final class RapidLookTools {
 	public static final String PROPERTY_BUTTON_HIGHLIGHT_DARK = "button_highlight_dark";
 
 	/**
+	 * If buttons should be highlighted in white or not. Set to {@code true} or {@code false}. Default is {@code false}.
+	 *
+	 * @since 9.2.0
+	 */
+	public static final String PROPERTY_BUTTON_HIGHLIGHT_WHITE = "button_highlight_white";
+
+	/**
 	 * If buttons should have a darker border. Set to {@code true} or {@code false}. Default is {@code false}.
 	 *
 	 * @since 8.1
@@ -122,6 +129,14 @@ public final class RapidLookTools {
 	 * @since 8.1
 	 */
 	public static final String PROPERTY_INPUT_TYPE_COMPOSITE = "input_type_composite";
+
+	/**
+	 * If a tabbed pane should lay out its tabs at the top (horizontally) using the full available width - and not more.
+	 * So 2 tabs would take ~50% each, 3 tabs ~33% each, etc.
+	 *
+	 * @since 9.4.0
+	 */
+	public static final String PROPERTY_TABBED_PANE_FULL_WIDTH = "tabbed_pane_full_width";
 
 	static {
 		try {
@@ -299,6 +314,7 @@ public final class RapidLookTools {
 		ColorUIResource colorGradientEnd;
 		boolean highlighted = Boolean.parseBoolean(String.valueOf(b.getClientProperty(PROPERTY_BUTTON_HIGHLIGHT)));
 		boolean highlightedDark = Boolean.parseBoolean(String.valueOf(b.getClientProperty(PROPERTY_BUTTON_HIGHLIGHT_DARK)));
+		boolean highlightedWhite = Boolean.parseBoolean(String.valueOf(b.getClientProperty(PROPERTY_BUTTON_HIGHLIGHT_WHITE)));
 		if (highlighted) {
 			if (b.isEnabled()) {
 				if (b.getModel().isPressed() || b.getModel().isSelected()) {
@@ -330,6 +346,22 @@ public final class RapidLookTools {
 			} else {
 				colorGradientStart = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_DARK_DISABLED_GRADIENT_START;
 				colorGradientEnd = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_DARK_DISABLED_GRADIENT_END;
+			}
+		} else if (highlightedWhite) {
+			if (b.isEnabled()) {
+				if (b.getModel().isPressed() || b.getModel().isSelected()) {
+					colorGradientStart = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_WHITE_PRESSED_GRADIENT_START;
+					colorGradientEnd = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_WHITE_PRESSED_GRADIENT_END;
+				} else if (b.getModel().isRollover()) {
+					colorGradientStart = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_WHITE_ROLLOVER_GRADIENT_START;
+					colorGradientEnd = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_WHITE_ROLLOVER_GRADIENT_END;
+				} else {
+					colorGradientStart = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_WHITE_GRADIENT_START;
+					colorGradientEnd = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_WHITE_GRADIENT_END;
+				}
+			} else {
+				colorGradientStart = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_WHITE_DISABLED_GRADIENT_START;
+				colorGradientEnd = Colors.BUTTON_BACKGROUND_HIGHLIGHTED_WHITE_DISABLED_GRADIENT_END;
 			}
 		} else {
 			if (b.isEnabled()) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -30,11 +30,11 @@ import com.rapidminer.example.table.AttributeFactory;
  */
 public abstract class NumericalAggregationFunction extends AggregationFunction {
 
-	private Attribute targetAttribute;
+	protected Attribute targetAttribute;
 
-	public NumericalAggregationFunction(Attribute sourceAttribute, boolean ignoreMissings, boolean countOnlyDisctinct,
+	public NumericalAggregationFunction(Attribute sourceAttribute, boolean ignoreMissings, boolean countOnlyDistinct,
 			String functionName, String separatorOpen, String separatorClose) {
-		super(sourceAttribute, ignoreMissings, countOnlyDisctinct);
+		super(sourceAttribute, ignoreMissings, countOnlyDistinct);
 		this.targetAttribute = AttributeFactory.createAttribute(functionName + separatorOpen
 				+ getSourceAttribute().getName() + separatorClose, getTargetValueType(sourceAttribute.getValueType()));
 	}

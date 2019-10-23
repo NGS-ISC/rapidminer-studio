@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -30,7 +30,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
-
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
@@ -38,7 +37,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.SwingWorker;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.text.html.HTMLEditorKit;
@@ -54,6 +52,7 @@ import com.rapidminer.gui.renderer.DefaultTextRenderer;
 import com.rapidminer.gui.renderer.Renderer;
 import com.rapidminer.gui.renderer.RendererService;
 import com.rapidminer.gui.tools.ExtendedHTMLJEditorPane;
+import com.rapidminer.gui.tools.MultiSwingWorker;
 import com.rapidminer.gui.tools.ProgressThread;
 import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.gui.tools.SwingTools;
@@ -68,6 +67,7 @@ import com.rapidminer.repository.Entry;
 import com.rapidminer.repository.IOObjectEntry;
 import com.rapidminer.repository.RepositoryLocation;
 import com.rapidminer.tools.ReferenceCache;
+import com.rapidminer.tools.Tools;
 
 
 /**
@@ -162,7 +162,7 @@ public class SingleResultOverview extends JPanel {
 
 		if (process.getRootOperator().getSubprocess(0).getInnerSinks().getNumberOfPorts() > resultIndex) {
 			InputPort resultPort = process.getRootOperator().getSubprocess(0).getInnerSinks().getPortByIndex(resultIndex);
-			IOObject other = resultPort.getAnyDataOrNull();
+			IOObject other = resultPort.getRawData();
 			if (result == other) { // make sure result does not come from collecting unconnected
 				// outputs, but is really
 				// from inner sink
@@ -180,7 +180,7 @@ public class SingleResultOverview extends JPanel {
 			name = ((ResultObject) result).getName();
 		} else {
 			name = RendererService.getName(result.getClass());
-			List<Renderer> renderers = RendererService.getRenderers(name);
+			List<Renderer> renderers = RendererService.getRenderersExcludingLegacyRenderers(name);
 			if (renderers.isEmpty()) {
 				main = makeTextRenderer(result);
 			} else {
@@ -331,11 +331,11 @@ public class SingleResultOverview extends JPanel {
 		css.addRule("h4 {margin-bottom:0; margin-top:1ex; padding:0}");
 		css.addRule("p  {margin-top:0; margin-bottom:1ex; padding:0}");
 		css.addRule("ul {margin-top:0; margin-bottom:1ex; list-style-image: url("
-				+ getClass().getResource("/com/rapidminer/resources/icons/modern/help/circle.png") + ")}");
+				+ Tools.getResource("icons/help/circle.png") + ")}");
 		css.addRule("ul li {padding-bottom: 2px}");
 		css.addRule("li.outPorts {padding-bottom: 0px}");
 		css.addRule("ul li ul {margin-top:0; margin-bottom:1ex; list-style-image: url("
-				+ getClass().getResource("/com/rapidminer/resources/icons/modern/help/line.png") + ")");
+				+ Tools.getResource("icons/help/line.png") + ")");
 		css.addRule("li ul li {padding-bottom:0}");
 
 		label.setEditable(false);
@@ -348,18 +348,18 @@ public class SingleResultOverview extends JPanel {
 	}
 
 	/**
-	 * Updates the preview renderable image in a {@link SwingWorker}.
+	 * Updates the preview renderable image in a {@link MultiSwingWorker}.
 	 */
 	private void updatePreviewImage() {
-		final IOObject result = ioObject.get();
+		final IOObject result = ioObject != null ? ioObject.get() : null;
 		if (result != null) {
 			String name = RendererService.getName(result.getClass());
-			final List<Renderer> renderers = RendererService.getRenderers(name);
+			final List<Renderer> renderers = RendererService.getRenderersExcludingLegacyRenderers(name);
 			if (renderers.isEmpty()) {
 				return;
 			}
 
-			SwingWorker<Void, Void> sw = new SwingWorker<Void, Void>() {
+			MultiSwingWorker<Void, Void> sw = new MultiSwingWorker<Void, Void>() {
 
 				@Override
 				protected Void doInBackground() throws Exception {
@@ -394,7 +394,7 @@ public class SingleResultOverview extends JPanel {
 					main.repaint();
 				}
 			};
-			sw.execute();
+			sw.start();
 		}
 	}
 }
