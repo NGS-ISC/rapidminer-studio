@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -864,7 +864,7 @@ public final class ProcessDrawer {
 		} else {
 			errorIcon = isBlacklisted ? IMAGE_BLACKLISTED_ZOOMED : IMAGE_WARNING_ZOOMED;
 		}
-		if (!operator.getErrorList().isEmpty() || isBlacklisted) {
+		if ((!operator.getErrorList().isEmpty() && !operator.isRunning()) || isBlacklisted) {
 			int iconY = (int) (frame.getY() + frame.getHeight() - iconSize - 2);
 			ImageIcon icon = ProcessDrawUtils.getIcon(operator, errorIcon);
 			RenderingHints originalRenderingHints = g2.getRenderingHints();

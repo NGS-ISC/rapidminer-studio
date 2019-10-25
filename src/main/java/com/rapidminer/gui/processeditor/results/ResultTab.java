@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -21,7 +21,6 @@ package com.rapidminer.gui.processeditor.results;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -33,15 +32,16 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import com.rapidminer.core.license.ProductConstraintManager;
+import com.rapidminer.gui.CleanupRequiringComponent;
 import com.rapidminer.gui.MainFrame;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.actions.CloseAllResultsAction;
+import com.rapidminer.gui.actions.CloseAllResultsExceptCurrentResultAction;
 import com.rapidminer.gui.actions.StoreInRepositoryAction;
 import com.rapidminer.gui.renderer.RendererService;
 import com.rapidminer.gui.tools.ProgressThread;
 import com.rapidminer.gui.tools.ResourceLabel;
 import com.rapidminer.gui.tools.SwingTools;
-import com.rapidminer.gui.viewer.metadata.MetaDataStatisticsViewer;
 import com.rapidminer.license.ConstraintNotRestrictedException;
 import com.rapidminer.license.LicenseConstants;
 import com.rapidminer.license.LicenseEvent;
@@ -93,8 +93,10 @@ public class ResultTab extends JPanel implements Dockable {
 
 			@Override
 			public void visitTabSelectorPopUp(JPopupMenu popUpMenu, Dockable dockable) {
-				popUpMenu.add(new JMenuItem(new StoreInRepositoryAction(resultObject)));
+				popUpMenu.add(new JMenuItem(new CloseAllResultsExceptCurrentResultAction(RapidMinerGUI.getMainFrame(), dockKey.getKey())));
 				popUpMenu.add(new JMenuItem(new CloseAllResultsAction(RapidMinerGUI.getMainFrame())));
+				popUpMenu.addSeparator();
+				popUpMenu.add(new JMenuItem(new StoreInRepositoryAction(resultObject)));
 			}
 		};
 		customizer.setTabSelectorPopUpCustomizer(true); // enable tabbed dock custom popup menu
@@ -225,7 +227,7 @@ public class ResultTab extends JPanel implements Dockable {
 
 	/**
 	 * Creates an appropriate name, appending a number to make names unique, and calls
-	 * {@link #createVisualizationComponent(IOObject, IOContainer, String)}.
+	 * {@link ResultDisplayTools#createVisualizationComponent(IOObject, IOContainer, String)}.
 	 */
 	private JPanel createComponent(ResultObject resultObject, IOContainer resultContainer) {
 		final String resultName = RendererService.getName(resultObject.getClass());
@@ -247,9 +249,13 @@ public class ResultTab extends JPanel implements Dockable {
 		return dockKey;
 	}
 
+	/**
+	 * Free up any resources held by this result tab. Also checks every child component for instances of {@link
+	 * CleanupRequiringComponent} and calls their clean-up methods.
+	 */
 	public void freeResources() {
 		if (component != null) {
-			stopStatisticsRecursively(component);
+			cleanUpRecursively(component);
 			remove(component);
 			component = null;
 			resultObject = null;
@@ -258,18 +264,18 @@ public class ResultTab extends JPanel implements Dockable {
 	}
 
 	/**
-	 * Looks recursively for the {@link MetaDataStatisticsViewer} and stops its statistics
-	 * calculation.
+	 * Looks recursively for components implementing the  {@link CleanupRequiringComponent} interface and calls their
+	 * cleanUp() method.
 	 *
 	 * @param component
-	 *            the component whose children should be searched
+	 * 		the component whose children should be searched
 	 */
-	private void stopStatisticsRecursively(Container component) {
+	private void cleanUpRecursively(Container component) {
 		for (Component child : component.getComponents()) {
-			if (child instanceof MetaDataStatisticsViewer) {
-				((MetaDataStatisticsViewer) child).stop();
+			if (child instanceof CleanupRequiringComponent) {
+				((CleanupRequiringComponent) child).cleanUp();
 			} else if (child instanceof Container) {
-				stopStatisticsRecursively((Container) child);
+				cleanUpRecursively((Container) child);
 			}
 		}
 	}

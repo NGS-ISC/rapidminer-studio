@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -95,7 +95,7 @@ public class Util {
 	public static void removeExpectedResults(Process process) throws RepositoryException {
 		Folder folder = process.getRepositoryLocation().locateEntry().getContainingFolder();
 
-		Collection<IOObjectEntry> toDelete = new ArrayList<IOObjectEntry>();
+		Collection<IOObjectEntry> toDelete = new ArrayList<>();
 		for (DataEntry entry : folder.getDataEntries()) {
 			if (entry instanceof IOObjectEntry) {
 				IOObjectEntry ioo = (IOObjectEntry) entry;

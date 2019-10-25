@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -60,7 +60,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 
 	private static final String RELEASE_CANDIDATE = "rc";
 
-	private static final String SNAPSHOT = "snapshot";
+	private static final String SNAPSHOT_TAG = "snapshot";
 
 	private int majorNumber;
 
@@ -117,7 +117,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 			patchLevel = 0;
 		}
 		if (classifierIndex >= 0) {
-			classifier = CLASSIFIER_TAG + version.substring(classifierIndex + 1, version.length());
+			classifier = CLASSIFIER_TAG + version.substring(classifierIndex + 1);
 		} else {
 			classifier = null;
 		}
@@ -373,7 +373,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 	 * @return {@code true} if the current version is a snapshot build (exactly if it has a classifier named SNAPSHOT).
 	 */
 	public final boolean isSnapshot() {
-		return classifier != null && classifier.equalsIgnoreCase(CLASSIFIER_TAG + SNAPSHOT);
+		return isPreview(SNAPSHOT_TAG);
 	}
 
 	private boolean isPreview(String tagName) {

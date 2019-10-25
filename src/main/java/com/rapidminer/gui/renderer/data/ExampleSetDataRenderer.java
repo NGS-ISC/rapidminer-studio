@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -60,7 +60,7 @@ public class ExampleSetDataRenderer extends AbstractDataTableTableRenderer {
 	@Override
 	public Component getVisualizationComponent(Object renderable, IOContainer ioContainer) {
 		ExampleSet exampleSet = (ExampleSet) renderable;
-		return new DataViewer(exampleSet, true);
+		return new DataViewer(exampleSet);
 	}
 
 	/**

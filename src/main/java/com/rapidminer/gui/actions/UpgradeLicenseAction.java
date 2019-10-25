@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -18,19 +18,19 @@
 */
 package com.rapidminer.gui.actions;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import javax.swing.SwingUtilities;
+
+import com.rapidminer.core.license.ProductLinkRegistry;
+import com.rapidminer.gui.tools.MultiSwingWorker;
 import com.rapidminer.gui.tools.NotificationPopup;
 import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.tools.I18N;
 import com.rapidminer.tools.LogService;
 import com.rapidminer.tools.RMUrlHandler;
-
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 
 
 /**
@@ -45,17 +45,29 @@ public class UpgradeLicenseAction extends ResourceAction {
 
 	/** the uri for the license upgrade */
 	private static final String URI_LICENSE_UPGRADE = I18N.getGUILabel("license.url");
+	private String productId;
 
 	/**
 	 * Creates a new {@link UpgradeLicenseAction} instance.
 	 */
 	public UpgradeLicenseAction() {
+		this(null);
+	}
+
+	/**
+	 * Creates a new {@link UpgradeLicenseAction} instance.
+	 *
+	 * @param productId
+	 * 		the product id that caused the action
+	 */
+	public UpgradeLicenseAction(String productId) {
 		super(false, "upgrade_license");
+		this.productId = productId;
 	}
 
 	@Override
 	public void loggedActionPerformed(final ActionEvent e) {
-		createUpgradeWorker().execute();
+		createUpgradeWorker().start();
 		if (e != null && e.getSource() != null) {
 			NotificationPopup popup = (NotificationPopup) SwingUtilities.getAncestorOfClass(NotificationPopup.class,
 					(Component) e.getSource());
@@ -66,16 +78,16 @@ public class UpgradeLicenseAction extends ResourceAction {
 	}
 
 	/**
-	 * Creates a new upgrade {@link SwingWorker}.
+	 * Creates a new upgrade {@link MultiSwingWorker}.
 	 * 
 	 * @return
 	 */
-	private static SwingWorker<Void, Void> createUpgradeWorker() {
-		return new SwingWorker<Void, Void>() {
+	private MultiSwingWorker<Void, Void> createUpgradeWorker() {
+		return new MultiSwingWorker<Void, Void>() {
 
 			@Override
 			protected Void doInBackground() throws Exception {
-				RMUrlHandler.handleUrl(URI_LICENSE_UPGRADE);
+				RMUrlHandler.handleUrl(ProductLinkRegistry.PURCHASE.get(productId, URI_LICENSE_UPGRADE));
 				return null;
 			}
 

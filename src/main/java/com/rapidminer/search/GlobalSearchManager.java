@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -88,5 +88,16 @@ public interface GlobalSearchManager {
 	 * @return the event handler, never {@code null}
 	 */
 	GlobalSearchManagerEventHandler getSearchManagerEventHandler();
+
+	/**
+	 * Returns the {@link GlobalSearchCategory} for this Manager.
+	 * If the {@link GlobalSearchCategory#isVisible()} it will be displayed in the Global Search UI as a new category
+	 * and it entries will appear in the All Studio search.
+	 *
+	 * @return the GlobalSearchCategory
+	 */
+	default GlobalSearchCategory getSearchCategory() {
+		return new GlobalSearchCategory(this);
+	}
 
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -45,6 +45,7 @@ import com.rapidminer.gui.look.Colors;
 import com.rapidminer.gui.search.GlobalSearchPanel;
 import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.gui.tools.ResourceLabel;
+import com.rapidminer.gui.tools.SwingTools;
 import com.rapidminer.gui.tools.components.composite.PerspectiveToggleGroup;
 import com.rapidminer.gui.tools.components.composite.SplitButton;
 import com.rapidminer.tools.I18N;
@@ -176,8 +177,7 @@ public class MainToolBar extends JPanel {
 			}, true);
 			perspectiveModel.addPerspectiveChangeListener(perspective -> {
 				perspectiveName = perspective.getName();
-				updateSelection();
-
+				SwingTools.invokeLater(this::updateSelection);
 			});
 			updatePerspectivePanel(perspectiveController, perspectiveController.getModel().getAllPerspectives());
 			addComponentListener(new MainToolBarResizer(perspectiveController));

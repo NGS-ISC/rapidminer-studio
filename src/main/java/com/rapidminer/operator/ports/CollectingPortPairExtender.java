@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -66,11 +66,11 @@ public class CollectingPortPairExtender extends PortPairExtender {
 	public void collect() {
 		synchronized (this) {
 			for (PortPair pair : getManagedPairs()) {
-				IOObject data = pair.getInputPort().getAnyDataOrNull();
+				IOObject data = pair.getInputPort().getRawData();
 				if (data != null) {
-					IOObject output = pair.getOutputPort().getAnyDataOrNull();
+					IOObject output = pair.getOutputPort().getRawData();
 					if (output == null) { // first iteration
-						IOObjectCollection<IOObject> collection = new IOObjectCollection<IOObject>();
+						IOObjectCollection<IOObject> collection = new IOObjectCollection<>();
 						collection.add(data);
 						pair.getOutputPort().deliver(collection);
 					} else if (output instanceof IOObjectCollection) {

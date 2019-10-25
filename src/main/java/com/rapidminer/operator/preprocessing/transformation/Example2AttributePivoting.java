@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -70,6 +70,7 @@ import com.rapidminer.tools.parameter.internal.DataManagementParameterHelper;
  * </p>
  *
  * @author Tobias Malbrecht
+ * @deprecated since 9.1.0, use {@link com.rapidminer.operator.preprocessing.transformation.pivot.PivotOperator} instead
  */
 public class Example2AttributePivoting extends ExampleSetTransformationOperator {
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 
 import com.rapidminer.RapidMiner;
 import com.rapidminer.adaption.belt.AtPortConverter;
+import com.rapidminer.adaption.belt.IOTable;
 import com.rapidminer.gui.RapidMinerGUI;
 import com.rapidminer.gui.renderer.RendererService;
 import com.rapidminer.operator.IOObject;
@@ -99,8 +100,19 @@ public abstract class AbstractPort extends AbstractObservable<Port> implements P
 		}
 	}
 
+	@Deprecated
 	@Override
 	public IOObject getAnyDataOrNull() {
+		IOObject ioObject = getRawData();
+		//prevent returning IOTables for backward compatibility
+		if (ioObject instanceof IOTable) {
+			return AtPortConverter.convert(ioObject, this);
+		}
+		return ioObject;
+	}
+
+	@Override
+	public IOObject getRawData() {
 		if (hardDataReference != null) {
 			return hardDataReference;
 		} else {
@@ -111,42 +123,60 @@ public abstract class AbstractPort extends AbstractObservable<Port> implements P
 	}
 
 	@Override
+	public <T extends IOObject> T getDataAsOrNull(Class<T> desiredClass) {
+		try {
+			return getData(desiredClass, true, true);
+		} catch (UserError userError) {
+			//cannot happen
+			return null;
+		}
+	}
+
+	@Override
 	public <T extends IOObject> T getData(Class<T> desiredClass) throws UserError {
-		IOObject data = getAnyDataOrNull();
+		return getData(desiredClass, false, false);
+	}
+
+	@Override
+	public <T extends IOObject> T getDataOrNull(Class<T> desiredClass) throws UserError {
+		return getData(desiredClass, true, false);
+	}
+
+	/**
+	 * This method returns the object of the desired class or throws an {@link UserError} if object cannot be cast to the desiredClass.
+	 * Dependening on <em>allowNull</em> either returns a {@code null} value or throws a {@link UserError}
+	 *
+	 * @param desiredClass
+	 * 		the super class of desired type of data
+	 * @param allowNull
+	 * 		if {@code null} value should be returned or throw an error
+	 * @param nullForOther if it should return null in case the existing class cannot be casted or converted to the
+	 *                        desired class
+	 * @throws UserError
+	 * 		if an error occurs, can only happen if either {@code allowNull} or {@code nullForOther} is false
+	 * @since 9.3
+	 */
+	private <T extends IOObject> T getData(Class<T> desiredClass, boolean allowNull, boolean nullForOther) throws UserError {
+		IOObject data = getRawData();
 		if (data == null) {
+			if (allowNull) {
+				return null;
+			}
 			throw new PortUserError(this, 149, getSpec() + (isConnected() ? " (connected)" : " (disconnected)"));
 		} else if (desiredClass.isAssignableFrom(data.getClass())) {
 			return desiredClass.cast(data);
 		} else if (AtPortConverter.isConvertible(data.getClass(), desiredClass)) {
 			return desiredClass.cast(AtPortConverter.convert(data, this));
-		} else {
+		} else if (!nullForOther) {
 			PortUserError error = new PortUserError(this, 156, RendererService.getName(data.getClass()), this.getName(),
 					RendererService.getName(desiredClass));
 			error.setExpectedType(desiredClass);
 			error.setActualType(data.getClass());
 			throw error;
-		}
-	}
-
-	@Override
-	public <T extends IOObject> T getDataOrNull(Class<T> desiredClass) throws UserError {
-		IOObject data = getAnyDataOrNull();
-		if (data == null) {
+		} else {
 			return null;
-		} else if (desiredClass.isAssignableFrom(data.getClass())) {
-			return desiredClass.cast(data);
-		} else if (AtPortConverter.isConvertible(data.getClass(), desiredClass)) {
-			return desiredClass.cast(AtPortConverter.convert(data, this));
-		} else {
-			PortUserError error = new PortUserError(this, 156, RendererService.getName(data.getClass()), this.getName(),
-					RendererService.getName(desiredClass));
-			error.setExpectedType(desiredClass);
-			error.setActualType(data.getClass());
-			throw error;
 		}
 	}
-
-
 
 	@SuppressWarnings("unchecked")
 	@Deprecated

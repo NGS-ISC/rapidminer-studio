@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -241,7 +241,7 @@ public abstract class AbstractPorts<T extends Port> extends AbstractObservable<P
 		Collection<IOObject> output = new LinkedList<>();
 		for (Port port : getAllPorts()) {
 			if (!onlyConnected || port.isConnected()) {
-				IOObject data = port.getAnyDataOrNull();
+				IOObject data = port.getRawData();
 				if (omitEmptyResults) {
 					if (data != null) {
 						output.add(data);

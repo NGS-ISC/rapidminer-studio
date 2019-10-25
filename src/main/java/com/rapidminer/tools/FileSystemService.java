@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -23,6 +23,7 @@ import static com.rapidminer.tools.ParameterService.RAPIDMINER_CONFIG_FILE_NAME;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.logging.Level;
 
 
@@ -33,19 +34,35 @@ import java.util.logging.Level;
  * @author Sebastian Land
  */
 public class FileSystemService {
-
 	/** folder in which extensions have their workspace */
 	private static final String RAPIDMINER_EXTENSIONS_FOLDER = "extensions";
 	/** folder in which extensions get their own folder to work with files */
 	public static final String RAPIDMINER_EXTENSIONS_WORKSPACE_FOLDER = "workspace";
 	/** folder which can be used to share data between extensions */
 	private static final String RAPIDMINER_SHARED_DATA = "shared data";
-	/** folder which can be used for internal caching of the Global Search feature */
+	/** folder which can be used for internal caching */
 	private static final String RAPIDMINER_INTERNAL_CACHE = "internal cache";
-	/** folder which can be used for internal caching of the Global Search feature */
+	/** {@link #RAPIDMINER_INTERNAL_CACHE} subfolder which can be used for internal caching of the Global Search feature */
 	private static final String RAPIDMINER_INTERNAL_CACHE_SEARCH = "search";
+	/** {@link #RAPIDMINER_INTERNAL_CACHE_SEARCH} subfolder which can be used for internal caching of the Global Search feature */
+	private static final String RAPIDMINER_INTERNAL_CACHE_SEARCH_INSTANCE = "instance_" + UUID.randomUUID();
+	/** {@link #RAPIDMINER_INTERNAL_CACHE} subfolder which is used for the connection file cache */
+	private static final String RAPIDMINER_INTERNAL_CACHE_CONNECTION = "connectionFiles";
+	/** {@link #RAPIDMINER_INTERNAL_CACHE} subfolder which is used by BrowserContext for cache data storage. Browser cache depends on platform, if you mix DLLs for Win32 and Win64, you get an endless loop */
+	private static final String RAPIDMINER_INTERNAL_CACHE_BROWSER = "browser" + (PlatformUtilities.getReleasePlatform() != null ? "-" + PlatformUtilities.getReleasePlatform().name() : "");
 
-	public static final String RAPIDMINER_INTERNAL_CACHE_SEARCH_FULL = "internal cache/search";
+	/** {@link #RAPIDMINER_INTERNAL_CACHE} subfolder which can be used for internal caching of the content mapper store */
+	private static final String RAPIDMINER_INTERNAL_CACHE_CONTENT_MAPPER_STORE = "content mapper";
+	/** {@link #RAPIDMINER_INTERNAL_CACHE} subfolder which can be used as an internal fallback temp folder */
+	private static final String RAPIDMINER_INTERNAL_CACHE_TEMP = "temp";
+
+	public static final String RAPIDMINER_INTERNAL_CACHE_CONNECTION_FULL = RAPIDMINER_INTERNAL_CACHE + "/" + RAPIDMINER_INTERNAL_CACHE_CONNECTION;
+	public static final String RAPIDMINER_INTERNAL_CACHE_SEARCH_FULL = RAPIDMINER_INTERNAL_CACHE + "/" + RAPIDMINER_INTERNAL_CACHE_SEARCH;
+	/** This folder only exists after the {@link com.rapidminer.search.GlobalSearchIndexer Global Search} is initialized. */
+	public static final String RAPIDMINER_INTERNAL_CACHE_SEARCH_INSTANCE_FULL = RAPIDMINER_INTERNAL_CACHE_SEARCH_FULL + "/" + RAPIDMINER_INTERNAL_CACHE_SEARCH_INSTANCE;
+	public static final String RAPIDMINER_INTERNAL_CACHE_CONTENT_MAPPER_STORE_FULL = RAPIDMINER_INTERNAL_CACHE + "/" + RAPIDMINER_INTERNAL_CACHE_CONTENT_MAPPER_STORE;
+	public static final String RAPIDMINER_INTERNAL_CACHE_BROWSER_FULL = RAPIDMINER_INTERNAL_CACHE + "/" + RAPIDMINER_INTERNAL_CACHE_BROWSER;
+	public static final String RAPIDMINER_INTERNAL_CACHE_TEMP_FULL = RAPIDMINER_INTERNAL_CACHE + "/" + RAPIDMINER_INTERNAL_CACHE_TEMP;
 
 	/** folder which can be used to load additional building blocks */
 	public static final String RAPIDMINER_BUILDINGBLOCKS = "buildingblocks";
@@ -76,23 +93,36 @@ public class FileSystemService {
 	}
 
 	public static File getUserRapidMinerDir() {
-		File homeDir = new File(System.getProperty("user.home"));
-		File userHomeDir = new File(homeDir, RAPIDMINER_USER_FOLDER);
-		File extensionsWorkspaceRootFolder = new File(userHomeDir, RAPIDMINER_EXTENSIONS_FOLDER);
-		File extensionsWorkspaceFolder = new File(extensionsWorkspaceRootFolder, RAPIDMINER_EXTENSIONS_WORKSPACE_FOLDER);
-		File sharedDataDir = new File(userHomeDir, RAPIDMINER_SHARED_DATA);
-		File buildingBlocksFolder = new File(userHomeDir, RAPIDMINER_BUILDINGBLOCKS);
-		File internalCacheFolder = new File(userHomeDir, RAPIDMINER_INTERNAL_CACHE);
-		File internalCacheSearchFolder = new File(internalCacheFolder, RAPIDMINER_INTERNAL_CACHE_SEARCH);
+		File rapidMinerDir;
+		String customHome = System.getProperty("rapidminer.user-home");
+		if (customHome != null && !customHome.trim().isEmpty()) {
+			rapidMinerDir = new File(customHome);
+		} else {
+			File homeDir = new File(System.getProperty("user.home"));
+			rapidMinerDir = new File(homeDir, RAPIDMINER_USER_FOLDER);
+		}
 
-		checkAndCreateFolder(userHomeDir);
+		File extensionsWorkspaceRootFolder = new File(rapidMinerDir, RAPIDMINER_EXTENSIONS_FOLDER);
+		File extensionsWorkspaceFolder = new File(extensionsWorkspaceRootFolder, RAPIDMINER_EXTENSIONS_WORKSPACE_FOLDER);
+		File sharedDataDir = new File(rapidMinerDir, RAPIDMINER_SHARED_DATA);
+		File buildingBlocksFolder = new File(rapidMinerDir, RAPIDMINER_BUILDINGBLOCKS);
+		File internalCacheFolder = new File(rapidMinerDir, RAPIDMINER_INTERNAL_CACHE);
+		File internalCacheSearchFolder = new File(internalCacheFolder, RAPIDMINER_INTERNAL_CACHE_SEARCH);
+		File internalCacheRepositoryMapperStoreFolder = new File(internalCacheFolder, RAPIDMINER_INTERNAL_CACHE_CONTENT_MAPPER_STORE);
+		File internalCacheBrowserFolder = new File(internalCacheFolder, RAPIDMINER_INTERNAL_CACHE_BROWSER);
+
+		checkAndCreateFolder(rapidMinerDir);
 		checkAndCreateFolder(extensionsWorkspaceRootFolder);
 		checkAndCreateFolder(internalCacheFolder);
 		checkAndCreateFolder(internalCacheSearchFolder);
+		checkAndCreateFolder(internalCacheRepositoryMapperStoreFolder);
+		checkAndCreateFolder(internalCacheBrowserFolder);
+
 		checkAndCreateFolder(extensionsWorkspaceFolder);
 		checkAndCreateFolder(sharedDataDir);
 		checkAndCreateFolder(buildingBlocksFolder);
-		return userHomeDir;
+
+		return rapidMinerDir;
 	}
 
 	/**
@@ -156,7 +186,6 @@ public class FileSystemService {
 			return new File(new File(root, "resources"), name);
 		}
 	}
-
 
 	/**
 	 * Tries to create the given folder location if it does not yet exist.

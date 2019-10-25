@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -30,7 +30,7 @@ import com.rapidminer.tools.expression.internal.SimpleConstant;
 
 
 /**
- * Type constants that can be used as a second argument in the eval function.
+ * Type constants that can be used as a second argument in the eval and attribute eval function.
  *
  * @author Gisa Schaefer
  *
@@ -39,7 +39,7 @@ public enum TypeConstants {
 
 	INSTANCE;
 
-	private static final String USED_IN_EVAL = "used in eval";
+	private static final String USED_IN_EVAL = "used in eval and attribute eval";
 	private final List<Constant> typeConstants = new ArrayList<>(5);
 	private final Map<String, ExpressionType> conversionMap = new HashMap<>(5);
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -56,7 +56,7 @@ public class ProcessOriginProcessXMLFilter implements ProcessXMLFilter {
 		GENERATED_AUTOMODEL("am_gen_"),
 
 		/**
-		 * Exported by Auto Model (used opened it)
+		 * Exported by Auto Model (user opened it)
 		 *
 		 * @since 9.0.0
 		 */
@@ -109,7 +109,14 @@ public class ProcessOriginProcessXMLFilter implements ProcessXMLFilter {
 		 *
 		 * @since 9.0.0
 		 */
-		GENERATED_TUTORIAL("tutorial_");
+		GENERATED_TUTORIAL("tutorial_"),
+
+		/**
+		 * Exported by Auto Model in the Cloud (user opened it)
+		 *
+		 * @since 9.0.2
+		 */
+		EXPORTED_AUTOMODEL_CLOUD("amc_exp_");
 
 
 		private String prefix;

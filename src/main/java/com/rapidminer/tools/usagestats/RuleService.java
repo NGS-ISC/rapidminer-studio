@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -24,12 +24,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.rapidminer.RapidMiner;
 import com.rapidminer.RapidMiner.ExecutionMode;
 import com.rapidminer.RapidMinerVersion;
@@ -51,39 +52,46 @@ enum RuleService {
 
 	INSTANCE;
 
-	private final Set<String> PROHIBITED_KEYWORDS = new HashSet<>();
+	private final Pattern prohibitedKeywords;
+
+	private final ObjectReader reader;
 
 	private final Set<VerifiableRule> rules = new HashSet<>();
 
 	private RuleService() {
-		PROHIBITED_KEYWORDS.add("JOIN");
-		PROHIBITED_KEYWORDS.add("CREATE");
-		PROHIBITED_KEYWORDS.add("INSERT");
-		PROHIBITED_KEYWORDS.add("UPDATE");
-		PROHIBITED_KEYWORDS.add("DELETE");
-		PROHIBITED_KEYWORDS.add("DROP");
-		PROHIBITED_KEYWORDS.add("ALTER");
-		PROHIBITED_KEYWORDS.add("MERGE");
-		PROHIBITED_KEYWORDS.add("TRUNCATE");
-		PROHIBITED_KEYWORDS.add("SET");
-		PROHIBITED_KEYWORDS.add("SHUTDOWN");
-		PROHIBITED_KEYWORDS.add("COMMIT");
-		PROHIBITED_KEYWORDS.add("GRANT");
-		PROHIBITED_KEYWORDS.add("CHECKPOINT");
-		PROHIBITED_KEYWORDS.add("SAVEPOINT");
-		PROHIBITED_KEYWORDS.add("PREPARE");
-		PROHIBITED_KEYWORDS.add("REVOKE");
-		PROHIBITED_KEYWORDS.add("ROLLBACK");
-		PROHIBITED_KEYWORDS.add("CONSTRAINT");
-		PROHIBITED_KEYWORDS.add("RUNSCRIPT");
-		PROHIBITED_KEYWORDS.add("BACKUP");
-		PROHIBITED_KEYWORDS.add("CALL");
-		PROHIBITED_KEYWORDS.add("SCRIPT");
-		PROHIBITED_KEYWORDS.add("ANALYZE");
-		PROHIBITED_KEYWORDS.add("COMMENT");
-		PROHIBITED_KEYWORDS.add("EXPLAIN");
-		PROHIBITED_KEYWORDS.add("SHOW");
+		List<String> prohibitedKeywords  = new ArrayList<>();
+		prohibitedKeywords.add("JOIN");
+		prohibitedKeywords.add("CREATE");
+		prohibitedKeywords.add("INSERT");
+		prohibitedKeywords.add("UPDATE");
+		prohibitedKeywords.add("DELETE");
+		prohibitedKeywords.add("DROP");
+		prohibitedKeywords.add("ALTER");
+		prohibitedKeywords.add("MERGE");
+		prohibitedKeywords.add("TRUNCATE");
+		prohibitedKeywords.add("SET");
+		prohibitedKeywords.add("SHUTDOWN");
+		prohibitedKeywords.add("COMMIT");
+		prohibitedKeywords.add("GRANT");
+		prohibitedKeywords.add("CHECKPOINT");
+		prohibitedKeywords.add("SAVEPOINT");
+		prohibitedKeywords.add("PREPARE");
+		prohibitedKeywords.add("REVOKE");
+		prohibitedKeywords.add("ROLLBACK");
+		prohibitedKeywords.add("CONSTRAINT");
+		prohibitedKeywords.add("RUNSCRIPT");
+		prohibitedKeywords.add("BACKUP");
+		prohibitedKeywords.add("CALL");
+		prohibitedKeywords.add("SCRIPT");
+		prohibitedKeywords.add("ANALYZE");
+		prohibitedKeywords.add("COMMENT");
+		prohibitedKeywords.add("EXPLAIN");
+		prohibitedKeywords.add("SHOW");
 
+		// Create a "\b(JOIN|CREATE|...)\b" regex, where \b matches word boundaries
+		this.prohibitedKeywords = Pattern.compile("\\b(" + String.join("|", prohibitedKeywords) + ")\\b", Pattern.CASE_INSENSITIVE);
+		ObjectMapper mapper = new ObjectMapper();
+		this.reader = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, Rule.class));
 		reloadRules();
 	}
 
@@ -99,7 +107,6 @@ enum RuleService {
 			return;
 		}
 
-		ObjectMapper mapper = new ObjectMapper();
 		List<VerifiableRule> loadedRules = null;
 		Iterator<RuleProvider> ruleProvider = RuleProviderRegistry.INSTANCE.getRuleProvider().iterator();
 
@@ -107,8 +114,7 @@ enum RuleService {
 			RuleProvider provider = ruleProvider.next();
 			try (InputStream ruleJson = provider.getRuleJson()) {
 				if (ruleJson != null) {
-					loadedRules = checkAndConvertRules(mapper.readValue(ruleJson, new TypeReference<List<Rule>>() {
-					}));
+					loadedRules = checkAndConvertRules(reader.readValue(ruleJson));
 				} else {
 					LogService.getRoot().log(Level.FINE, I18N.getMessage(LogService.getRoot().getResourceBundle(),
 							"com.rapidminer.tools.usagestats.RuleService.load.empty", provider.getClass().getSimpleName()));
@@ -165,7 +171,7 @@ enum RuleService {
 
 	/**
 	 * Converts JSON rules list to a {@link VerifiableRule} list. Also checks that rules do not
-	 * violate the {@link #PROHIBITED_KEYWORDS} SQL blacklist. If any rules does, it is skipped.
+	 * violate the {@link #prohibitedKeywords} SQL blacklist. If any rules does, it is skipped.
 	 *
 	 * @param jsonRules
 	 *            the input rule list
@@ -173,19 +179,16 @@ enum RuleService {
 	 */
 	private List<VerifiableRule> checkAndConvertRules(List<Rule> jsonRules) {
 		List<VerifiableRule> newRules = new ArrayList<>(jsonRules.size());
-		ruleLoop: for (Rule rule : jsonRules) {
-			for (String sql : rule.getQueries()) {
-				for (String prohibited : PROHIBITED_KEYWORDS) {
-					if (sql.toUpperCase(Locale.ENGLISH).contains(prohibited)) {
-						// prohibited keyword found, skip this rule
-						LogService.getRoot().log(Level.WARNING,
-								"com.rapidminer.tools.usagestats.RuleService.load_invalid_sql",
-								new Object[] { rule.getId(), prohibited });
-						continue ruleLoop;
-					}
-				}
+		for (Rule rule : jsonRules) {
+			Matcher matcher = prohibitedKeywords.matcher(String.join(" ", rule.getQueries()));
+			if (matcher.find()) {
+				// prohibited keyword found, skip this rule
+				LogService.getRoot().log(Level.WARNING,
+						"com.rapidminer.tools.usagestats.RuleService.load_invalid_sql",
+						new Object[]{rule.getId(), matcher.group()});
+			} else {
+				newRules.add(new VerifiableRule(rule));
 			}
-			newRules.add(new VerifiableRule(rule));
 		}
 
 		return newRules;

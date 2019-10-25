@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -60,7 +60,7 @@ public class DefaultPreview extends AbstractTableModel {
 		if (listener != null) {
 			listener.setTotal(previewSize);
 		}
-		List<String[]> dataList = new LinkedList<String[]>();
+		List<String[]> dataList = new LinkedList<>();
 		resultSet.reset(listener);
 		while (resultSet.hasNext() && dataList.size() < previewSize) {
 			resultSet.next(listener);

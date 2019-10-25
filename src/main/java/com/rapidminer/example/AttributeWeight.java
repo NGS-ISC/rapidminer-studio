@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -17,6 +17,8 @@
  * If not, see http://www.gnu.org/licenses/.
 */
 package com.rapidminer.example;
+
+import java.util.Objects;
 
 import com.rapidminer.tools.math.Averagable;
 
@@ -111,17 +113,20 @@ public class AttributeWeight extends Averagable implements Comparable<AttributeW
 	/** Returns true if both objects have the same name and the same weight. */
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof AttributeWeight)) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		AttributeWeight w = (AttributeWeight) o;
-		return this.name.equals(w.name) && (this.weight == w.weight);
+		AttributeWeight that = (AttributeWeight) o;
+		return Objects.equals(name, that.name) &&
+				Objects.equals(weight, that.weight);
 	}
 
 	@Override
 	public int hashCode() {
-		long bits = Double.doubleToLongBits(this.weight);
-		return this.name.hashCode() ^ ((int) (bits ^ bits >>> 32));
+		return Objects.hash(weight, name);
 	}
 
 	/** Builds the sum of weights and counters. */

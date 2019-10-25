@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -28,6 +28,7 @@ import javax.swing.JRadioButtonMenuItem;
 import com.rapidminer.gui.tools.ResourceAction;
 import com.rapidminer.gui.tools.ResourceMenu;
 import com.rapidminer.tools.Observable;
+import com.rapidminer.gui.tools.SwingTools;
 import com.rapidminer.tools.Observer;
 
 
@@ -66,7 +67,12 @@ public class PerspectiveMenu extends ResourceMenu {
 		public void perspectiveChangedTo(Perspective perspective) {
 			perspectiveName = perspective.getName();
 			if (perspectiveMap.containsKey(perspectiveName)) {
-				perspectiveMap.get(perspectiveName).setSelected(true);
+				SwingTools.invokeLater(() -> {
+					JMenuItem item = perspectiveMap.get(perspectiveName);
+					if (item != null) {
+						item.setSelected(true);
+					}
+				});
 			}
 		}
 	};

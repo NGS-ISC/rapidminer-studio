@@ -20,7 +20,7 @@ apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 mainClassName = 'com.rapidminer.gui.GuiLauncher'
-apply plugin: 'com.rapidminer.java-basics'
+// apply plugin: 'com.rapidminer.java-basics'
 // apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
 
 shadowJar {
@@ -47,30 +47,32 @@ compileJava {
 dependencies {
 
 	// belt project for new data core
-	compile 'com.rapidminer:belt:0.2.0'
+	compile 'com.rapidminer:belt:1.0.0-BETA2'
 
 	// belt adapter for conversion between old and new core
-	compile ('com.rapidminer:belt-adapter:0.1.0'){
+	compile ('com.rapidminer:belt-adapter:0.5') {
 		exclude group: 'com.rapidminer.studio', module: 'rapidminer-studio-core'
+		exclude group: 'com.rapidminer', module: 'belt'
+	}
 
     // OS X adapter to add platform specific UI
     compile 'com.rapidminer.studio:rapidminer-studio-osx-adapter:1.0.2'
 
 	// RapidMiner license framework for license management
-	compile 'com.rapidminer.license:rapidminer-license-api:4.0.5'
-	compile('com.rapidminer.license:rapidminer-license-commons:4.0.5'){
+	compile "com.rapidminer.license:rapidminer-license-api:$licenseVersion"
+	compile("com.rapidminer.license:rapidminer-license-commons:$licenseVersion") {
 		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
 		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
 	}
 
 	// RapidMiner API
-	compile 'com.rapidminer:rapidminer-api:0.2.1'
-
+	compile 'com.rapidminer:rapidminer-api:0.2.2'
+	
 	// Alphanumeric sorting
 	compile 'com.rapidminer.external:alphanumeric-sorting:1.0.1'
 
 	// VLDocking as docking framework (https://code.google.com/p/vldocking/)
-	compile 'com.rapidminer.external:vldocking:1.2.2'
+	compile 'com.rapidminer.external:vldocking:9.0.2'
 
 	// Freehep for vector graphic export (http://java.freehep.org/)
 	compile('org.freehep:freehep-graphicsio-ps:2.3') {
@@ -117,7 +119,7 @@ dependencies {
 	compile 'org.codehaus.groovy:groovy-all:2.4.10'
 
 	// SwingX for various Swing components (https://swingx.java.net/)
-	compile 'org.swinglabs.swingx:swingx-all:1.6.5'
+	compile 'org.swinglabs.swingx:swingx-all:1.6.5-1'
 
 	// XStreams for generic XML serialization (http://xstream.codehaus.org/)
 	compile 'com.thoughtworks.xstream:xstream:1.4.10'
@@ -148,11 +150,10 @@ dependencies {
 
 	// antlr for parsing expressions (http://www.antlr.org/)
 	compile 'org.antlr:antlr4-runtime:4.5.1'
-	// compile 'org.antlr:antlr4-runtime:4.7.1'
-
-	// SLF4J API (http://www.slf4j.org)
+ 
+	// SLF4J API (http://www.slf4j.org) 
 	compile 'org.slf4j:slf4j-api:1.7.13'
-
+	
 	// add testing suite
 	//TODO should be test compile but RapidMiner src/main contains code that references JUnit
 	compile 'junit:junit:4.12'
@@ -162,18 +163,18 @@ dependencies {
 
 	// JMathPlot for 2D and 3D plots like Box plot, Stick plot, etc. (https://code.google.com/p/jmathplot/)
 	compile 'com.rapidminer.external:jmathplot:1.0.0'
-
+	
 	// Microba adds a Swing date picker (http://microba.sf.net/)
 	compile 'com.github.tdbear:microba:0.4.4.3'
-
+	
 	// Apache Tika for file MIME type detection (https://tika.apache.org/)
 	compile 'org.apache.tika:tika-core:1.18'
-
+	
 	// The xalan version used by the JRE for XML handling contains a bug which results in XSLT not working with an enabled SecurityManager
-	// Using this version manually to override the JRE fixes the problem. Otherwise all our operator documentation would not work at all
+	// Using this version manually to override the JRE fixes the problem. Otherwise all our operator documentation would not work at all 
 	compile 'xalan:xalan:2.7.2'
 	compile 'xalan:serializer:2.7.2'
-
+	
 	// H2 Database used for CTA
 	compile 'com.h2database:h2:1.4.194'
 
@@ -188,14 +189,14 @@ dependencies {
 	compile 'org.jsoup:jsoup:1.8.3'
 
 	// access to windows registry
-	compile 'net.java.dev.jna:jna-platform:4.5.1'
+	compile 'net.java.dev.jna:jna-platform:4.5.2'
 
 	// tests require mockito
 	testCompile 'org.mockito:mockito-core:2.13.0'
 
 }
 
-task wrapper(type: Wrapper) { gradleVersion = '4.0.1' }
+wrapper { gradleVersion = '5.6.2' }
 
 apply from: 'gradle/wsimport.gradle'
 apply from: 'gradle/props.gradle'
@@ -204,4 +205,3 @@ apply from: 'gradle/template.gradle'
 
 // Jacoco for code coverage information
 apply from: 'jacoco.gradle'
-}

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -20,13 +20,13 @@ package com.rapidminer.gui.search;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.ScoreDoc;
 
 import com.rapidminer.gui.search.model.GlobalSearchModel;
+import com.rapidminer.gui.tools.MultiSwingWorker;
 import com.rapidminer.search.GlobalSearchCategory;
 import com.rapidminer.search.GlobalSearchRegistry;
 import com.rapidminer.search.GlobalSearchResult;
@@ -80,7 +80,7 @@ final class GlobalSearchController {
 	}
 
 	/**
-	 * Handles loading more results (if there are any) in a {@link SwingWorker}.
+	 * Handles loading more results (if there are any).
 	 *
 	 * @param previousResult
 	 * 		the results of the already found results for this category
@@ -93,12 +93,16 @@ final class GlobalSearchController {
 			return;
 		}
 
-		searchOrAppendForCategory(previousResult.getLastResult(), lastQuery, categoryId, lastCategoryFilter != null ? NUMBER_OF_RESULTS_SINGLE_CAT : NUMBER_OF_RESULTS_ALL_CATS);
+		int resultNumberLimit = lastCategoryFilter != null ? NUMBER_OF_RESULTS_SINGLE_CAT : NUMBER_OF_RESULTS_ALL_CATS;
+		if (resultNumberLimit == previousResult.getPotentialNumberOfResults() - previousResult.getNumberOfResults() - 1) {
+			resultNumberLimit++;
+		}
+		searchOrAppendForCategory(previousResult.getLastResult(), lastQuery, categoryId, resultNumberLimit);
 	}
 
 
 	/**
-	 * Handles searching in a {@link SwingWorker}.
+	 * Handles searching.
 	 *
 	 * @param query
 	 * 		the search query entered by the user
@@ -172,12 +176,12 @@ final class GlobalSearchController {
 	 */
 	private void searchOrAppendForCategory(final ScoreDoc offset, final String query, final String categoryId, int resultNumberLimit) {
 		final int searchCountSnapshot = searchCounter.get();
-		SwingWorker<GlobalSearchResult, Void> worker = new SwingWorker<GlobalSearchResult, Void>() {
+		MultiSwingWorker<GlobalSearchResult, Void> worker = new MultiSwingWorker<GlobalSearchResult, Void>() {
 
 			@Override
 			protected GlobalSearchResult doInBackground() throws Exception {
 				model.setPending(categoryId, true);
-				GlobalSearchResultBuilder builder = new GlobalSearchResultBuilder(query.trim()).setMaxNumberOfResults(resultNumberLimit).setHighlightResult(true);
+				GlobalSearchResultBuilder builder = new GlobalSearchResultBuilder(query.trim()).setMaxNumberOfResults(resultNumberLimit).setMoreResults(1).setHighlightResult(true);
 				builder.setSearchCategories(GlobalSearchRegistry.INSTANCE.getSearchCategoryById(categoryId)).setSearchOffset(offset).setSimpleMode(true);
 				return builder.runSearch();
 			}
@@ -231,14 +235,14 @@ final class GlobalSearchController {
 				}
 			}
 		};
-		worker.execute();
+		worker.start();
 	}
 
 	/**
-	 * Handles the error when a {@link SwingWorker} fails while searching.
+	 * Handles an error while searching.
 	 *
 	 * @param e
-	 * 		the exception of the SwingWorker
+	 * 		the exception
 	 */
 	private void handleSearchError(ExecutionException e) {
 		String message = null;

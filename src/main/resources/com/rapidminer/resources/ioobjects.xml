@@ -22,20 +22,23 @@
     </ioobject>
     
     <!-- Data Tables (Example Sets) -->
-    
-    <ioobject 
-        name="Data Table" 
-        class="com.rapidminer.example.ExampleSet"
-        reportable="true"
-        icon="data.png">
+
+    <ioobject
+            name="Data Table"
+            class="com.rapidminer.example.ExampleSet"
+            reportable="true"
+            icon="data.png">
         <renderer>com.rapidminer.gui.renderer.data.ExampleSetDataRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.data.ExampleSetMetaDataRenderer</renderer>
+        <!-- New Visualizations.Coming from the HTML5 charts extension -->
+        <renderer>com.rapidminer.extension.html5charts.gui.renderer.ExampleSetVisualizationRenderer</renderer>
+        <!-- Legacy simple chart renderer, scheduled for removal in the future -->
         <renderer>com.rapidminer.gui.renderer.data.ExampleSetPlotRenderer</renderer>
+        <!-- Legacy advanced chart renderer, legacy and deprecated, hidden unless user selects a checkbox, scheduled for removal in the future -->
         <renderer>com.rapidminer.gui.new_plotter.integration.ExpertDataTableRenderer</renderer>
-        <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>     
+        <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>
     </ioobject>
-        
-        
+
     <!-- Attribute Weights -->
     
     <ioobject 
@@ -44,10 +47,23 @@
         reportable="true"
         icon="sort_descending.png">
         <renderer>com.rapidminer.gui.renderer.weights.AttributeWeightsTableRenderer</renderer>
+        <renderer>com.rapidminer.extension.html5charts.gui.renderer.AttributeWeightsVisualizationRenderer</renderer>
+        <!-- Legacy simple chart renderer, legacy and deprecated, hidden unless user selects a checkbox, scheduled for removal in the future -->
         <renderer>com.rapidminer.gui.renderer.weights.AttributeWeightsPlotRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>                           
     </ioobject>
-    
+
+
+    <!-- Connection Information -->
+
+    <ioobject
+            name="Connection"
+            class="com.rapidminer.connection.ConnectionInformationContainerIOObject"
+            reportable="false"
+            icon="plug.png">
+        <renderer>com.rapidminer.connection.gui.ConnectionInformationRenderer</renderer>
+        <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>
+    </ioobject>
         
     <!-- Similarity Measures -->
     
@@ -213,7 +229,10 @@
         icon="lightbulb_off.png">
         <renderer>com.rapidminer.gui.renderer.DefaultTextRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.models.KernelModelWeightsRenderer</renderer>
+        <renderer>com.rapidminer.extension.html5charts.gui.renderer.KernelModelWeightsVisualizationRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.models.KernelModelSupportVectorRenderer</renderer>
+        <renderer>com.rapidminer.extension.html5charts.gui.renderer.KernelModelVisualizationRenderer</renderer>
+        <!-- Legacy simple chart renderer, legacy and deprecated, hidden unless user selects a checkbox, scheduled for removal in the future -->
         <renderer>com.rapidminer.gui.renderer.models.KernelModelPlotRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>
     </ioobject>
@@ -699,6 +718,8 @@
         icon="chart_bubble.png">
         <renderer>com.rapidminer.gui.renderer.math.NumericalMatrixTableRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.math.NumericalMatrixPairwiseRenderer</renderer>
+        <renderer>com.rapidminer.extension.html5charts.gui.renderer.NumericalMatrixVisualizationRenderer</renderer>
+        <!-- Legacy simple chart renderer, legacy and deprecated, hidden unless user selects a checkbox, scheduled for removal in the future -->
         <renderer>com.rapidminer.gui.renderer.math.NumericalMatrixPlotRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>       
     </ioobject>
@@ -710,10 +731,11 @@
         icon="chart_bubble.png">
         <renderer>com.rapidminer.gui.renderer.math.NumericalMatrixTableRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.math.NumericalMatrixPairwiseRenderer</renderer>
+        <renderer>com.rapidminer.extension.html5charts.gui.renderer.NumericalMatrixVisualizationRenderer</renderer>
+        <!--Legacy simple chart  renderer, legacy and deprecated, hidden unless user selects a checkbox, scheduled for removal in the future -->
         <renderer>com.rapidminer.gui.renderer.math.NumericalMatrixPlotRenderer</renderer>   
         <renderer>com.rapidminer.gui.renderer.math.RainflowMatrixTableRenderer</renderer>
-        <renderer>com.rapidminer.gui.renderer.math.RainflowMatrixPlotRenderer</renderer>
-        <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>        
+        <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>
     </ioobject>
     
     <!-- Visualizations -->
@@ -794,9 +816,7 @@
         <renderer>com.rapidminer.gui.renderer.DefaultTextRenderer</renderer>
         <renderer>com.rapidminer.gui.renderer.AnnotationsRenderer</renderer>
     </ioobject>
-    
-   
-     
+
     <!-- Dummy Entry -->
     
     <!--  ioobject 

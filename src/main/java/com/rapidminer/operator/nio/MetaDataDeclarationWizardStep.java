@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  * 
  * Complete list of developers available at our web site:
  * 
@@ -54,6 +54,7 @@ import javax.swing.table.TableModel;
 import com.rapidminer.datatable.DataTableExampleSetAdapter;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.gui.tools.CellColorProviderAlternating;
+import com.rapidminer.gui.tools.ExtendedJScrollPane;
 import com.rapidminer.gui.tools.ExtendedJTable;
 import com.rapidminer.gui.tools.ProgressThread;
 import com.rapidminer.gui.tools.ResourceAction;
@@ -270,7 +271,7 @@ public class MetaDataDeclarationWizardStep extends WizardStep {
 				}
 			}
 		});
-		final JScrollPane errorScrollPane = new JScrollPane(errorTable);
+		final JScrollPane errorScrollPane = new ExtendedJScrollPane(errorTable);
 		errorScrollPane.setPreferredSize(new Dimension(500, 80));
 		c.weighty = 1;
 		c.gridwidth = GridBagConstraints.REMAINDER;

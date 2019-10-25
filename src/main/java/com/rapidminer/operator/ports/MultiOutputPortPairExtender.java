@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2001-2018 by RapidMiner and the contributors
+ * Copyright (C) 2001-2019 by RapidMiner and the contributors
  *
  * Complete list of developers available at our web site:
  *
@@ -57,7 +57,7 @@ public class MultiOutputPortPairExtender extends MultiPortPairExtender<InputPort
 	@Deprecated
 	public void passDataThrough() {
 		for (MultiPortPair mpp : getManagedPairs()) {
-			IOObject data = mpp.singlePort.getAnyDataOrNull();
+			IOObject data = mpp.singlePort.getRawData();
 			for (OutputPort port : mpp.multiPorts) {
 				port.deliver(data);
 			}
@@ -74,7 +74,7 @@ public class MultiOutputPortPairExtender extends MultiPortPairExtender<InputPort
 	 */
 	public void passDataThrough(int i) {
 		for (MultiPortPair mpp : getManagedPairs()) {
-			IOObject data = mpp.singlePort.getAnyDataOrNull();
+			IOObject data = mpp.singlePort.getRawData();
 			mpp.multiPorts.get(i).deliver(data);
 		}
 	}
