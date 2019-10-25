@@ -65,7 +65,7 @@ dependencies {
 
 	// RapidMiner API
 	compile 'com.rapidminer:rapidminer-api:0.2.1'
-	
+
 	// Alphanumeric sorting
 	compile 'com.rapidminer.external:alphanumeric-sorting:1.0.1'
 
@@ -148,10 +148,11 @@ dependencies {
 
 	// antlr for parsing expressions (http://www.antlr.org/)
 	compile 'org.antlr:antlr4-runtime:4.5.1'
- 
-	// SLF4J API (http://www.slf4j.org) 
+	// compile 'org.antlr:antlr4-runtime:4.7.1'
+
+	// SLF4J API (http://www.slf4j.org)
 	compile 'org.slf4j:slf4j-api:1.7.13'
-	
+
 	// add testing suite
 	//TODO should be test compile but RapidMiner src/main contains code that references JUnit
 	compile 'junit:junit:4.12'
@@ -161,18 +162,18 @@ dependencies {
 
 	// JMathPlot for 2D and 3D plots like Box plot, Stick plot, etc. (https://code.google.com/p/jmathplot/)
 	compile 'com.rapidminer.external:jmathplot:1.0.0'
-	
+
 	// Microba adds a Swing date picker (http://microba.sf.net/)
 	compile 'com.github.tdbear:microba:0.4.4.3'
-	
+
 	// Apache Tika for file MIME type detection (https://tika.apache.org/)
 	compile 'org.apache.tika:tika-core:1.18'
-	
+
 	// The xalan version used by the JRE for XML handling contains a bug which results in XSLT not working with an enabled SecurityManager
-	// Using this version manually to override the JRE fixes the problem. Otherwise all our operator documentation would not work at all 
+	// Using this version manually to override the JRE fixes the problem. Otherwise all our operator documentation would not work at all
 	compile 'xalan:xalan:2.7.2'
 	compile 'xalan:serializer:2.7.2'
-	
+
 	// H2 Database used for CTA
 	compile 'com.h2database:h2:1.4.194'
 
