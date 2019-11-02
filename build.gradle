@@ -4,9 +4,9 @@ buildscript {
         maven { url 'https://maven.rapidminer.com/content/groups/public/' }
     }
     dependencies {
-        classpath 'com.rapidminer.gradle:java-basics:0.4.0'
+        // classpath 'com.rapidminer.gradle:java-basics:0.4.0'
         classpath 'com.rapidminer.gradle:java-publishing:0.2.1'
-		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+	classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
     }
 }
 
@@ -15,7 +15,7 @@ apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 mainClassName = 'com.rapidminer.gui.GuiLauncher'
-apply plugin: 'com.rapidminer.java-basics'
+// apply plugin: 'com.rapidminer.java-basics'
 // apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
 
 shadowJar {
@@ -179,7 +179,8 @@ dependencies {
 
 }
 
-task wrapper(type: Wrapper) { gradleVersion = '4.0.1' }
+wrapper { gradleVersion = '5.6.4' }
+// wrapper { gradleVersion = '6.0' }
 
 apply from: 'gradle/wsimport.gradle'
 apply from: 'gradle/props.gradle'
