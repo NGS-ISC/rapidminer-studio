@@ -71,7 +71,7 @@ public class ComboBoxUI extends BasicComboBoxUI {
 		/** as wide as our min resolution */
 		private static final int MAX_POPUP_WIDTH = 1280;
 
-		public RapidLookComboPopup(JComboBox<?> comboBox) {
+		public RapidLookComboPopup(JComboBox<Object> comboBox) {
 			super(comboBox);
 		}
 
@@ -96,7 +96,7 @@ public class ComboBoxUI extends BasicComboBoxUI {
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
-		protected JList<?> createList() {
+		protected JList<Object> createList() {
 			return new MenuShortcutJList(this.comboBox.getModel(), false);
 		}
 

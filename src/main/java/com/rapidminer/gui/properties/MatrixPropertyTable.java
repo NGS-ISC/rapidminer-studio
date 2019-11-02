@@ -163,7 +163,7 @@ public class MatrixPropertyTable extends ExtendedJTable {
 		for (Object row : modelData) {
 			((Vector<?>) row).removeElementAt(modelIndex);
 		}
-		model.setDataVector(modelData, columnIdentifiers);
+		model.setDataVector((Vector<? extends Vector>) modelData, columnIdentifiers);
 
 		// correct the model indices in the TableColumn objects
 		Enumeration<TableColumn> columns = getColumnModel().getColumns();

@@ -116,9 +116,9 @@ class Cache {
 			h.data = new_data;
 			size -= more;
 			do {
-				int _ = h.len;
+				int _1 = h.len;
 				h.len = len;
-				len = _;
+				len = _1;
 			} while (false);
 		}
 
@@ -139,14 +139,14 @@ class Cache {
 			lru_delete(head[j]);
 		}
 		do {
-			float[] _ = head[i].data;
+			float[] _1 = head[i].data;
 			head[i].data = head[j].data;
-			head[j].data = _;
+			head[j].data = _1;
 		} while (false);
 		do {
-			int _ = head[i].len;
+			int _1 = head[i].len;
 			head[i].len = head[j].len;
-			head[j].len = _;
+			head[j].len = _1;
 		} while (false);
 		if (head[i].len > 0) {
 			lru_insert(head[i]);
@@ -157,18 +157,18 @@ class Cache {
 
 		if (i > j) {
 			do {
-				int _ = i;
+				int _1 = i;
 				i = j;
-				j = _;
+				j = _1;
 			} while (false);
 		}
 		for (head_t h = lru_head.next; h != lru_head; h = h.next) {
 			if (h.len > i) {
 				if (h.len > j) {
 					do {
-						float _ = h.data[i];
+						float _1 = h.data[i];
 						h.data[i] = h.data[j];
-						h.data[j] = _;
+						h.data[j] = _1;
 					} while (false);
 				} else {
 					// give up
@@ -280,39 +280,39 @@ class Solver {
 	void swap_index(int i, int j) {
 		Q.swap_index(i, j);
 		do {
-			byte _ = y[i];
+			byte _1 = y[i];
 			y[i] = y[j];
-			y[j] = _;
+			y[j] = _1;
 		} while (false);
 		do {
-			double _ = G[i];
+			double _1 = G[i];
 			G[i] = G[j];
-			G[j] = _;
+			G[j] = _1;
 		} while (false);
 		do {
-			byte _ = alpha_status[i];
+			byte _1 = alpha_status[i];
 			alpha_status[i] = alpha_status[j];
-			alpha_status[j] = _;
+			alpha_status[j] = _1;
 		} while (false);
 		do {
-			double _ = alpha[i];
+			double _1 = alpha[i];
 			alpha[i] = alpha[j];
-			alpha[j] = _;
+			alpha[j] = _1;
 		} while (false);
 		do {
-			double _ = p[i];
+			double _1 = p[i];
 			p[i] = p[j];
-			p[j] = _;
+			p[j] = _1;
 		} while (false);
 		do {
-			int _ = active_set[i];
+			int _1 = active_set[i];
 			active_set[i] = active_set[j];
-			active_set[j] = _;
+			active_set[j] = _1;
 		} while (false);
 		do {
-			double _ = G_bar[i];
+			double _1 = G_bar[i];
 			G_bar[i] = G_bar[j];
-			G_bar[j] = _;
+			G_bar[j] = _1;
 		} while (false);
 	}
 
@@ -1113,14 +1113,14 @@ class SVC_Q extends Kernel {
 		cache.swap_index(i, j);
 		super.swap_index(i, j);
 		do {
-			byte _ = y[i];
+			byte _1 = y[i];
 			y[i] = y[j];
-			y[j] = _;
+			y[j] = _1;
 		} while (false);
 		do {
-			float _ = QD[i];
+			float _1 = QD[i];
 			QD[i] = QD[j];
-			QD[j] = _;
+			QD[j] = _1;
 		} while (false);
 	}
 }
@@ -1162,9 +1162,9 @@ class ONE_CLASS_Q extends Kernel {
 		cache.swap_index(i, j);
 		super.swap_index(i, j);
 		do {
-			float _ = QD[i];
+			float _1 = QD[i];
 			QD[i] = QD[j];
-			QD[j] = _;
+			QD[j] = _1;
 		} while (false);
 	}
 }
@@ -1202,19 +1202,19 @@ class SVR_Q extends Kernel {
 	@Override
 	void swap_index(int i, int j) {
 		do {
-			byte _ = sign[i];
+			byte _1 = sign[i];
 			sign[i] = sign[j];
-			sign[j] = _;
+			sign[j] = _1;
 		} while (false);
 		do {
-			int _ = index[i];
+			int _1 = index[i];
 			index[i] = index[j];
-			index[j] = _;
+			index[j] = _1;
 		} while (false);
 		do {
-			float _ = QD[i];
+			float _1 = QD[i];
 			QD[i] = QD[j];
-			QD[j] = _;
+			QD[j] = _1;
 		} while (false);
 	}
 
@@ -1715,9 +1715,9 @@ public class Svm {
 		for (i = 0; i < prob.l; i++) {
 			int j = i + (int) (randomGenerator.nextDouble() * (prob.l - i));
 			do {
-				int _ = perm[i];
+				int _1 = perm[i];
 				perm[i] = perm[j];
-				perm[j] = _;
+				perm[j] = _1;
 			} while (false);
 		}
 		for (i = 0; i < nr_fold; i++) {
@@ -2195,9 +2195,9 @@ public class Svm {
 				for (i = 0; i < count[c]; i++) {
 					int j = i + (int) (randomGenerator.nextDouble() * (count[c] - i));
 					do {
-						int _ = index[start[c] + j];
+						int _1 = index[start[c] + j];
 						index[start[c] + j] = index[start[c] + i];
-						index[start[c] + i] = _;
+						index[start[c] + i] = _1;
 					} while (false);
 				}
 			}
@@ -2232,9 +2232,9 @@ public class Svm {
 			for (i = 0; i < l; i++) {
 				int j = i + (int) (Math.random() * (l - i));
 				do {
-					int _ = perm[i];
+					int _1 = perm[i];
 					perm[i] = perm[j];
-					perm[j] = _;
+					perm[j] = _1;
 				} while (false);
 			}
 			for (i = 0; i <= nr_fold; i++) {

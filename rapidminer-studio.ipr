@@ -14,7 +14,7 @@
     <bytecodeTargetLevel target="1.8">
       <module name="rapidminer-studio_external" target="1.8" />
       <module name="rapidminer-studio_main" target="1.8" />
-      <module name="rapidminer-studio_test" target="1.8" />
+      <module name="rapidminer-studio_test" target="13" />
     </bytecodeTargetLevel>
   </component>
   <component name="CopyrightManager" default="" />
@@ -53,21 +53,7 @@
     <version value="1.0" />
   </component>
   <component name="JavadocGenerationManager">
-    <option name="OUTPUT_DIRECTORY" />
-    <option name="OPTION_SCOPE" value="protected" />
-    <option name="OPTION_HIERARCHY" value="true" />
-    <option name="OPTION_NAVIGATOR" value="true" />
-    <option name="OPTION_INDEX" value="true" />
-    <option name="OPTION_SEPARATE_INDEX" value="true" />
-    <option name="OPTION_DOCUMENT_TAG_USE" value="false" />
-    <option name="OPTION_DOCUMENT_TAG_AUTHOR" value="false" />
-    <option name="OPTION_DOCUMENT_TAG_VERSION" value="false" />
-    <option name="OPTION_DOCUMENT_TAG_DEPRECATED" value="true" />
-    <option name="OPTION_DEPRECATED_LIST" value="true" />
     <option name="OTHER_OPTIONS" value="" />
-    <option name="HEAP_SIZE" />
-    <option name="LOCALE" />
-    <option name="OPEN_IN_BROWSER" value="true" />
   </component>
   <component name="ProjectCodeStyleConfiguration">
     <option name="PREFERRED_PROJECT_CODE_STYLE" value="Default" />
@@ -75,12 +61,12 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/rapidminer-studio.iml" filepath="$PROJECT_DIR$/rapidminer-studio.iml" group="rapidminer-studio" />
-      <module fileurl="file://$PROJECT_DIR$/rapidminer-studio_external.iml" filepath="$PROJECT_DIR$/rapidminer-studio_external.iml" group="rapidminer-studio" />
+      <module fileurl="file://$PROJECT_DIR$/rapidminer-studio_external.iml" filepath="$PROJECT_DIR$/rapidminer-studio_external.iml" />
       <module fileurl="file://$PROJECT_DIR$/rapidminer-studio_main.iml" filepath="$PROJECT_DIR$/rapidminer-studio_main.iml" group="rapidminer-studio" />
       <module fileurl="file://$PROJECT_DIR$/rapidminer-studio_test.iml" filepath="$PROJECT_DIR$/rapidminer-studio_test.iml" group="rapidminer-studio" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="1.8-OpenJDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_13_PREVIEW" default="false" project-jdk-name="13" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="SvnBranchConfigurationManager">
@@ -217,29 +203,29 @@
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="Gradle: com.rapidminer.external:vldocking:1.2.2">
+    <library name="Gradle: com.rapidminer.external:vldocking:9.0.2">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.external/vldocking/1.2.2/558cd057d8136302990b7e63a41d971b28c2bfcd/vldocking-1.2.2.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.external/vldocking/9.0.2/54bc96acad19682cf08a227408042c4a1d5bc33b/vldocking-9.0.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="Gradle: com.rapidminer.license:rapidminer-license-api:4.0.5">
+    <library name="Gradle: com.rapidminer.license:rapidminer-license-api:4.2.2">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.license/rapidminer-license-api/4.0.5/c502189ced0e14b220ea60c618317d8fbc8df0ff/rapidminer-license-api-4.0.5.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.license/rapidminer-license-api/4.2.2/dfe185fd73de043e781395055c1f04db26d939e4/rapidminer-license-api-4.2.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.license/rapidminer-license-api/4.0.5/b2da3f3140670a640f4761dd9deb9840d0c7da06/rapidminer-license-api-4.0.5-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.license/rapidminer-license-api/4.2.2/188b84f27ddeaefeda540af7dd40fd5582388482/rapidminer-license-api-4.2.2-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Gradle: com.rapidminer.license:rapidminer-license-commons:4.0.5">
+    <library name="Gradle: com.rapidminer.license:rapidminer-license-commons:4.2.2">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.license/rapidminer-license-commons/4.0.5/847633f36bc6b246f841cde012b09bf2bee6776c/rapidminer-license-commons-4.0.5.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.license/rapidminer-license-commons/4.2.2/df3f7f5e7d9e3afde3c81f766c3829db5216e345/rapidminer-license-commons-4.2.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.license/rapidminer-license-commons/4.0.5/610507289fdfcfe2328c016caefcb43d61feb3c0/rapidminer-license-commons-4.0.5-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.license/rapidminer-license-commons/4.2.2/e5a38ab40cc4a7e025ada9ef74fdba5536e01d37/rapidminer-license-commons-4.2.2-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: com.rapidminer.studio:rapidminer-studio-osx-adapter:1.0.2">
@@ -251,27 +237,31 @@
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer.studio/rapidminer-studio-osx-adapter/1.0.2/6b6291cb48a1752ccdb3f0aaa7d1ca9ac25d6a22/rapidminer-studio-osx-adapter-1.0.2-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Gradle: com.rapidminer:belt-adapter:0.1.0">
+    <library name="Gradle: com.rapidminer:belt-adapter:0.5">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/belt-adapter/0.1.0/79992db8498559f0c719f87b0661bca5b95dd94c/belt-adapter-0.1.0.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="Gradle: com.rapidminer:belt:0.2.0">
-      <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/belt/0.2.0/da90fda11e635869f927c282d261e246c21d9d37/belt-0.2.0.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="Gradle: com.rapidminer:rapidminer-api:0.2.1">
-      <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/rapidminer-api/0.2.1/3a8622d7db96b322cd55dff244d45380ff4e96fe/rapidminer-api-0.2.1.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/belt-adapter/0.5/6ec1a6d94a60f27aa81f1d80d9ef7d547460310c/belt-adapter-0.5.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/rapidminer-api/0.2.1/e3e802a73a62de259edb6569e47dd9951e7d49f2/rapidminer-api-0.2.1-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/belt-adapter/0.5/1e7c76426a2c30c23edb8f5963f2ecf302b0f06e/belt-adapter-0.5-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: com.rapidminer:belt:1.0.0-BETA2">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/belt/1.0.0-BETA2/16536ba5c8275b21e2efd58445808a35d13ca4d3/belt-1.0.0-BETA2.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/belt/1.0.0-BETA2/1d1069d9f8d5aa009f0fffcfa09134d90f58c6ab/belt-1.0.0-BETA2-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: com.rapidminer:rapidminer-api:0.2.2">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/rapidminer-api/0.2.2/f40f9a16902089c521292e1df1fd906ed332e0b/rapidminer-api-0.2.2.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.rapidminer/rapidminer-api/0.2.2/2ed2d74890a7b78bb58d114df89a63091be5a71f/rapidminer-api-0.2.2-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: com.sun.mail:javax.mail:1.6.0">
@@ -373,22 +363,22 @@
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy/1.7.9/d4715044fac07c15e0578933fa0dd25cd64ad0cc/byte-buddy-1.7.9-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Gradle: net.java.dev.jna:jna-platform:4.5.1">
+    <library name="Gradle: net.java.dev.jna:jna-platform:4.5.2">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/4.5.1/117d52c9f672d8b7ea80a81464c33ef843de9254/jna-platform-4.5.1.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/4.5.2/741853c07152f6c0fef5194efa6b2dabac22e9c0/jna-platform-4.5.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/4.5.1/2793e1c7c5e916e909addff50dd38d37ff848bf6/jna-platform-4.5.1-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna-platform/4.5.2/acd7e40e3c37103db081f71d52115b242e769757/jna-platform-4.5.2-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Gradle: net.java.dev.jna:jna:4.5.1">
+    <library name="Gradle: net.java.dev.jna:jna:4.5.2">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.5.1/65bd0cacc9c79a21c6ed8e9f588577cd3c2f85b9/jna-4.5.1.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.5.2/35d000afbaa4ed425d91873b40f4df9b8236875b/jna-4.5.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.5.1/965bf0f4cf5b71c2b1e9bb5a8d7b6919020e0492/jna-4.5.1-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/4.5.2/abbb850e6885dd52b7b785add4a821f4b45ceb5a/jna-4.5.2-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: net.sf.jung:jung-algorithms:2.0.1">
@@ -729,6 +719,105 @@
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.objenesis/objenesis/2.6/96614f514a1031296657bf0dde452dc15e42fcb8/objenesis-2.6-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Gradle: org.openjfx:javafx-base:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-base/12.0.1/6abae81d00e0c6f4fde02e2666f9c0b989ff47e4/javafx-base-12.0.1.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-base/12.0.1/eb73441f6bc350c75995da1e64396be5f6d61fde/javafx-base-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-base:linux:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-base/12.0.1/bacd11da7c8f80868508aaa89b8b22c282dddaf7/javafx-base-12.0.1-linux.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-base/12.0.1/eb73441f6bc350c75995da1e64396be5f6d61fde/javafx-base-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-controls:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-controls/12.0.1/a6502999bdb947885c8d121a47d745d52a06577a/javafx-controls-12.0.1.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-controls/12.0.1/56cf8664da8de1b8e06efa227920740cf5c9a671/javafx-controls-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-controls:linux:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-controls/12.0.1/705ca40565f7cff44fbd6aeae1876de06975bc8c/javafx-controls-12.0.1-linux.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-controls/12.0.1/56cf8664da8de1b8e06efa227920740cf5c9a671/javafx-controls-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-fxml:linux:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-fxml/12.0.1/5c59cdc89fecc71f9392a03b5b19db906af063b0/javafx-fxml-12.0.1-linux.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-fxml/12.0.1/cef7346264945c58e3710955b176c799e0d435d3/javafx-fxml-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-graphics:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-graphics/12.0.1/19ec56a15d7dd9c49112912547425b718485d7db/javafx-graphics-12.0.1.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-graphics/12.0.1/eb2eebbd957e5519332cec722ccf485674d65b4a/javafx-graphics-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-graphics:linux:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-graphics/12.0.1/16cecc736fb34c555b7bd669a89820b9d0fce3f/javafx-graphics-12.0.1-linux.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-graphics/12.0.1/eb2eebbd957e5519332cec722ccf485674d65b4a/javafx-graphics-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-media:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-media/12.0.1/9905b35d7a6327d9f96244d39bab52aeb3619d47/javafx-media-12.0.1.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-media/12.0.1/e2d9416075bb2506ddea2e68e1a1d23df6142709/javafx-media-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-media:linux:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-media/12.0.1/b7f23df9d25b3433dc1a330d20c4d7010e906ca/javafx-media-12.0.1-linux.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-media/12.0.1/e2d9416075bb2506ddea2e68e1a1d23df6142709/javafx-media-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-swing:linux:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-swing/12.0.1/c359661bc4f5b8464ee0ea7c80e0ad526fe27149/javafx-swing-12.0.1-linux.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-swing/12.0.1/b8f4431919aafce2914354d8445e5b149630a459/javafx-swing-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Gradle: org.openjfx:javafx-web:linux:12.0.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-web/12.0.1/2dad47dfaa2a828b2ccd44fa0f682727938a668/javafx-web-12.0.1-linux.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjfx/javafx-web/12.0.1/5989b1fb5009ec8a55b4b5afafda079aeb101519/javafx-web-12.0.1-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Gradle: org.slf4j:slf4j-api:1.7.13">
       <CLASSES>
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.7.13/7fcf30c25b8f4a9379b9dad0d3f487b25272c026/slf4j-api-1.7.13.jar!/" />
@@ -738,13 +827,13 @@
         <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.7.13/96e785df399a4e1a6c030877097807b7e18520cc/slf4j-api-1.7.13-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Gradle: org.swinglabs.swingx:swingx-all:1.6.5">
+    <library name="Gradle: org.swinglabs.swingx:swingx-all:1.6.5-1">
       <CLASSES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.swinglabs.swingx/swingx-all/1.6.5/d947460f7e2687db371c2b3b9f2f70f418d6804/swingx-all-1.6.5.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.swinglabs.swingx/swingx-all/1.6.5-1/1ea704cd8779f8df8a3d345ee1344239e7774d52/swingx-all-1.6.5-1.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.swinglabs.swingx/swingx-all/1.6.5/7b32c29c677ffdf9d2e8f7d1d447e44303764276/swingx-all-1.6.5-sources.jar!/" />
+        <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.swinglabs.swingx/swingx-all/1.6.5-1/9a3a906edc005af1bf704cdff88d15a440e8df4d/swingx-all-1.6.5-1-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Gradle: stax:stax-api:1.0.1">

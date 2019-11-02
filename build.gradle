@@ -16,6 +16,12 @@ plugins {
   id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
+sourceSets {
+    generated{
+        java.srcDir "${buildDir}/generated/src/java/"
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -44,11 +50,16 @@ repositories {
 }
 
 compileJava {
-	sourceCompatibility = 1.8
-	targetCompatibility = 1.8
+	// sourceCompatibility = 1.8
+	// targetCompatibility = 1.8
+	source += sourceSets.generated.java
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/javax.xml.ws/jaxws-api
+    compile group: 'javax.xml.ws', name: 'jaxws-api', version: '2.3.1'
+    // https://mvnrepository.com/artifact/javax.jws/javax.jws-api
+    compile group: 'javax.jws', name: 'javax.jws-api', version: '1.1'
 
 	// belt project for new data core
 	compile 'com.rapidminer:belt:1.0.0-BETA2'

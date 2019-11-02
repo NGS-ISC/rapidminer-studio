@@ -2,7 +2,21 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5715df05-d8e6-4db7-b6fd-1511d09bd4ee" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/rapidminer/tools/DefaultShellFolder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/rapidminer/tools/ShellFolder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/rapidminer/tools/ShellFolderColumnInfo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/rapidminer/tools/ShellFolderManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/props.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/props.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rapidminer-studio.ipr" beforeDir="false" afterPath="$PROJECT_DIR$/rapidminer-studio.ipr" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rapidminer-studio.iws" beforeDir="false" afterPath="$PROJECT_DIR$/rapidminer-studio.iws" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/rapidminer/gui/look/fc/FileChooserUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/rapidminer/gui/look/fc/FileChooserUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/rapidminer/gui/look/fc/FileList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/rapidminer/gui/look/fc/FileList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/rapidminer/gui/look/ui/ComboBoxUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/rapidminer/gui/look/ui/ComboBoxUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/rapidminer/gui/properties/MatrixPropertyTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/rapidminer/gui/properties/MatrixPropertyTable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/libsvm/Kernel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/libsvm/Kernel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/libsvm/Svm.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/libsvm/Svm.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -69,16 +83,12 @@
       </state>
     </system>
   </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>ParameterTypeSuggestion</find>
-      <find>ParameterTypeAttribute</find>
-      <find>Attribute</find>
-      <find>category</find>
-    </findStrings>
-    <dirStrings>
-      <dir>$PROJECT_DIR$/src/main/java/com/rapidminer/operator</dir>
-    </dirStrings>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -96,7 +106,9 @@
       <profile-state />
     </entry>
   </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectReloadState">
     <option name="STATE" value="0" />
   </component>
@@ -108,7 +120,11 @@
     <property name="MemberChooser.showClasses" value="true" />
     <property name="MemberChooser.sorted" value="false" />
     <property name="SearchEverywhereHistoryKey" value="ParameterTypeCategory&#9;PSI&#9;JAVA://com.rapidminer.parameter.ParameterTypeCategory&#10;propertyType&#9;PSI&#9;JAVA://org.apache.tika.metadata.Property.PropertyType&#10;getPArameterAs&#9;PSI&#9;JAVA://com.rapidminer.parameter.ParameterHandler#getParameterAsInt&#10;ResultObjectAdapter&#9;PSI&#9;JAVA://com.rapidminer.operator.ResultObjectAdapter&#10;fileObj&#9;PSI&#9;JAVA://com.rapidminer.operator.nio.file.FileObject&#10;block_type&#9;PSI&#9;JAVA://com.rapidminer.gui.viewer.MetaDataViewerTableModel#BLOCK_TYPE&#10;selection&#9;PSI&#9;JAVA://com.rapidminer.gui.new_plotter.engine.jfreechart.link_and_brush.listener.LinkAndBrushSelection.SelectionType#SELECTION&#10;Suggestion&#9;FILE&#9;file:///home/eugeneai/tmp/rapidminer-studio/src/main/java/com/rapidminer/parameter/ParameterTypeSuggestion.java&#10;IOMultiplier&#9;PSI&#9;JAVA://com.rapidminer.operator.IOMultiplier&#10;&gt;com.rapidminer.operator.IOMultiplier&#9;null&#9;null&#10;This operators multiplies its input object&#9;null&#9;null&#10;Multiply&#9;PSI&#9;JAVA://com.rapidminer.operator.IOMultiplyOperator" />
-    <property name="last_opened_file_path" value="$USER_HOME$/projects/code/icc.xmitransform/lgt/Makefile" />
+    <property name="external.system.task.project.file.to.start" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.0" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RunDashboard">
@@ -123,7 +139,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Gradle.buid studi">
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
       <Port>5050</Port>
@@ -142,6 +158,78 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="jar" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list />
+        </option>
+        <option name="vmOptions" value="" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="buid studi" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="jar" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list />
+        </option>
+        <option name="vmOptions" value="" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="rapidminer-studio [compileJava]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="jar" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="compileJava" />
+          </list>
+        </option>
+        <option name="vmOptions" value="" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="rapidminer-studio [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="jar" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="shadowJar" />
+          </list>
+        </option>
+        <option name="vmOptions" value="" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" />
@@ -156,6 +244,12 @@
     </configuration>
     <configuration default="true" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
       <makefile filename="$USER_HOME$/projects/code/icc.xmitransform/lgt/Makefile" target="run" workingDirectory="$USER_HOME$/projects/code/icc.xmitransform/lgt" arguments="">
+        <envs />
+      </makefile>
+      <method v="2" />
+    </configuration>
+    <configuration name="build" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
+      <makefile filename="$PROJECT_DIR$/Makefile" target="build" workingDirectory="$USER_HOME$/projects/code/icc.xmitransform/lgt" arguments="">
         <envs />
       </makefile>
       <method v="2" />
@@ -177,6 +271,20 @@
         <option name="BuildArtifacts" enabled="false" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Gradle.buid studi" />
+      <item itemvalue="Makefile.run-gen" />
+      <item itemvalue="Makefile.build" />
+      <item itemvalue="Gradle.rapidminer-studio [shadowJar]" />
+      <item itemvalue="Gradle.rapidminer-studio [compileJava]" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.rapidminer-studio [compileJava]" />
+        <item itemvalue="Gradle.rapidminer-studio [shadowJar]" />
+        <item itemvalue="Makefile.build" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />

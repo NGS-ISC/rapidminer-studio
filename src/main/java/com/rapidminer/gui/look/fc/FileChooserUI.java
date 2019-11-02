@@ -91,7 +91,7 @@ import com.rapidminer.gui.tools.dialogs.ButtonDialog;
 import com.rapidminer.io.remote.RemoteFileSystemView;
 import com.rapidminer.tools.I18N;
 
-import sun.awt.shell.ShellFolder;
+import com.rapidminer.tools.ShellFolder;
 
 
 /**
