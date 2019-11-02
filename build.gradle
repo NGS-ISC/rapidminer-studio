@@ -2,17 +2,22 @@ buildscript {
     repositories {
         jcenter()
         maven { url 'https://maven.rapidminer.com/content/groups/public/' }
+        maven {
+    	    url "https://plugins.gradle.org/m2/"
+	}
     }
     dependencies {
         // classpath 'com.rapidminer.gradle:java-basics:0.4.0'
         classpath 'com.rapidminer.gradle:java-publishing:0.2.1'
 	classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+	classpath "org.openjfx:javafx-plugin:0.0.8"
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: "org.openjfx.javafxplugin"
 
 mainClassName = 'com.rapidminer.gui.GuiLauncher'
 // apply plugin: 'com.rapidminer.java-basics'
@@ -38,6 +43,11 @@ compileJava {
 	sourceCompatibility = 1.8
 	targetCompatibility = 1.8
 }
+
+javafx {
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.bind' ]
+}
+
 
 dependencies {
 
