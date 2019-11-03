@@ -7,7 +7,7 @@ buildscript {
     dependencies {
         classpath 'com.rapidminer.gradle:java-basics:0.4.0'
         classpath 'com.rapidminer.gradle:java-publishing:0.2.1'
-        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.4"
+        classpath "com.github.jengelman.gradle.plugins:shadow:5.1.0" // 2.0.4
     }
 }
 
@@ -34,6 +34,7 @@ mainClassName = 'com.rapidminer.gui.GuiLauncher'
 // apply plugin: 'com.rapidminer.java-publishing.agpl-v3'
 
 shadowJar {
+	mainClassName = 'com.rapidminer.gui.RapidMinerGUI'
 	baseName = 'rapidminer-studio'
 //	classifier = null
 //	version = null
@@ -50,8 +51,8 @@ repositories {
 }
 
 compileJava {
-	// sourceCompatibility = 1.8
-	// targetCompatibility = 1.8
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
 	source += sourceSets.generated.java
 }
 
